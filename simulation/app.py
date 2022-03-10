@@ -10,12 +10,12 @@ PORT:int = flaskHttpAppWithRoutes.config.get('GEMBER_PORT') # type:ignore
 def run_app():
     # logging.getLogger().setLevel(logging.DEBUG)
     logging.basicConfig(level=logging.DEBUG,
-                        format='[%(levelname)s] (%(threadName)-10s) %(message)s',
+                        format=Fore.BLUE + '[%(levelname)s] (%(threadName)-10s) %(message)s' + Style.RESET_ALL,
                         )
     logging.getLogger().addHandler(logging.FileHandler('gpAppLog.log'))
-    print(f'Running FLASK http server in {flaskHttpAppWithRoutes.env} mode with debug:={flaskHttpAppWithRoutes.debug}')
-    print(flaskHttpAppWithRoutes.url_map._rules)
-    print(Fore.GREEN + f'module name: {__name__}' + Style.RESET_ALL)
+    print(Fore.BLUE + Style.DIM + f'Running FLASK http server in {flaskHttpAppWithRoutes.env} mode with debug:={flaskHttpAppWithRoutes.debug}' + Style.RESET_ALL)
+    # print(flaskHttpAppWithRoutes.url_map._rules)
+    # print(Fore.GREEN + f'module name: {__name__}' + Style.RESET_ALL)
     socketio.run(flaskHttpAppWithRoutes, 
                  host=HOST, port=PORT, 
                  log_output=True, 

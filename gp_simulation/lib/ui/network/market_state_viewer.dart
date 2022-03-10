@@ -463,7 +463,7 @@ mixin HttpRequestMixin on SocketIoMixin, IMarketStateViewer {
     final uri = _addKeyToUri(url);
     Map<String, String> headers = HashMap();
     headers['Accept'] = 'application/json';
-    
+
     print(PrintPens.orangePen('[POST]: Calling uri: $uri'));
     try {
       /* [body] sets the body of the request. It can be a [String], a [List] or a [Map<String, String>]. If it's a String, it's encoded using [encoding] and used as the body of the request. The content-type of the request will default to "text/plain".
@@ -511,6 +511,8 @@ class MarketStateViewer extends SocketIoMixin with HttpRequestMixin {
   }
 
   static const socketIoUrl = SocketIoMixin.socketIoUrl;
+
+  bool loadingEntities = false;
 
   MarketStateViewer._privateConstruct() {
     onTransaction = _transactionEmitterController.stream.asBroadcastStream();
@@ -640,13 +642,18 @@ class MarketStateViewer extends SocketIoMixin with HttpRequestMixin {
 
   @override
   Future<LoadEntitiesResult> loadEntities() async {
-    if (_EntityCatalog.isEmpty) {
-      final data = await postData('$apiUrl/init', {
-        'retailer_name': 'Tescos',
-        'retailer_strategy': 'COMPETITIVE',
-        'retailer_sustainability': 'AVERAGE',
-      });
-      _loadEntities(data);
+    if (_EntityCatalog.isEmpty && !loadingEntities) {
+      loadingEntities = true;
+      try {
+        final data = await postData('$apiUrl/init', {
+          'retailer_name': 'Tescos',
+          'retailer_strategy': 'COMPETITIVE',
+          'retailer_sustainability': 'AVERAGE',
+        });
+        _loadEntities(data);
+      } finally {
+        loadingEntities = false;
+      }
       _requestPurchaseSpeed();
     }
     return _EntityCatalog;

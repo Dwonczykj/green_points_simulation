@@ -32,7 +32,8 @@
         <p id="isolated-iteration"></p>
         <p id="full-sim"></p>
     </div>
-    <div style="display: flex; align-items: flex-start; flex-direction: column-reverse; border-width: 2px; border-color: black; background-color: aliceblue;">
+    <div
+        style="display: flex; align-items: flex-start; flex-direction: column-reverse; border-width: 2px; border-color: black; background-color: aliceblue;">
         <ul id="view-socket-events">
         </ul>
     </div>
@@ -41,16 +42,16 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"
     integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA=="
     crossorigin="anonymous">
-</script>
+    </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
 <script>
     transactionsCount = 0.0;
 
     function sayHi() {
         console.debug('sayHi clicked');
-        if (socket){
-            socket.emit('message', JSON.stringify({'data': 'a message from joey d'}) )
-        }else if(ws){
+        if (socket) {
+            socket.emit('message', JSON.stringify({ 'data': 'a message from joey d' }))
+        } else if (ws) {
             ws.send(JSON.stringify({ 'type': 'message', 'data': 'a message from joey d' }));
         }
     }
@@ -81,12 +82,13 @@
             });
     }
 
-    function getGemberAPIKEYQueryStr(){
-        return `?GEMBER_API_KEY=9adf915b-7d11-4dd1-a377-0df5267179ed`;
+    function getGemberAPIKEYQueryStr() {
+        // return `?GEMBER_API_KEY=9adf915b-7d11-4dd1-a377-0df5267179ed`;
+        return '';
     }
 
     function initGPApp() {
-        
+
         statusEl = document.getElementById('isolated-iteration')
         const params = {
             'retailer_name': 'Tescos',
@@ -133,7 +135,7 @@
             .then(r => JSON.stringify(r))
             .then(response => {
                 console.info(response);
-                statusEl.innerText =  'Run Full Simulation call Done -> ' + response;
+                statusEl.innerText = 'Run Full Simulation call Done -> ' + response;
             });
 
     }
@@ -181,7 +183,7 @@
                 }
             })
             .then(r => {
-                if (typeof(r) == 'string') {
+                if (typeof (r) == 'string') {
                     return r;
                 } else {
                     return JSON.stringify(r);
@@ -204,52 +206,70 @@
     $(document).ready(function () {
         var status_el = document.getElementById('socket-protocol');
 
-        initGPApp();        
+        initGPApp();
 
-        socket = io({ transports: ['websocket'], upgrade: false });
-        
-        socket.on('connect', function () {
-            var conn_status_el = document.getElementById('connection-status');
-            conn_status_el.innerText = "Socket.io connected EIO:(" + socket.io.engine.transport.query.EIO + ")";
-            socket.emit('my event', { data: 'Vanilla connect.html page is connected to socket.io!' });
-            console.info('Connected to socketio with protocol: ' + socket.io.engine.transport.query.EIO);
-            console.debug(socket);
-        });
-        socket.on('connect_timeout', function () {
-            console.warn('Socketio connection to connect.html timed out...');
-        });
+        // socket = io({ transports: ['websocket'], upgrade: false, namespace:'/' });
+        sockets = {}
+        sockets['/'] = io({ transports: ['websocket'], upgrade: false });
+        sockets['/transactions'] = io('/transactions', { transports: ['websocket'], upgrade: false });
+        sockets['/simulation'] = io('/simulation', { transports: ['websocket'], upgrade: false });
+
+
+        for (let i in Object.values(sockets)) {
+            let socket = Object.values(sockets)[i];
+            socket.on('connect', function () {
+                var conn_status_el = document.getElementById('connection-status');
+                conn_status_el.innerText = "Socket.io connected EIO:(" + socket.io.engine.transport.query.EIO + ")";
+                socket.emit('my event', { data: 'Vanilla connect.html page is connected to socket.io!' });
+                console.info('Connected to socketio on channel: ' + socket.nsp + ' with protocol: ' + socket.io.engine.transport.query.EIO);
+                console.debug(socket);
+                initGPApp();
+            });
+            socket.on('disconnect', function () {
+                var conn_status_el = document.getElementById('connection-status');
+                conn_status_el.innerText = "Socket.io disconnected";
+            });
+            socket.on('connect_timeout', function () {
+                console.warn('Socketio connection to connect.html timed out...');
+            });
+        }
+
+
         messageViewEl = document.getElementById('view-socket-events');
-        socket.on('message', function (data) {
-            const node = document.createElement("li");
-            const textnode = document.createTextNode(JSON.stringify(data));
-            node.appendChild(textnode);
-            messageViewEl.appendChild(node);
-        });
-        socket.on('fromServer', function (data) {
-            const node = document.createElement("li");
-            const textnode = document.createTextNode(JSON.stringify({'fromServer':data}));
-            node.appendChild(textnode);
-            messageViewEl.appendChild(node);
-        });
 
-        socket.on('*', function (data) {
-            const node = document.createElement("li");
-            const textnode = document.createTextNode(JSON.stringify({'*':data}));
-            node.appendChild(textnode);
-            messageViewEl.appendChild(node);
-        });
-        
-        
+        eventCounts = {}
+        let f = function (eventName, namespace = '/') {
+            eventCounts[eventName] = 0
+            socket = sockets[namespace];
+            socket.on(eventName, function (data) {
+                const node = document.createElement("li");
+                res = {};
+                res[eventName] = data;
+                const textnode = document.createTextNode(JSON.stringify(res));
+                node.appendChild(textnode);
+                messageViewEl.appendChild(node);
+                eventCounts[eventName] = eventCounts[eventName] + 1
+            });
+        }
+
+        f('message')
+        f('fromServer')
+        f('entity updated')
+        f('bank transaction completed', '/transactions')
+        f('simulation iteration completed', '/simulation')
+
+        socket = sockets['/']
+
         // if ("WebSocket" in window) {
         //     let ws = false;
         //     try {
         //         ws = new WebSocket("ws://" + document.domain + ":8443/websocket");
-                
+
         //     } catch (error) {
         //         ws = false;
         //     }
         //     if (ws != false){
-                
+
         //         ws.on("connect", function(){
         //             console.log('vanilla ws connected');
         //             socket = ws;
@@ -269,22 +289,22 @@
         //             ws.send(JSON.stringify({ 'data': 'Sent from my browser!' }));
         //         });
         //     }
-            
+
         // }
         // else {
         $("button#send").live("click", function () {
-            socket.emit("message",JSON.stringify({ 'data': 'Sent from my browser!' }));
+            socket.emit("message", JSON.stringify({ 'data': 'Sent from my browser!' }));
         });
         // }
 
 
         // Cleanly close websocket when unload window
         window.onbeforeunload = function () {
-            if(ws){
+            if (ws) {
                 ws.onclose = function () { }; // disable onclose handler first
                 ws.close();
             }
-            if(socket){
+            if (socket) {
                 socket.close();
             }
         };

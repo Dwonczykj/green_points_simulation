@@ -99,26 +99,23 @@ def testWsEventMemory():
         for i in range(N):
             gpApp._emit_event(WebSocketServerResponseEvent.message_received, {
                               'data': f'test message {N}'})
-    if isinstance(dual_pool, ThreadPool):
-        if flaskHttpApp.config["ALLOW_THREADING"]:
-            async_result = dual_pool.apply_async(
-                _emitNEvents, args=[2], kwds={}, callback=None)
-            tasks[taskId] = async_result
-            #BUG: This will cause a memory leak given enough time as this store should be on disk on a db....
-            #  we can just delete old tasks by popping them once accessed as they should only be asked fro once if one client has the taskid.
-            taskPresenters[taskId] = lambda res: res.to_json()
-            # do some other stuff in the main process ...
-            # resultDf = async_result.get()
-            # response = make_response(resultDf.to_json())
-            statusId = HTTPStatus.ACCEPTED
-            return wrap_CORS_response(make_response({'status': statusId, 'message': 'test-ws-event-memory_running', 'task_id': taskId}, statusId))
-        else:
-            _emitNEvents(100)
-            statusId = HTTPStatus.OK
-            return wrap_CORS_response(make_response({'status': statusId, 'message': 'test-ws-event-memory_ran', 'task_id': taskId}, statusId))
-
+    
+    if flaskHttpApp.config["ALLOW_THREADING"]:
+        async_result = dual_pool.apply_async(
+            _emitNEvents, args=[2], kwds={}, callback=None)
+        tasks[taskId] = async_result
+        #BUG: This will cause a memory leak given enough time as this store should be on disk on a db....
+        #  we can just delete old tasks by popping them once accessed as they should only be asked fro once if one client has the taskid.
+        taskPresenters[taskId] = lambda res: res.to_json()
+        # do some other stuff in the main process ...
+        # resultDf = async_result.get()
+        # response = make_response(resultDf.to_json())
+        statusId = HTTPStatus.ACCEPTED
+        return wrap_CORS_response(make_response({'status': statusId, 'message': 'test-ws-event-memory_running', 'task_id': taskId}, statusId))
     else:
-        abort(401, 'Flask Server isnt running on the main thread...')
+        _emitNEvents(100)
+        statusId = HTTPStatus.OK
+        return wrap_CORS_response(make_response({'status': statusId, 'message': 'test-ws-event-memory_ran', 'task_id': taskId}, statusId))
 
 
 @require_appkey
@@ -127,13 +124,18 @@ def init_simulation():
     print('init gpApp')
     response = wrap_CORS_response(make_response({}))
     if not gpApp.initialised():
+        data = {}
+        if request.data:
+            data = {**data, **json.loads(request.data)}
+        elif len(request.form) > 0:
+            data = {**data, **request.form}
         valid_retailer_name = validate_retailer_name(
-            request.form['retailer_name'])
+            data['retailer_name'])
         if valid_retailer_name:
             valid_retailer_strategy = validate_retailer_strategy(
-                request.form['retailer_name'], request.form['retailer_strategy'])
+                data['retailer_name'], data['retailer_strategy'])
             valid_retailer_sustainability = validate_retailer_sustainability(
-                request.form['retailer_name'], request.form['retailer_sustainability'])
+                data['retailer_name'], data['retailer_sustainability'])
             if valid_retailer_strategy and valid_retailer_sustainability:
                 (_, entities) = gpApp.initNewSim()
 
@@ -217,76 +219,71 @@ def run_isolated_simulation():
     # resultDf = T1.join()
 
     taskId = str(uuid.uuid4())
-    if isinstance(dual_pool, ThreadPool):
-        if flaskHttpApp.config["ALLOW_THREADING"]:
-            async_result = dual_pool.apply_async(
-                gpApp.run_isolated_iteration, args=(), kwds={}, callback=None)
-            tasks[taskId] = async_result
-            #BUG: This will cause a memory leak given enough time as this store should be on disk on a db....
-            #  we can just delete old tasks by popping them once accessed as they should only be asked fro once if one client has the taskid.
-            taskPresenters[taskId] = lambda res: res.to_json()
-            # do some other stuff in the main process ...
-            # resultDf = async_result.get()
-            # response = make_response(resultDf.to_json())
-            statusId = HTTPStatus.ACCEPTED
-            return wrap_CORS_response(make_response({'status': statusId, 'message': 'simulation_running', 'task_id': taskId}, statusId))
-        else:
-            df = gpApp.run_isolated_iteration
-            statusId = HTTPStatus.OK
-            return wrap_CORS_response(make_response({'status': statusId, 'message': 'simulation_ran', 'task_id': taskId}, statusId))
-
+    
+    if flaskHttpApp.config["ALLOW_THREADING"]:
+        async_result = dual_pool.apply_async(
+            gpApp.run_isolated_iteration, args=(), kwds={}, callback=None)
+        tasks[taskId] = async_result
+        #BUG: This will cause a memory leak given enough time as this store should be on disk on a db....
+        #  we can just delete old tasks by popping them once accessed as they should only be asked fro once if one client has the taskid.
+        taskPresenters[taskId] = lambda res: res.to_json()
+        # do some other stuff in the main process ...
+        # resultDf = async_result.get()
+        # response = make_response(resultDf.to_json())
+        statusId = HTTPStatus.ACCEPTED
+        return wrap_CORS_response(make_response({'status': statusId, 'message': 'simulation_running', 'task_id': taskId}, statusId))
     else:
-        abort(401, 'Flask Server isnt running on the main thread...')
+        df = gpApp.run_isolated_iteration()
+        statusId = HTTPStatus.OK
+        return wrap_CORS_response(make_response({'status': statusId, 'message': 'simulation_ran', 'task_id': taskId}, statusId))
+
 
 
 @require_appkey
 @flaskHttpApp.route('/run-full-sim', methods=['POST'])
 def run_simulation():
-    if isinstance(dual_pool, ThreadPool):
-        kwds = {}
-        data = {}
-        if request.data:
-            data = {**data, **json.loads(request.data)}
-        elif len(request.form) > 0:
-            data = {**data, **request.form}
-        if 'maxN' in data:
-            kwds['maxN'] = int(data['maxN'])
-        if 'convergence_threshold' in data:
-            kwds['convergence_threshold'] = float(
-                data['convergence_threshold'])
-        taskId = str(uuid.uuid4())
-        simId = gpApp.simulationEnvironmentToken()
-        if flaskHttpApp.config["ALLOW_THREADING"]:
-            async_result = dual_pool.apply_async(
-                lambda: gpApp.run_full_simulation(simulationId=simId, **kwds), callback=None)
-            tasks[taskId] = async_result
-            #BUG: This will cause a memory leak given enough time as this store should be on disk on a db....
-            #  we can just delete old tasks by popping them once accessed as they should only be asked fro once if one client has the taskid.
-            taskPresenters[taskId] = lambda res: res.to_json()
-            # do some other stuff in the main process ...
-            # resultDf = async_result.get()
+    
+    kwds = {}
+    data = {}
+    if request.data:
+        data = {**data, **json.loads(request.data)}
+    elif len(request.form) > 0:
+        data = {**data, **request.form}
+    if 'maxN' in data:
+        kwds['maxN'] = int(data['maxN'])
+    if 'convergence_threshold' in data:
+        kwds['convergence_threshold'] = float(
+            data['convergence_threshold'])
+    taskId = str(uuid.uuid4())
+    simId = gpApp.simulationEnvironmentToken()
+    if flaskHttpApp.config["ALLOW_THREADING"]:
+        async_result = dual_pool.apply_async(
+            lambda: gpApp.run_full_simulation(simulationId=simId, **kwds), callback=None)
+        tasks[taskId] = async_result
+        #BUG: This will cause a memory leak given enough time as this store should be on disk on a db....
+        #  we can just delete old tasks by popping them once accessed as they should only be asked fro once if one client has the taskid.
+        taskPresenters[taskId] = lambda res: res.to_json()
+        # do some other stuff in the main process ...
+        # resultDf = async_result.get()
 
-            # response = make_response(resultDf.to_json())
-            return_status_code = HTTPStatus.ACCEPTED
-            return wrap_CORS_response(make_response({'status': return_status_code,
-                                                     'message': 'simulation_running',
-                                                     'task_id': taskId,
-                                                     'simulation_id': simId
-                                                     }, return_status_code))
-        else:
-            df = gpApp.run_full_simulation(simulationId=simId, **kwds)
-            return_status_code = HTTPStatus.ACCEPTED
-            return wrap_CORS_response(make_response({'status': return_status_code,
-                                                     'message': 'simulation_ran',
-                                                     'task_id': taskId,
-                                                     'simulation_id': simId
-                                                     }, return_status_code))
-
-        # response.headers['Access-Control-Allow-Origin'] = request.origin
-        # return response
-
+        # response = make_response(resultDf.to_json())
+        return_status_code = HTTPStatus.ACCEPTED
+        return wrap_CORS_response(make_response({'status': return_status_code,
+                                                    'message': 'simulation_running',
+                                                    'task_id': taskId,
+                                                    'simulation_id': simId
+                                                    }, return_status_code))
     else:
-        abort(401, 'Flask Server isnt running on the main thread...')
+        df = gpApp.run_full_simulation(simulationId=simId, **kwds)
+        return_status_code = HTTPStatus.ACCEPTED
+        return wrap_CORS_response(make_response({'status': return_status_code,
+                                                    'message': 'simulation_ran',
+                                                    'task_id': taskId,
+                                                    'simulation_id': simId
+                                                    }, return_status_code))
+
+    # response.headers['Access-Control-Allow-Origin'] = request.origin
+    # return response
 
 
 def get_task_result():
