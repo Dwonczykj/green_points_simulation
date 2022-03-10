@@ -1,0 +1,43 @@
+{
+    "entities": {
+        "consumers": [
+            {
+                "id": "BAC1-IS87-UIY7-KJD8",
+                "name": "Tom",
+                "bank": "AMEX",
+                "accounts": [],
+                "basket": [],
+                "transactionHistory": []
+            }
+        ],
+        "retailers": [
+            {
+                "id": "827G-UHDY-KDU8-K875",
+                "name": "Coop",
+                "bank": "AMEX",
+                "accounts": [],
+                "gpIssueingAccount": {},
+                "strategy": "",
+                "sustainability": "",
+                "greenPointFiatValue": 0.01,
+                "salesCount": 10,
+                "salesHistory": [
+                    {
+                        "bank": "AMEX",
+                        "item": {
+                            "name": "Potatoes",
+                            "retailer": "Coop",
+                            "cost": {
+                                "amount": 1.50,
+                                "currency": "GBP"
+                            },
+                            "KGCo2": "0.3",
+                            "GP": 12
+                        },
+                        "greenPointsIssuedForItem": 12
+                    }
+                ]
+            }
+        ]
+    }
+}

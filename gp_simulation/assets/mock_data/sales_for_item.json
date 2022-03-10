@@ -1,0 +1,43 @@
+[
+    {
+        "totalGasBoughtWithMoney": {
+            "amount": 0,
+            "currency": "GBP"
+        },
+        "totalGasUsed": {
+            "amount": 2.2303506111160677e-10
+        },
+        "id": "16b95739-370d-46e0-89a5-77ee80971c74",
+        "name": "Chicken",
+        "retailer": {
+            "id": "c0ca73ae-f3b6-41c4-83ba-f4fd6c950a43",
+            "name": "ASDA",
+            "strategy": 1.0,
+            "sustainability": 0.0
+        },
+        "cost": {
+            "amount": 4.3,
+            "currency": "GBP"
+        },
+        "KGCo2": 8.94,
+        "GP": 2.0,
+        "greenPointsIssuedForItem": {
+            "greenPoints": {
+                "amount": 2.0,
+                "tokenValueInPeggedCurrency": 0.01,
+                "valueInPeggedCurrency": {
+                    "amount": 0.02,
+                    "currency": "GBP"
+                },
+                "peggedCurrency": "GBP"
+            },
+            "gas": {
+                "amount": 1.1151753055580339e-10
+            },
+            "money": {
+                "amount": 0.02000000000062181,
+                "currency": "GBP"
+            }
+        }
+    }
+]

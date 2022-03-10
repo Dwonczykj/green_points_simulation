@@ -1,0 +1,5 @@
+*.ipynb
+*.csv
+*__pycache__*
+.env*
+*.log

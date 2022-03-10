@@ -1,0 +1,23 @@
+{
+    "python.defaultInterpreterPath": "/Users/joeyd/opt/anaconda3/envs/GreenPointsSimulation/bin/python",
+    "python.pythonPath": "/Users/joeyd/opt/anaconda3/envs/GreenPointsSimulation/bin/python",
+    "python.testing.pytestArgs": [],
+    "python.testing.pytestEnabled": true,
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/Observable/utils/",
+        "${workspaceFolder}/webSockets/"
+    ],
+    "python.analysis.typeCheckingMode": "basic",
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportPropertyTypeMismatch": "error",
+        "reportFunctionMemberAccess": "information",
+        "reportUnboundVariable": "warning",
+        "reportImplicitStringConcatenation": "warning",
+        "reportUntypedClassDecorator": "warning",
+        "reportMissingParameterType": "information",
+        "reportUnusedImport": "warning",
+        "reportDuplicateImport": "error",
+        "reportMissingSuperCall": "none",
+        "reportUnnecessaryIsInstance": "none"
+    },
+}

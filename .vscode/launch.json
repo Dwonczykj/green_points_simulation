@@ -1,0 +1,159 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "compounds": [ // https://github.com/microsoft/vscode/issues/14842#issuecomment-257818614
+        {
+            "name": "Compound - Flask & Flutter",
+            "configurations": [
+                "Python: App.py",
+                "Flutter",
+            ],
+            "presentation": {
+                "hidden": false,
+                "group": "",
+                "order": 1
+            }
+        }
+    ],
+    "configurations": [
+        {
+            "name": "Python: Flask Dummy Run",
+            "type": "python",
+            "request": "launch",
+            "module": "flask",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/simulation/:${workspaceFolder}/simulation/webSockets/:${workspaceFolder}/simulation/Observable/utils/",
+                "FLASK_APP": "simulation.app.py",
+                "FLASK_ENV": "development"
+            },
+            "args": [
+                "run",
+                "--no-debugger"
+            ],
+            "jinja": true,
+            "justMyCode": true
+        },
+        {
+            "name": "Python: Flask",
+            "type": "python",
+            "request": "launch",
+            "module": "flask",
+            "cwd": "${workspaceFolder}/simulation/",
+            "console": "integratedTerminal",
+            "env": {
+                "FLASK_APP": "app.py",
+                // "FLASK_ENV": "development",
+                "PYTHONPATH": "${workspaceFolder}/simulation/:${workspaceFolder}/simulation/webSockets/:${workspaceFolder}/simulation/Observable/utils/",
+            },
+            "args": [
+                "run",
+                "--no-debugger",
+                "--no-reload"
+            ],
+            // "jinja": true,
+            // "justMyCode": true
+        },
+        {
+            "name": "Python: App.py",
+            "type": "python",
+            "request": "launch",
+            "module": "app",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/simulation/",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/simulation/:${workspaceFolder}/simulation/webSockets/:${workspaceFolder}/simulation/Observable/utils/",
+            }
+        },
+        {
+            "name": "Python: Debug Flask",
+            "type": "python",
+            "request": "launch",
+            "module": "app",
+            "cwd": "${workspaceFolder}/simulation/",
+            // "gevent": true, //Needed for using websockets to avoid error: PYDEV DEBUGGER WARNING: \n sys.settrace() should not be used when the debugger is being used.
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/simulation/:${workspaceFolder}/simulation/webSockets/:${workspaceFolder}/simulation/Observable/utils/",
+                // "FLASK_APP": "run.py",
+                // "FLASK_ENV": "development",
+                // "FLASK_DEBUG": "0"
+                // "PYDEVD_USE_FRAME_EVAL": "NO",
+                // "GEVENT_SUPPORT": "True",
+            },
+            "args": [
+                // "run",
+                // "--debug True", // or setup own docker debugger setup for flask: https://blog.theodo.com/2020/05/debug-flask-vscode/
+                // "--py-autoreload 1",
+                // "--no-debugger",
+                // "--no-reload",
+                // "--port=5100"
+            ],
+            // "jinja": true,
+            "console": "integratedTerminal",
+            // "justMyCode": false,
+            // "autoReload": {
+            //     "enable": true
+            // },
+            // "preLaunchTask": {
+            //     "task": "cls",
+            //     "type": ""
+            // }
+        },
+        {
+            "name": "Flutter",
+            "type": "dart",
+            "request": "launch",
+            "program": "gp_simulation/lib/main.dart",
+        },
+        {
+            "name": "Flutter - Open Network Devtools",
+            "type": "dart",
+            "request": "launch",
+            "program": "gp_simulation/lib/main.dart",
+            "openDevTools": "network"
+        },
+        {
+            "name": "gp_simulation (profile mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile",
+            "program": "gp_simulation/lib/main.dart"
+        },
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/simulation/:${workspaceFolder}/simulation/webSockets/:${workspaceFolder}/simulation/Observable/utils/",
+            }
+        },
+        {
+            "name": "Python: unittest Current File",
+            "type": "python",
+            "request": "launch",
+            "module": "unittest", //https://docs.python.org/3/library/unittest.html
+            "args": [
+                "${file}"
+            ],
+            "cwd": "${workspaceFolder}/simulation/",
+            "console": "integratedTerminal",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/simulation/:${workspaceFolder}/simulation/webSockets/:${workspaceFolder}/simulation/Observable/utils/",
+            }
+        },
+        {
+            "name": "Python: unittest all files",
+            "type": "python",
+            "request": "launch",
+            "module": "unittest",
+            "cwd": "${workspaceFolder}/simulation/",
+            "console": "integratedTerminal",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/simulation/:${workspaceFolder}/simulation/webSockets/:${workspaceFolder}/simulation/Observable/utils/",
+            }
+        },
+    ]
+}

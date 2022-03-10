@@ -1,0 +1,2789 @@
+{
+    "retailers": {
+        "ASDA": {
+            "id": "2adba83d-fa01-474f-9a8d-a5b67525752b",
+            "name": "ASDA",
+            "strategy": 1.0,
+            "sustainability": 0.0,
+            "bank": {
+                "id": "353fb5d7-2ecc-46b2-8959-2f4065443ee1",
+                "name": "AMEX"
+            },
+            "balance": {
+                "viewCurrency": "GBP",
+                "underlyingCurrency": "GBP",
+                "greenPointsMonetaryValue": {
+                    "amount": 1.8,
+                    "currency": "GBP"
+                },
+                "greenPoints": 180.0,
+                "moneyBalance": {
+                    "amount": 10020.4,
+                    "currency": "GBP"
+                },
+                "combinedBalance": {
+                    "amount": 10022.199999999999,
+                    "currency": "GBP"
+                }
+            },
+            "balanceMoney": {
+                "amount": 10022.199999999999,
+                "currency": "GBP"
+            },
+            "salesHistory": [
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 7.806227138906237e-09
+                    },
+                    "id": "a8062c89-4281-456a-82ae-6a2705f2fe71",
+                    "name": "Sparkling Water",
+                    "retailer": {
+                        "id": "2adba83d-fa01-474f-9a8d-a5b67525752b",
+                        "name": "ASDA",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 1.4,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 0.35,
+                    "GP": 53.0,
+                    "greenPointsIssuedForItem": {
+                        "greenPoints": {
+                            "amount": 53.0,
+                            "tokenValueInPeggedCurrency": 0.01,
+                            "valueInPeggedCurrency": {
+                                "amount": 0.53,
+                                "currency": "GBP"
+                            },
+                            "peggedCurrency": "GBP"
+                        },
+                        "gas": {
+                            "amount": 2.95521455972879e-09
+                        },
+                        "money": {
+                            "amount": 0.530000000016478,
+                            "currency": "GBP"
+                        }
+                    }
+                },
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 0
+                    },
+                    "id": "46c4e97a-40bd-4e1a-8f4b-1d2b4c43d2fd",
+                    "name": "Chicken",
+                    "retailer": {
+                        "id": "2adba83d-fa01-474f-9a8d-a5b67525752b",
+                        "name": "ASDA",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 4.3,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 8.94,
+                    "GP": 2.0,
+                    "greenPointsIssuedForItem": {
+                        "greenPoints": {
+                            "amount": 2.0,
+                            "tokenValueInPeggedCurrency": 0.01,
+                            "valueInPeggedCurrency": {
+                                "amount": 0.02,
+                                "currency": "GBP"
+                            },
+                            "peggedCurrency": "GBP"
+                        },
+                        "gas": {
+                            "amount": 1.1151753055580339e-10
+                        },
+                        "money": {
+                            "amount": 0.02000000000062181,
+                            "currency": "GBP"
+                        }
+                    }
+                },
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 0
+                    },
+                    "id": "0a226fd4-b703-4cd9-8a5c-c7589321b93f",
+                    "name": "Chicken",
+                    "retailer": {
+                        "id": "2adba83d-fa01-474f-9a8d-a5b67525752b",
+                        "name": "ASDA",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 4.3,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 8.94,
+                    "GP": 2.0,
+                    "greenPointsIssuedForItem": {
+                        "greenPoints": {
+                            "amount": 2.0,
+                            "tokenValueInPeggedCurrency": 0.01,
+                            "valueInPeggedCurrency": {
+                                "amount": 0.02,
+                                "currency": "GBP"
+                            },
+                            "peggedCurrency": "GBP"
+                        },
+                        "gas": {
+                            "amount": 1.1151753055580339e-10
+                        },
+                        "money": {
+                            "amount": 0.02000000000062181,
+                            "currency": "GBP"
+                        }
+                    }
+                },
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 1.1151753055580339e-10
+                    },
+                    "id": "f7cb805a-fd3e-4c97-ae1c-d51c858f055b",
+                    "name": "Chicken",
+                    "retailer": {
+                        "id": "2adba83d-fa01-474f-9a8d-a5b67525752b",
+                        "name": "ASDA",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 4.3,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 8.94,
+                    "GP": 2.0,
+                    "greenPointsIssuedForItem": {
+                        "greenPoints": {
+                            "amount": 2.0,
+                            "tokenValueInPeggedCurrency": 0.01,
+                            "valueInPeggedCurrency": {
+                                "amount": 0.02,
+                                "currency": "GBP"
+                            },
+                            "peggedCurrency": "GBP"
+                        },
+                        "gas": {
+                            "amount": 1.1151753055580339e-10
+                        },
+                        "money": {
+                            "amount": 0.02000000000062181,
+                            "currency": "GBP"
+                        }
+                    }
+                },
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 0
+                    },
+                    "id": "7337090d-30a8-46f5-828d-2a299d9b9b0f",
+                    "name": "Chicken",
+                    "retailer": {
+                        "id": "2adba83d-fa01-474f-9a8d-a5b67525752b",
+                        "name": "ASDA",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 4.3,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 8.94,
+                    "GP": 2.0,
+                    "greenPointsIssuedForItem": {
+                        "greenPoints": {
+                            "amount": 2.0,
+                            "tokenValueInPeggedCurrency": 0.01,
+                            "valueInPeggedCurrency": {
+                                "amount": 0.02,
+                                "currency": "GBP"
+                            },
+                            "peggedCurrency": "GBP"
+                        },
+                        "gas": {
+                            "amount": 1.1151753055580339e-10
+                        },
+                        "money": {
+                            "amount": 0.02000000000062181,
+                            "currency": "GBP"
+                        }
+                    }
+                },
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 1.1151753055580339e-10
+                    },
+                    "id": "7bb2d4db-dadc-40d4-b194-1ce6a2b42253",
+                    "name": "Recylable Packaged Raspberries",
+                    "retailer": {
+                        "id": "2adba83d-fa01-474f-9a8d-a5b67525752b",
+                        "name": "ASDA",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 2.2,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 0.6,
+                    "GP": 5.0,
+                    "greenPointsIssuedForItem": {
+                        "greenPoints": {
+                            "amount": 5.0,
+                            "tokenValueInPeggedCurrency": 0.01,
+                            "valueInPeggedCurrency": {
+                                "amount": 0.05,
+                                "currency": "GBP"
+                            },
+                            "peggedCurrency": "GBP"
+                        },
+                        "gas": {
+                            "amount": 2.7879382638950844e-10
+                        },
+                        "money": {
+                            "amount": 0.05000000000155452,
+                            "currency": "GBP"
+                        }
+                    }
+                },
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 2.007315550004461e-09
+                    },
+                    "id": "c120d322-7253-461e-97dd-9f8147782199",
+                    "name": "Sparkling Water",
+                    "retailer": {
+                        "id": "2adba83d-fa01-474f-9a8d-a5b67525752b",
+                        "name": "ASDA",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 1.4,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 0.35,
+                    "GP": 53.0,
+                    "greenPointsIssuedForItem": {
+                        "greenPoints": {
+                            "amount": 53.0,
+                            "tokenValueInPeggedCurrency": 0.01,
+                            "valueInPeggedCurrency": {
+                                "amount": 0.53,
+                                "currency": "GBP"
+                            },
+                            "peggedCurrency": "GBP"
+                        },
+                        "gas": {
+                            "amount": 2.95521455972879e-09
+                        },
+                        "money": {
+                            "amount": 0.530000000016478,
+                            "currency": "GBP"
+                        }
+                    }
+                }
+            ],
+            "totalSales": {
+                "totalCostByCcy": {
+                    "GBP": {
+                        "amount": 22.2,
+                        "currency": "GBP"
+                    }
+                },
+                "totalMoneySentByCcy": {
+                    "GBP": {
+                        "amount": 20.4,
+                        "currency": "GBP"
+                    }
+                },
+                "totalGPIssued": 119.0,
+                "numItemsIssued": 7,
+                "itemCountMap": {
+                    "Sparkling Water": 4,
+                    "Chicken": 8,
+                    "Recylable Packaged Raspberries": 2,
+                    "Homegrown Potatoes": 4,
+                    "Broccoli (100g)": 2,
+                    "Imported Potatoes": 2,
+                    "Imported Raspberries": 2,
+                    "Smoked Salmon": 4,
+                    "Tesco Vegan Cheese": 4,
+                    "Chocolate Bar": 4,
+                    "Americano (Own Mug)": 4
+                }
+            }
+        },
+        "Coop": {
+            "id": "b27c5e7f-643e-4204-ae46-bbcdc342d17e",
+            "name": "Coop",
+            "strategy": 1.0,
+            "sustainability": 0.0,
+            "bank": {
+                "id": "353fb5d7-2ecc-46b2-8959-2f4065443ee1",
+                "name": "AMEX"
+            },
+            "balance": {
+                "viewCurrency": "GBP",
+                "underlyingCurrency": "GBP",
+                "greenPointsMonetaryValue": {
+                    "amount": 1.51,
+                    "currency": "GBP"
+                },
+                "greenPoints": 151.0,
+                "moneyBalance": {
+                    "amount": 10013.189999999997,
+                    "currency": "GBP"
+                },
+                "combinedBalance": {
+                    "amount": 10014.699999999997,
+                    "currency": "GBP"
+                }
+            },
+            "balanceMoney": {
+                "amount": 10014.699999999997,
+                "currency": "GBP"
+            },
+            "salesHistory": [
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 0
+                    },
+                    "id": "0cb4e412-625b-4987-bf05-5b6f8dfc9ff2",
+                    "name": "Homegrown Potatoes",
+                    "retailer": {
+                        "id": "b27c5e7f-643e-4204-ae46-bbcdc342d17e",
+                        "name": "Coop",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 0.8,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 0.2,
+                    "GP": 87.0,
+                    "greenPointsIssuedForItem": {
+                        "greenPoints": {
+                            "amount": 87.0,
+                            "tokenValueInPeggedCurrency": 0.01,
+                            "valueInPeggedCurrency": {
+                                "amount": 0.87,
+                                "currency": "GBP"
+                            },
+                            "peggedCurrency": "GBP"
+                        },
+                        "gas": {
+                            "amount": 4.8510125791774476e-09
+                        },
+                        "money": {
+                            "amount": 0.8700000000270487,
+                            "currency": "GBP"
+                        }
+                    }
+                },
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 0
+                    },
+                    "id": "e30c5d12-b7b5-49c6-bbb8-c12806804da1",
+                    "name": "Broccoli (100g)",
+                    "retailer": {
+                        "id": "b27c5e7f-643e-4204-ae46-bbcdc342d17e",
+                        "name": "Coop",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 0.55,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 0.24,
+                    "GP": 65.0,
+                    "greenPointsIssuedForItem": {
+                        "greenPoints": {
+                            "amount": 65.0,
+                            "tokenValueInPeggedCurrency": 0.01,
+                            "valueInPeggedCurrency": {
+                                "amount": 0.65,
+                                "currency": "GBP"
+                            },
+                            "peggedCurrency": "GBP"
+                        },
+                        "gas": {
+                            "amount": 3.62431974306361e-09
+                        },
+                        "money": {
+                            "amount": 0.6500000000202087,
+                            "currency": "GBP"
+                        }
+                    }
+                },
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 3.62431974306361e-09
+                    },
+                    "id": "03604b87-aea7-492f-8f61-661af5c70349",
+                    "name": "Imported Potatoes",
+                    "retailer": {
+                        "id": "b27c5e7f-643e-4204-ae46-bbcdc342d17e",
+                        "name": "Coop",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 0.65,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 0.6,
+                    "GP": 43.0,
+                    "greenPointsIssuedForItem": {
+                        "greenPoints": {
+                            "amount": 43.0,
+                            "tokenValueInPeggedCurrency": 0.01,
+                            "valueInPeggedCurrency": {
+                                "amount": 0.43,
+                                "currency": "GBP"
+                            },
+                            "peggedCurrency": "GBP"
+                        },
+                        "gas": {
+                            "amount": 2.397626906949773e-09
+                        },
+                        "money": {
+                            "amount": 0.43000000001336885,
+                            "currency": "GBP"
+                        }
+                    }
+                },
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 1.1151753055580339e-10
+                    },
+                    "id": "27dcfae9-dc6f-4811-9b26-31e8a6940457",
+                    "name": "Imported Raspberries",
+                    "retailer": {
+                        "id": "b27c5e7f-643e-4204-ae46-bbcdc342d17e",
+                        "name": "Coop",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 1.9,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 1.5,
+                    "GP": 13.0,
+                    "greenPointsIssuedForItem": {
+                        "greenPoints": {
+                            "amount": 13.0,
+                            "tokenValueInPeggedCurrency": 0.01,
+                            "valueInPeggedCurrency": {
+                                "amount": 0.13,
+                                "currency": "GBP"
+                            },
+                            "peggedCurrency": "GBP"
+                        },
+                        "gas": {
+                            "amount": 7.24863948612722e-10
+                        },
+                        "money": {
+                            "amount": 0.13000000000404174,
+                            "currency": "GBP"
+                        }
+                    }
+                },
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 4.460701222232135e-09
+                    },
+                    "id": "92ea234f-fb95-49b8-add5-b0fdf144e6d8",
+                    "name": "Homegrown Potatoes",
+                    "retailer": {
+                        "id": "b27c5e7f-643e-4204-ae46-bbcdc342d17e",
+                        "name": "Coop",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 0.8,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 0.2,
+                    "GP": 87.0,
+                    "greenPointsIssuedForItem": {
+                        "greenPoints": {
+                            "amount": 87.0,
+                            "tokenValueInPeggedCurrency": 0.01,
+                            "valueInPeggedCurrency": {
+                                "amount": 0.87,
+                                "currency": "GBP"
+                            },
+                            "peggedCurrency": "GBP"
+                        },
+                        "gas": {
+                            "amount": 4.8510125791774476e-09
+                        },
+                        "money": {
+                            "amount": 0.8700000000270487,
+                            "currency": "GBP"
+                        }
+                    }
+                },
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 0
+                    },
+                    "id": "f16dd837-815b-4bc5-aa07-6b04a1b4a1c9",
+                    "name": "Smoked Salmon",
+                    "retailer": {
+                        "id": "b27c5e7f-643e-4204-ae46-bbcdc342d17e",
+                        "name": "Coop",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 5.0,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 3.43,
+                    "GP": 4.0,
+                    "greenPointsIssuedForItem": {
+                        "greenPoints": {
+                            "amount": 4.0,
+                            "tokenValueInPeggedCurrency": 0.01,
+                            "valueInPeggedCurrency": {
+                                "amount": 0.04,
+                                "currency": "GBP"
+                            },
+                            "peggedCurrency": "GBP"
+                        },
+                        "gas": {
+                            "amount": 2.2303506111160677e-10
+                        },
+                        "money": {
+                            "amount": 0.04000000000124362,
+                            "currency": "GBP"
+                        }
+                    }
+                },
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 2.2303506111160677e-10
+                    },
+                    "id": "709694f4-9119-483d-9eff-a01a7b218ddf",
+                    "name": "Smoked Salmon",
+                    "retailer": {
+                        "id": "b27c5e7f-643e-4204-ae46-bbcdc342d17e",
+                        "name": "Coop",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 5.0,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 3.43,
+                    "GP": 4.0,
+                    "greenPointsIssuedForItem": {
+                        "greenPoints": {
+                            "amount": 4.0,
+                            "tokenValueInPeggedCurrency": 0.01,
+                            "valueInPeggedCurrency": {
+                                "amount": 0.04,
+                                "currency": "GBP"
+                            },
+                            "peggedCurrency": "GBP"
+                        },
+                        "gas": {
+                            "amount": 2.2303506111160677e-10
+                        },
+                        "money": {
+                            "amount": 0.04000000000124362,
+                            "currency": "GBP"
+                        }
+                    }
+                }
+            ],
+            "totalSales": {
+                "totalCostByCcy": {
+                    "GBP": {
+                        "amount": 36.9,
+                        "currency": "GBP"
+                    }
+                },
+                "totalMoneySentByCcy": {
+                    "GBP": {
+                        "amount": 33.589999999999996,
+                        "currency": "GBP"
+                    }
+                },
+                "totalGPIssued": 303.0,
+                "numItemsIssued": 7,
+                "itemCountMap": {
+                    "Sparkling Water": 4,
+                    "Chicken": 8,
+                    "Recylable Packaged Raspberries": 2,
+                    "Homegrown Potatoes": 4,
+                    "Broccoli (100g)": 2,
+                    "Imported Potatoes": 2,
+                    "Imported Raspberries": 2,
+                    "Smoked Salmon": 4,
+                    "Tesco Vegan Cheese": 4,
+                    "Chocolate Bar": 4,
+                    "Americano (Own Mug)": 4
+                }
+            }
+        },
+        "Tescos": {
+            "id": "3ff548b3-c03f-49f6-b36d-e16597869b18",
+            "name": "Tescos",
+            "strategy": 1.0,
+            "sustainability": 0.0,
+            "bank": {
+                "id": "353fb5d7-2ecc-46b2-8959-2f4065443ee1",
+                "name": "AMEX"
+            },
+            "balance": {
+                "viewCurrency": "GBP",
+                "underlyingCurrency": "GBP",
+                "greenPointsMonetaryValue": {
+                    "amount": 1.23,
+                    "currency": "GBP"
+                },
+                "greenPoints": 123.0,
+                "moneyBalance": {
+                    "amount": 10003.769999999999,
+                    "currency": "GBP"
+                },
+                "combinedBalance": {
+                    "amount": 10004.999999999998,
+                    "currency": "GBP"
+                }
+            },
+            "balanceMoney": {
+                "amount": 10004.999999999998,
+                "currency": "GBP"
+            },
+            "salesHistory": [
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 4.8510125791774476e-09
+                    },
+                    "id": "5f056d38-fd4e-4d20-9aba-5de43339a3d1",
+                    "name": "Tesco Vegan Cheese",
+                    "retailer": {
+                        "id": "3ff548b3-c03f-49f6-b36d-e16597869b18",
+                        "name": "Tescos",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 1.5,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 0.3,
+                    "GP": 37.0,
+                    "greenPointsIssuedForItem": {
+                        "greenPoints": {
+                            "amount": 37.0,
+                            "tokenValueInPeggedCurrency": 0.01,
+                            "valueInPeggedCurrency": {
+                                "amount": 0.37,
+                                "currency": "GBP"
+                            },
+                            "peggedCurrency": "GBP"
+                        },
+                        "gas": {
+                            "amount": 2.0630743152823625e-09
+                        },
+                        "money": {
+                            "amount": 0.37000000001150346,
+                            "currency": "GBP"
+                        }
+                    }
+                },
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 0
+                    },
+                    "id": "70ff5499-7e35-4187-a930-8c67ca122c86",
+                    "name": "Chocolate Bar",
+                    "retailer": {
+                        "id": "3ff548b3-c03f-49f6-b36d-e16597869b18",
+                        "name": "Tescos",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 1.0,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 0.44,
+                    "GP": 36.0,
+                    "greenPointsIssuedForItem": {
+                        "greenPoints": {
+                            "amount": 36.0,
+                            "tokenValueInPeggedCurrency": 0.01,
+                            "valueInPeggedCurrency": {
+                                "amount": 0.36,
+                                "currency": "GBP"
+                            },
+                            "peggedCurrency": "GBP"
+                        },
+                        "gas": {
+                            "amount": 2.007315550004461e-09
+                        },
+                        "money": {
+                            "amount": 0.36000000001119253,
+                            "currency": "GBP"
+                        }
+                    }
+                },
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 2.007315550004461e-09
+                    },
+                    "id": "80e1319e-702f-4d6e-8ae7-982c988f6015",
+                    "name": "Tesco Vegan Cheese",
+                    "retailer": {
+                        "id": "3ff548b3-c03f-49f6-b36d-e16597869b18",
+                        "name": "Tescos",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 1.5,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 0.3,
+                    "GP": 37.0,
+                    "greenPointsIssuedForItem": {
+                        "greenPoints": {
+                            "amount": 37.0,
+                            "tokenValueInPeggedCurrency": 0.01,
+                            "valueInPeggedCurrency": {
+                                "amount": 0.37,
+                                "currency": "GBP"
+                            },
+                            "peggedCurrency": "GBP"
+                        },
+                        "gas": {
+                            "amount": 2.0630743152823625e-09
+                        },
+                        "money": {
+                            "amount": 0.37000000001150346,
+                            "currency": "GBP"
+                        }
+                    }
+                },
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 0
+                    },
+                    "id": "9da7f61b-ce39-4df7-8a8c-58285ae53d55",
+                    "name": "Chocolate Bar",
+                    "retailer": {
+                        "id": "3ff548b3-c03f-49f6-b36d-e16597869b18",
+                        "name": "Tescos",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 1.0,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 0.44,
+                    "GP": 36.0,
+                    "greenPointsIssuedForItem": {
+                        "greenPoints": {
+                            "amount": 36.0,
+                            "tokenValueInPeggedCurrency": 0.01,
+                            "valueInPeggedCurrency": {
+                                "amount": 0.36,
+                                "currency": "GBP"
+                            },
+                            "peggedCurrency": "GBP"
+                        },
+                        "gas": {
+                            "amount": 2.007315550004461e-09
+                        },
+                        "money": {
+                            "amount": 0.36000000001119253,
+                            "currency": "GBP"
+                        }
+                    }
+                }
+            ],
+            "totalSales": {
+                "totalCostByCcy": {
+                    "GBP": {
+                        "amount": 41.9,
+                        "currency": "GBP"
+                    }
+                },
+                "totalMoneySentByCcy": {
+                    "GBP": {
+                        "amount": 37.36,
+                        "currency": "GBP"
+                    }
+                },
+                "totalGPIssued": 146.0,
+                "numItemsIssued": 4,
+                "itemCountMap": {
+                    "Sparkling Water": 4,
+                    "Chicken": 8,
+                    "Recylable Packaged Raspberries": 2,
+                    "Homegrown Potatoes": 4,
+                    "Broccoli (100g)": 2,
+                    "Imported Potatoes": 2,
+                    "Imported Raspberries": 2,
+                    "Smoked Salmon": 4,
+                    "Tesco Vegan Cheese": 4,
+                    "Chocolate Bar": 4,
+                    "Americano (Own Mug)": 4
+                }
+            }
+        },
+        "VW": {
+            "id": "06447629-1cba-4350-b2e6-494585a47cdd",
+            "name": "VW",
+            "strategy": 0.0,
+            "sustainability": 0.0,
+            "bank": {
+                "id": "353fb5d7-2ecc-46b2-8959-2f4065443ee1",
+                "name": "AMEX"
+            },
+            "balance": {
+                "viewCurrency": "GBP",
+                "underlyingCurrency": "GBP",
+                "greenPointsMonetaryValue": {
+                    "amount": 0.0,
+                    "currency": "GBP"
+                },
+                "greenPoints": 0.0,
+                "moneyBalance": {
+                    "amount": 10000.0,
+                    "currency": "GBP"
+                },
+                "combinedBalance": {
+                    "amount": 10000.0,
+                    "currency": "GBP"
+                }
+            },
+            "balanceMoney": {
+                "amount": 10000.0,
+                "currency": "GBP"
+            },
+            "salesHistory": [],
+            "totalSales": {
+                "totalCostByCcy": {
+                    "GBP": {
+                        "amount": 41.9,
+                        "currency": "GBP"
+                    }
+                },
+                "totalMoneySentByCcy": {
+                    "GBP": {
+                        "amount": 37.36,
+                        "currency": "GBP"
+                    }
+                },
+                "totalGPIssued": 0.0,
+                "numItemsIssued": 0,
+                "itemCountMap": {
+                    "Sparkling Water": 4,
+                    "Chicken": 8,
+                    "Recylable Packaged Raspberries": 2,
+                    "Homegrown Potatoes": 4,
+                    "Broccoli (100g)": 2,
+                    "Imported Potatoes": 2,
+                    "Imported Raspberries": 2,
+                    "Smoked Salmon": 4,
+                    "Tesco Vegan Cheese": 4,
+                    "Chocolate Bar": 4,
+                    "Americano (Own Mug)": 4
+                }
+            }
+        },
+        "Starbucks": {
+            "id": "587d4659-97b7-408a-96a1-731d1e0f070e",
+            "name": "Starbucks",
+            "strategy": 1.0,
+            "sustainability": 0.0,
+            "bank": {
+                "id": "353fb5d7-2ecc-46b2-8959-2f4065443ee1",
+                "name": "AMEX"
+            },
+            "balance": {
+                "viewCurrency": "GBP",
+                "underlyingCurrency": "GBP",
+                "greenPointsMonetaryValue": {
+                    "amount": 0.0,
+                    "currency": "GBP"
+                },
+                "greenPoints": 0.0,
+                "moneyBalance": {
+                    "amount": 10001.8,
+                    "currency": "GBP"
+                },
+                "combinedBalance": {
+                    "amount": 10001.8,
+                    "currency": "GBP"
+                }
+            },
+            "balanceMoney": {
+                "amount": 10001.8,
+                "currency": "GBP"
+            },
+            "salesHistory": [
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 0
+                    },
+                    "id": "b64b1349-a145-4c9b-8005-a316e4416e2f",
+                    "name": "Americano (Own Mug)",
+                    "retailer": {
+                        "id": "587d4659-97b7-408a-96a1-731d1e0f070e",
+                        "name": "Starbucks",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 0.9,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 0.1,
+                    "GP": 163.0,
+                    "greenPointsIssuedForItem": {
+                        "greenPoints": {
+                            "amount": 163.0,
+                            "tokenValueInPeggedCurrency": 0.01,
+                            "valueInPeggedCurrency": {
+                                "amount": 1.6300000000000001,
+                                "currency": "GBP"
+                            },
+                            "peggedCurrency": "GBP"
+                        },
+                        "gas": {
+                            "amount": 9.088678740297976e-09
+                        },
+                        "money": {
+                            "amount": 1.6300000000506774,
+                            "currency": "GBP"
+                        }
+                    }
+                },
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 0
+                    },
+                    "id": "1997e6b0-3d87-4bac-8110-1ea601ed0573",
+                    "name": "Americano (Own Mug)",
+                    "retailer": {
+                        "id": "587d4659-97b7-408a-96a1-731d1e0f070e",
+                        "name": "Starbucks",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 0.9,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 0.1,
+                    "GP": 163.0,
+                    "greenPointsIssuedForItem": {
+                        "greenPoints": {
+                            "amount": 163.0,
+                            "tokenValueInPeggedCurrency": 0.01,
+                            "valueInPeggedCurrency": {
+                                "amount": 1.6300000000000001,
+                                "currency": "GBP"
+                            },
+                            "peggedCurrency": "GBP"
+                        },
+                        "gas": {
+                            "amount": 9.088678740297976e-09
+                        },
+                        "money": {
+                            "amount": 1.6300000000506774,
+                            "currency": "GBP"
+                        }
+                    }
+                }
+            ],
+            "totalSales": {
+                "totalCostByCcy": {
+                    "GBP": {
+                        "amount": 43.699999999999996,
+                        "currency": "GBP"
+                    }
+                },
+                "totalMoneySentByCcy": {
+                    "GBP": {
+                        "amount": 39.16,
+                        "currency": "GBP"
+                    }
+                },
+                "totalGPIssued": 326.0,
+                "numItemsIssued": 2,
+                "itemCountMap": {
+                    "Sparkling Water": 4,
+                    "Chicken": 8,
+                    "Recylable Packaged Raspberries": 2,
+                    "Homegrown Potatoes": 4,
+                    "Broccoli (100g)": 2,
+                    "Imported Potatoes": 2,
+                    "Imported Raspberries": 2,
+                    "Smoked Salmon": 4,
+                    "Tesco Vegan Cheese": 4,
+                    "Chocolate Bar": 4,
+                    "Americano (Own Mug)": 4
+                }
+            }
+        }
+    },
+    "retailersCluster": {
+        "balance": {
+            "viewCurrency": "GBP",
+            "underlyingCurrency": "GBP",
+            "greenPointsMonetaryValue": {
+                "amount": 4.54,
+                "currency": "GBP"
+            },
+            "greenPoints": 454.0,
+            "moneyBalance": {
+                "amount": 50039.15999999999,
+                "currency": "GBP"
+            },
+            "combinedBalance": {
+                "amount": 50043.69999999999,
+                "currency": "GBP"
+            }
+        },
+        "balanceMoney": {
+            "amount": 50043.69999999999,
+            "currency": "GBP"
+        },
+        "salesHistory": [
+            {
+                "totalGasBoughtWithMoney": {
+                    "amount": 0,
+                    "currency": "GBP"
+                },
+                "totalGasUsed": {
+                    "amount": 7.806227138906237e-09
+                },
+                "id": "a8062c89-4281-456a-82ae-6a2705f2fe71",
+                "name": "Sparkling Water",
+                "retailer": {
+                    "id": "2adba83d-fa01-474f-9a8d-a5b67525752b",
+                    "name": "ASDA",
+                    "strategy": 1.0,
+                    "sustainability": 0.0
+                },
+                "cost": {
+                    "amount": 1.4,
+                    "currency": "GBP"
+                },
+                "KGCo2": 0.35,
+                "GP": 53.0,
+                "greenPointsIssuedForItem": {
+                    "greenPoints": {
+                        "amount": 53.0,
+                        "tokenValueInPeggedCurrency": 0.01,
+                        "valueInPeggedCurrency": {
+                            "amount": 0.53,
+                            "currency": "GBP"
+                        },
+                        "peggedCurrency": "GBP"
+                    },
+                    "gas": {
+                        "amount": 2.95521455972879e-09
+                    },
+                    "money": {
+                        "amount": 0.530000000016478,
+                        "currency": "GBP"
+                    }
+                }
+            },
+            {
+                "totalGasBoughtWithMoney": {
+                    "amount": 0,
+                    "currency": "GBP"
+                },
+                "totalGasUsed": {
+                    "amount": 0
+                },
+                "id": "46c4e97a-40bd-4e1a-8f4b-1d2b4c43d2fd",
+                "name": "Chicken",
+                "retailer": {
+                    "id": "2adba83d-fa01-474f-9a8d-a5b67525752b",
+                    "name": "ASDA",
+                    "strategy": 1.0,
+                    "sustainability": 0.0
+                },
+                "cost": {
+                    "amount": 4.3,
+                    "currency": "GBP"
+                },
+                "KGCo2": 8.94,
+                "GP": 2.0,
+                "greenPointsIssuedForItem": {
+                    "greenPoints": {
+                        "amount": 2.0,
+                        "tokenValueInPeggedCurrency": 0.01,
+                        "valueInPeggedCurrency": {
+                            "amount": 0.02,
+                            "currency": "GBP"
+                        },
+                        "peggedCurrency": "GBP"
+                    },
+                    "gas": {
+                        "amount": 1.1151753055580339e-10
+                    },
+                    "money": {
+                        "amount": 0.02000000000062181,
+                        "currency": "GBP"
+                    }
+                }
+            },
+            {
+                "totalGasBoughtWithMoney": {
+                    "amount": 0,
+                    "currency": "GBP"
+                },
+                "totalGasUsed": {
+                    "amount": 0
+                },
+                "id": "0a226fd4-b703-4cd9-8a5c-c7589321b93f",
+                "name": "Chicken",
+                "retailer": {
+                    "id": "2adba83d-fa01-474f-9a8d-a5b67525752b",
+                    "name": "ASDA",
+                    "strategy": 1.0,
+                    "sustainability": 0.0
+                },
+                "cost": {
+                    "amount": 4.3,
+                    "currency": "GBP"
+                },
+                "KGCo2": 8.94,
+                "GP": 2.0,
+                "greenPointsIssuedForItem": {
+                    "greenPoints": {
+                        "amount": 2.0,
+                        "tokenValueInPeggedCurrency": 0.01,
+                        "valueInPeggedCurrency": {
+                            "amount": 0.02,
+                            "currency": "GBP"
+                        },
+                        "peggedCurrency": "GBP"
+                    },
+                    "gas": {
+                        "amount": 1.1151753055580339e-10
+                    },
+                    "money": {
+                        "amount": 0.02000000000062181,
+                        "currency": "GBP"
+                    }
+                }
+            },
+            {
+                "totalGasBoughtWithMoney": {
+                    "amount": 0,
+                    "currency": "GBP"
+                },
+                "totalGasUsed": {
+                    "amount": 1.1151753055580339e-10
+                },
+                "id": "f7cb805a-fd3e-4c97-ae1c-d51c858f055b",
+                "name": "Chicken",
+                "retailer": {
+                    "id": "2adba83d-fa01-474f-9a8d-a5b67525752b",
+                    "name": "ASDA",
+                    "strategy": 1.0,
+                    "sustainability": 0.0
+                },
+                "cost": {
+                    "amount": 4.3,
+                    "currency": "GBP"
+                },
+                "KGCo2": 8.94,
+                "GP": 2.0,
+                "greenPointsIssuedForItem": {
+                    "greenPoints": {
+                        "amount": 2.0,
+                        "tokenValueInPeggedCurrency": 0.01,
+                        "valueInPeggedCurrency": {
+                            "amount": 0.02,
+                            "currency": "GBP"
+                        },
+                        "peggedCurrency": "GBP"
+                    },
+                    "gas": {
+                        "amount": 1.1151753055580339e-10
+                    },
+                    "money": {
+                        "amount": 0.02000000000062181,
+                        "currency": "GBP"
+                    }
+                }
+            },
+            {
+                "totalGasBoughtWithMoney": {
+                    "amount": 0,
+                    "currency": "GBP"
+                },
+                "totalGasUsed": {
+                    "amount": 0
+                },
+                "id": "7337090d-30a8-46f5-828d-2a299d9b9b0f",
+                "name": "Chicken",
+                "retailer": {
+                    "id": "2adba83d-fa01-474f-9a8d-a5b67525752b",
+                    "name": "ASDA",
+                    "strategy": 1.0,
+                    "sustainability": 0.0
+                },
+                "cost": {
+                    "amount": 4.3,
+                    "currency": "GBP"
+                },
+                "KGCo2": 8.94,
+                "GP": 2.0,
+                "greenPointsIssuedForItem": {
+                    "greenPoints": {
+                        "amount": 2.0,
+                        "tokenValueInPeggedCurrency": 0.01,
+                        "valueInPeggedCurrency": {
+                            "amount": 0.02,
+                            "currency": "GBP"
+                        },
+                        "peggedCurrency": "GBP"
+                    },
+                    "gas": {
+                        "amount": 1.1151753055580339e-10
+                    },
+                    "money": {
+                        "amount": 0.02000000000062181,
+                        "currency": "GBP"
+                    }
+                }
+            },
+            {
+                "totalGasBoughtWithMoney": {
+                    "amount": 0,
+                    "currency": "GBP"
+                },
+                "totalGasUsed": {
+                    "amount": 1.1151753055580339e-10
+                },
+                "id": "7bb2d4db-dadc-40d4-b194-1ce6a2b42253",
+                "name": "Recylable Packaged Raspberries",
+                "retailer": {
+                    "id": "2adba83d-fa01-474f-9a8d-a5b67525752b",
+                    "name": "ASDA",
+                    "strategy": 1.0,
+                    "sustainability": 0.0
+                },
+                "cost": {
+                    "amount": 2.2,
+                    "currency": "GBP"
+                },
+                "KGCo2": 0.6,
+                "GP": 5.0,
+                "greenPointsIssuedForItem": {
+                    "greenPoints": {
+                        "amount": 5.0,
+                        "tokenValueInPeggedCurrency": 0.01,
+                        "valueInPeggedCurrency": {
+                            "amount": 0.05,
+                            "currency": "GBP"
+                        },
+                        "peggedCurrency": "GBP"
+                    },
+                    "gas": {
+                        "amount": 2.7879382638950844e-10
+                    },
+                    "money": {
+                        "amount": 0.05000000000155452,
+                        "currency": "GBP"
+                    }
+                }
+            },
+            {
+                "totalGasBoughtWithMoney": {
+                    "amount": 0,
+                    "currency": "GBP"
+                },
+                "totalGasUsed": {
+                    "amount": 2.007315550004461e-09
+                },
+                "id": "c120d322-7253-461e-97dd-9f8147782199",
+                "name": "Sparkling Water",
+                "retailer": {
+                    "id": "2adba83d-fa01-474f-9a8d-a5b67525752b",
+                    "name": "ASDA",
+                    "strategy": 1.0,
+                    "sustainability": 0.0
+                },
+                "cost": {
+                    "amount": 1.4,
+                    "currency": "GBP"
+                },
+                "KGCo2": 0.35,
+                "GP": 53.0,
+                "greenPointsIssuedForItem": {
+                    "greenPoints": {
+                        "amount": 53.0,
+                        "tokenValueInPeggedCurrency": 0.01,
+                        "valueInPeggedCurrency": {
+                            "amount": 0.53,
+                            "currency": "GBP"
+                        },
+                        "peggedCurrency": "GBP"
+                    },
+                    "gas": {
+                        "amount": 2.95521455972879e-09
+                    },
+                    "money": {
+                        "amount": 0.530000000016478,
+                        "currency": "GBP"
+                    }
+                }
+            },
+            {
+                "totalGasBoughtWithMoney": {
+                    "amount": 0,
+                    "currency": "GBP"
+                },
+                "totalGasUsed": {
+                    "amount": 0
+                },
+                "id": "0cb4e412-625b-4987-bf05-5b6f8dfc9ff2",
+                "name": "Homegrown Potatoes",
+                "retailer": {
+                    "id": "b27c5e7f-643e-4204-ae46-bbcdc342d17e",
+                    "name": "Coop",
+                    "strategy": 1.0,
+                    "sustainability": 0.0
+                },
+                "cost": {
+                    "amount": 0.8,
+                    "currency": "GBP"
+                },
+                "KGCo2": 0.2,
+                "GP": 87.0,
+                "greenPointsIssuedForItem": {
+                    "greenPoints": {
+                        "amount": 87.0,
+                        "tokenValueInPeggedCurrency": 0.01,
+                        "valueInPeggedCurrency": {
+                            "amount": 0.87,
+                            "currency": "GBP"
+                        },
+                        "peggedCurrency": "GBP"
+                    },
+                    "gas": {
+                        "amount": 4.8510125791774476e-09
+                    },
+                    "money": {
+                        "amount": 0.8700000000270487,
+                        "currency": "GBP"
+                    }
+                }
+            },
+            {
+                "totalGasBoughtWithMoney": {
+                    "amount": 0,
+                    "currency": "GBP"
+                },
+                "totalGasUsed": {
+                    "amount": 0
+                },
+                "id": "e30c5d12-b7b5-49c6-bbb8-c12806804da1",
+                "name": "Broccoli (100g)",
+                "retailer": {
+                    "id": "b27c5e7f-643e-4204-ae46-bbcdc342d17e",
+                    "name": "Coop",
+                    "strategy": 1.0,
+                    "sustainability": 0.0
+                },
+                "cost": {
+                    "amount": 0.55,
+                    "currency": "GBP"
+                },
+                "KGCo2": 0.24,
+                "GP": 65.0,
+                "greenPointsIssuedForItem": {
+                    "greenPoints": {
+                        "amount": 65.0,
+                        "tokenValueInPeggedCurrency": 0.01,
+                        "valueInPeggedCurrency": {
+                            "amount": 0.65,
+                            "currency": "GBP"
+                        },
+                        "peggedCurrency": "GBP"
+                    },
+                    "gas": {
+                        "amount": 3.62431974306361e-09
+                    },
+                    "money": {
+                        "amount": 0.6500000000202087,
+                        "currency": "GBP"
+                    }
+                }
+            },
+            {
+                "totalGasBoughtWithMoney": {
+                    "amount": 0,
+                    "currency": "GBP"
+                },
+                "totalGasUsed": {
+                    "amount": 3.62431974306361e-09
+                },
+                "id": "03604b87-aea7-492f-8f61-661af5c70349",
+                "name": "Imported Potatoes",
+                "retailer": {
+                    "id": "b27c5e7f-643e-4204-ae46-bbcdc342d17e",
+                    "name": "Coop",
+                    "strategy": 1.0,
+                    "sustainability": 0.0
+                },
+                "cost": {
+                    "amount": 0.65,
+                    "currency": "GBP"
+                },
+                "KGCo2": 0.6,
+                "GP": 43.0,
+                "greenPointsIssuedForItem": {
+                    "greenPoints": {
+                        "amount": 43.0,
+                        "tokenValueInPeggedCurrency": 0.01,
+                        "valueInPeggedCurrency": {
+                            "amount": 0.43,
+                            "currency": "GBP"
+                        },
+                        "peggedCurrency": "GBP"
+                    },
+                    "gas": {
+                        "amount": 2.397626906949773e-09
+                    },
+                    "money": {
+                        "amount": 0.43000000001336885,
+                        "currency": "GBP"
+                    }
+                }
+            },
+            {
+                "totalGasBoughtWithMoney": {
+                    "amount": 0,
+                    "currency": "GBP"
+                },
+                "totalGasUsed": {
+                    "amount": 1.1151753055580339e-10
+                },
+                "id": "27dcfae9-dc6f-4811-9b26-31e8a6940457",
+                "name": "Imported Raspberries",
+                "retailer": {
+                    "id": "b27c5e7f-643e-4204-ae46-bbcdc342d17e",
+                    "name": "Coop",
+                    "strategy": 1.0,
+                    "sustainability": 0.0
+                },
+                "cost": {
+                    "amount": 1.9,
+                    "currency": "GBP"
+                },
+                "KGCo2": 1.5,
+                "GP": 13.0,
+                "greenPointsIssuedForItem": {
+                    "greenPoints": {
+                        "amount": 13.0,
+                        "tokenValueInPeggedCurrency": 0.01,
+                        "valueInPeggedCurrency": {
+                            "amount": 0.13,
+                            "currency": "GBP"
+                        },
+                        "peggedCurrency": "GBP"
+                    },
+                    "gas": {
+                        "amount": 7.24863948612722e-10
+                    },
+                    "money": {
+                        "amount": 0.13000000000404174,
+                        "currency": "GBP"
+                    }
+                }
+            },
+            {
+                "totalGasBoughtWithMoney": {
+                    "amount": 0,
+                    "currency": "GBP"
+                },
+                "totalGasUsed": {
+                    "amount": 4.460701222232135e-09
+                },
+                "id": "92ea234f-fb95-49b8-add5-b0fdf144e6d8",
+                "name": "Homegrown Potatoes",
+                "retailer": {
+                    "id": "b27c5e7f-643e-4204-ae46-bbcdc342d17e",
+                    "name": "Coop",
+                    "strategy": 1.0,
+                    "sustainability": 0.0
+                },
+                "cost": {
+                    "amount": 0.8,
+                    "currency": "GBP"
+                },
+                "KGCo2": 0.2,
+                "GP": 87.0,
+                "greenPointsIssuedForItem": {
+                    "greenPoints": {
+                        "amount": 87.0,
+                        "tokenValueInPeggedCurrency": 0.01,
+                        "valueInPeggedCurrency": {
+                            "amount": 0.87,
+                            "currency": "GBP"
+                        },
+                        "peggedCurrency": "GBP"
+                    },
+                    "gas": {
+                        "amount": 4.8510125791774476e-09
+                    },
+                    "money": {
+                        "amount": 0.8700000000270487,
+                        "currency": "GBP"
+                    }
+                }
+            },
+            {
+                "totalGasBoughtWithMoney": {
+                    "amount": 0,
+                    "currency": "GBP"
+                },
+                "totalGasUsed": {
+                    "amount": 0
+                },
+                "id": "f16dd837-815b-4bc5-aa07-6b04a1b4a1c9",
+                "name": "Smoked Salmon",
+                "retailer": {
+                    "id": "b27c5e7f-643e-4204-ae46-bbcdc342d17e",
+                    "name": "Coop",
+                    "strategy": 1.0,
+                    "sustainability": 0.0
+                },
+                "cost": {
+                    "amount": 5.0,
+                    "currency": "GBP"
+                },
+                "KGCo2": 3.43,
+                "GP": 4.0,
+                "greenPointsIssuedForItem": {
+                    "greenPoints": {
+                        "amount": 4.0,
+                        "tokenValueInPeggedCurrency": 0.01,
+                        "valueInPeggedCurrency": {
+                            "amount": 0.04,
+                            "currency": "GBP"
+                        },
+                        "peggedCurrency": "GBP"
+                    },
+                    "gas": {
+                        "amount": 2.2303506111160677e-10
+                    },
+                    "money": {
+                        "amount": 0.04000000000124362,
+                        "currency": "GBP"
+                    }
+                }
+            },
+            {
+                "totalGasBoughtWithMoney": {
+                    "amount": 0,
+                    "currency": "GBP"
+                },
+                "totalGasUsed": {
+                    "amount": 2.2303506111160677e-10
+                },
+                "id": "709694f4-9119-483d-9eff-a01a7b218ddf",
+                "name": "Smoked Salmon",
+                "retailer": {
+                    "id": "b27c5e7f-643e-4204-ae46-bbcdc342d17e",
+                    "name": "Coop",
+                    "strategy": 1.0,
+                    "sustainability": 0.0
+                },
+                "cost": {
+                    "amount": 5.0,
+                    "currency": "GBP"
+                },
+                "KGCo2": 3.43,
+                "GP": 4.0,
+                "greenPointsIssuedForItem": {
+                    "greenPoints": {
+                        "amount": 4.0,
+                        "tokenValueInPeggedCurrency": 0.01,
+                        "valueInPeggedCurrency": {
+                            "amount": 0.04,
+                            "currency": "GBP"
+                        },
+                        "peggedCurrency": "GBP"
+                    },
+                    "gas": {
+                        "amount": 2.2303506111160677e-10
+                    },
+                    "money": {
+                        "amount": 0.04000000000124362,
+                        "currency": "GBP"
+                    }
+                }
+            },
+            {
+                "totalGasBoughtWithMoney": {
+                    "amount": 0,
+                    "currency": "GBP"
+                },
+                "totalGasUsed": {
+                    "amount": 4.8510125791774476e-09
+                },
+                "id": "5f056d38-fd4e-4d20-9aba-5de43339a3d1",
+                "name": "Tesco Vegan Cheese",
+                "retailer": {
+                    "id": "3ff548b3-c03f-49f6-b36d-e16597869b18",
+                    "name": "Tescos",
+                    "strategy": 1.0,
+                    "sustainability": 0.0
+                },
+                "cost": {
+                    "amount": 1.5,
+                    "currency": "GBP"
+                },
+                "KGCo2": 0.3,
+                "GP": 37.0,
+                "greenPointsIssuedForItem": {
+                    "greenPoints": {
+                        "amount": 37.0,
+                        "tokenValueInPeggedCurrency": 0.01,
+                        "valueInPeggedCurrency": {
+                            "amount": 0.37,
+                            "currency": "GBP"
+                        },
+                        "peggedCurrency": "GBP"
+                    },
+                    "gas": {
+                        "amount": 2.0630743152823625e-09
+                    },
+                    "money": {
+                        "amount": 0.37000000001150346,
+                        "currency": "GBP"
+                    }
+                }
+            },
+            {
+                "totalGasBoughtWithMoney": {
+                    "amount": 0,
+                    "currency": "GBP"
+                },
+                "totalGasUsed": {
+                    "amount": 0
+                },
+                "id": "70ff5499-7e35-4187-a930-8c67ca122c86",
+                "name": "Chocolate Bar",
+                "retailer": {
+                    "id": "3ff548b3-c03f-49f6-b36d-e16597869b18",
+                    "name": "Tescos",
+                    "strategy": 1.0,
+                    "sustainability": 0.0
+                },
+                "cost": {
+                    "amount": 1.0,
+                    "currency": "GBP"
+                },
+                "KGCo2": 0.44,
+                "GP": 36.0,
+                "greenPointsIssuedForItem": {
+                    "greenPoints": {
+                        "amount": 36.0,
+                        "tokenValueInPeggedCurrency": 0.01,
+                        "valueInPeggedCurrency": {
+                            "amount": 0.36,
+                            "currency": "GBP"
+                        },
+                        "peggedCurrency": "GBP"
+                    },
+                    "gas": {
+                        "amount": 2.007315550004461e-09
+                    },
+                    "money": {
+                        "amount": 0.36000000001119253,
+                        "currency": "GBP"
+                    }
+                }
+            },
+            {
+                "totalGasBoughtWithMoney": {
+                    "amount": 0,
+                    "currency": "GBP"
+                },
+                "totalGasUsed": {
+                    "amount": 2.007315550004461e-09
+                },
+                "id": "80e1319e-702f-4d6e-8ae7-982c988f6015",
+                "name": "Tesco Vegan Cheese",
+                "retailer": {
+                    "id": "3ff548b3-c03f-49f6-b36d-e16597869b18",
+                    "name": "Tescos",
+                    "strategy": 1.0,
+                    "sustainability": 0.0
+                },
+                "cost": {
+                    "amount": 1.5,
+                    "currency": "GBP"
+                },
+                "KGCo2": 0.3,
+                "GP": 37.0,
+                "greenPointsIssuedForItem": {
+                    "greenPoints": {
+                        "amount": 37.0,
+                        "tokenValueInPeggedCurrency": 0.01,
+                        "valueInPeggedCurrency": {
+                            "amount": 0.37,
+                            "currency": "GBP"
+                        },
+                        "peggedCurrency": "GBP"
+                    },
+                    "gas": {
+                        "amount": 2.0630743152823625e-09
+                    },
+                    "money": {
+                        "amount": 0.37000000001150346,
+                        "currency": "GBP"
+                    }
+                }
+            },
+            {
+                "totalGasBoughtWithMoney": {
+                    "amount": 0,
+                    "currency": "GBP"
+                },
+                "totalGasUsed": {
+                    "amount": 0
+                },
+                "id": "9da7f61b-ce39-4df7-8a8c-58285ae53d55",
+                "name": "Chocolate Bar",
+                "retailer": {
+                    "id": "3ff548b3-c03f-49f6-b36d-e16597869b18",
+                    "name": "Tescos",
+                    "strategy": 1.0,
+                    "sustainability": 0.0
+                },
+                "cost": {
+                    "amount": 1.0,
+                    "currency": "GBP"
+                },
+                "KGCo2": 0.44,
+                "GP": 36.0,
+                "greenPointsIssuedForItem": {
+                    "greenPoints": {
+                        "amount": 36.0,
+                        "tokenValueInPeggedCurrency": 0.01,
+                        "valueInPeggedCurrency": {
+                            "amount": 0.36,
+                            "currency": "GBP"
+                        },
+                        "peggedCurrency": "GBP"
+                    },
+                    "gas": {
+                        "amount": 2.007315550004461e-09
+                    },
+                    "money": {
+                        "amount": 0.36000000001119253,
+                        "currency": "GBP"
+                    }
+                }
+            },
+            {
+                "totalGasBoughtWithMoney": {
+                    "amount": 0,
+                    "currency": "GBP"
+                },
+                "totalGasUsed": {
+                    "amount": 0
+                },
+                "id": "b64b1349-a145-4c9b-8005-a316e4416e2f",
+                "name": "Americano (Own Mug)",
+                "retailer": {
+                    "id": "587d4659-97b7-408a-96a1-731d1e0f070e",
+                    "name": "Starbucks",
+                    "strategy": 1.0,
+                    "sustainability": 0.0
+                },
+                "cost": {
+                    "amount": 0.9,
+                    "currency": "GBP"
+                },
+                "KGCo2": 0.1,
+                "GP": 163.0,
+                "greenPointsIssuedForItem": {
+                    "greenPoints": {
+                        "amount": 163.0,
+                        "tokenValueInPeggedCurrency": 0.01,
+                        "valueInPeggedCurrency": {
+                            "amount": 1.6300000000000001,
+                            "currency": "GBP"
+                        },
+                        "peggedCurrency": "GBP"
+                    },
+                    "gas": {
+                        "amount": 9.088678740297976e-09
+                    },
+                    "money": {
+                        "amount": 1.6300000000506774,
+                        "currency": "GBP"
+                    }
+                }
+            },
+            {
+                "totalGasBoughtWithMoney": {
+                    "amount": 0,
+                    "currency": "GBP"
+                },
+                "totalGasUsed": {
+                    "amount": 0
+                },
+                "id": "1997e6b0-3d87-4bac-8110-1ea601ed0573",
+                "name": "Americano (Own Mug)",
+                "retailer": {
+                    "id": "587d4659-97b7-408a-96a1-731d1e0f070e",
+                    "name": "Starbucks",
+                    "strategy": 1.0,
+                    "sustainability": 0.0
+                },
+                "cost": {
+                    "amount": 0.9,
+                    "currency": "GBP"
+                },
+                "KGCo2": 0.1,
+                "GP": 163.0,
+                "greenPointsIssuedForItem": {
+                    "greenPoints": {
+                        "amount": 163.0,
+                        "tokenValueInPeggedCurrency": 0.01,
+                        "valueInPeggedCurrency": {
+                            "amount": 1.6300000000000001,
+                            "currency": "GBP"
+                        },
+                        "peggedCurrency": "GBP"
+                    },
+                    "gas": {
+                        "amount": 9.088678740297976e-09
+                    },
+                    "money": {
+                        "amount": 1.6300000000506774,
+                        "currency": "GBP"
+                    }
+                }
+            }
+        ],
+        "totalSales": {
+            "totalCostByCcy": {
+                "GBP": {
+                    "amount": 471.0,
+                    "currency": "GBP"
+                }
+            },
+            "totalMoneySentByCcy": {
+                "GBP": {
+                    "amount": 423.2299999999999,
+                    "currency": "GBP"
+                }
+            },
+            "totalGPIssued": 894.0,
+            "numItemsIssued": 20,
+            "itemCountMap": {
+                "Sparkling Water": 24,
+                "Chicken": 48,
+                "Recylable Packaged Raspberries": 12,
+                "Homegrown Potatoes": 20,
+                "Broccoli (100g)": 10,
+                "Imported Potatoes": 10,
+                "Imported Raspberries": 10,
+                "Smoked Salmon": 20,
+                "Tesco Vegan Cheese": 18,
+                "Chocolate Bar": 18,
+                "Americano (Own Mug)": 14
+            }
+        }
+    },
+    "customers": {
+        "Customer[0]": {
+            "id": "80306dde-1642-48e3-afe3-e8c937263736",
+            "name": "Customer[0]",
+            "bank": {
+                "id": "353fb5d7-2ecc-46b2-8959-2f4065443ee1",
+                "name": "AMEX"
+            },
+            "balance": {
+                "viewCurrency": "GBP",
+                "underlyingCurrency": "GBP",
+                "greenPointsMonetaryValue": {
+                    "amount": 0.37,
+                    "currency": "GBP"
+                },
+                "greenPoints": 37.0,
+                "moneyBalance": {
+                    "amount": 98.56999944241235,
+                    "currency": "GBP"
+                },
+                "combinedBalance": {
+                    "amount": 98.93999944241236,
+                    "currency": "GBP"
+                }
+            },
+            "balanceMoney": {
+                "amount": 98.93999944241236,
+                "currency": "GBP"
+            },
+            "basket": [],
+            "purchaseHistory": [
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 0
+                    },
+                    "id": "0cb4e412-625b-4987-bf05-5b6f8dfc9ff2",
+                    "name": "Homegrown Potatoes",
+                    "retailer": {
+                        "id": "b27c5e7f-643e-4204-ae46-bbcdc342d17e",
+                        "name": "Coop",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 0.8,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 0.2,
+                    "GP": 87.0
+                },
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 4.8510125791774476e-09
+                    },
+                    "id": "5f056d38-fd4e-4d20-9aba-5de43339a3d1",
+                    "name": "Tesco Vegan Cheese",
+                    "retailer": {
+                        "id": "3ff548b3-c03f-49f6-b36d-e16597869b18",
+                        "name": "Tescos",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 1.5,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 0.3,
+                    "GP": 37.0
+                }
+            ]
+        },
+        "Customer[1]": {
+            "id": "e686a9f0-9552-4d61-9725-c54c0feece40",
+            "name": "Customer[1]",
+            "bank": {
+                "id": "353fb5d7-2ecc-46b2-8959-2f4065443ee1",
+                "name": "AMEX"
+            },
+            "balance": {
+                "viewCurrency": "GBP",
+                "underlyingCurrency": "GBP",
+                "greenPointsMonetaryValue": {
+                    "amount": 0.37,
+                    "currency": "GBP"
+                },
+                "greenPoints": 37.0,
+                "moneyBalance": {
+                    "amount": 97.85999944241235,
+                    "currency": "GBP"
+                },
+                "combinedBalance": {
+                    "amount": 98.22999944241235,
+                    "currency": "GBP"
+                }
+            },
+            "balanceMoney": {
+                "amount": 98.22999944241235,
+                "currency": "GBP"
+            },
+            "basket": [],
+            "purchaseHistory": [
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 0
+                    },
+                    "id": "70ff5499-7e35-4187-a930-8c67ca122c86",
+                    "name": "Chocolate Bar",
+                    "retailer": {
+                        "id": "3ff548b3-c03f-49f6-b36d-e16597869b18",
+                        "name": "Tescos",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 1.0,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 0.44,
+                    "GP": 36.0
+                },
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 2.007315550004461e-09
+                    },
+                    "id": "80e1319e-702f-4d6e-8ae7-982c988f6015",
+                    "name": "Tesco Vegan Cheese",
+                    "retailer": {
+                        "id": "3ff548b3-c03f-49f6-b36d-e16597869b18",
+                        "name": "Tescos",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 1.5,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 0.3,
+                    "GP": 37.0
+                }
+            ]
+        },
+        "Customer[2]": {
+            "id": "083af3a9-651c-4944-9542-8c53ada573a0",
+            "name": "Customer[2]",
+            "bank": {
+                "id": "353fb5d7-2ecc-46b2-8959-2f4065443ee1",
+                "name": "AMEX"
+            },
+            "balance": {
+                "viewCurrency": "GBP",
+                "underlyingCurrency": "GBP",
+                "greenPointsMonetaryValue": {
+                    "amount": 0.76,
+                    "currency": "GBP"
+                },
+                "greenPoints": 76.0,
+                "moneyBalance": {
+                    "amount": 99.09999944241234,
+                    "currency": "GBP"
+                },
+                "combinedBalance": {
+                    "amount": 99.85999944241235,
+                    "currency": "GBP"
+                }
+            },
+            "balanceMoney": {
+                "amount": 99.85999944241235,
+                "currency": "GBP"
+            },
+            "basket": [],
+            "purchaseHistory": [
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 0
+                    },
+                    "id": "b64b1349-a145-4c9b-8005-a316e4416e2f",
+                    "name": "Americano (Own Mug)",
+                    "retailer": {
+                        "id": "587d4659-97b7-408a-96a1-731d1e0f070e",
+                        "name": "Starbucks",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 0.9,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 0.1,
+                    "GP": 163.0
+                },
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 7.806227138906237e-09
+                    },
+                    "id": "a8062c89-4281-456a-82ae-6a2705f2fe71",
+                    "name": "Sparkling Water",
+                    "retailer": {
+                        "id": "2adba83d-fa01-474f-9a8d-a5b67525752b",
+                        "name": "ASDA",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 1.4,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 0.35,
+                    "GP": 53.0
+                }
+            ]
+        },
+        "Customer[3]": {
+            "id": "b052d268-f575-44c0-bf22-9ca1123b2d8e",
+            "name": "Customer[3]",
+            "bank": {
+                "id": "353fb5d7-2ecc-46b2-8959-2f4065443ee1",
+                "name": "AMEX"
+            },
+            "balance": {
+                "viewCurrency": "GBP",
+                "underlyingCurrency": "GBP",
+                "greenPointsMonetaryValue": {
+                    "amount": 0.43,
+                    "currency": "GBP"
+                },
+                "greenPoints": 43.0,
+                "moneyBalance": {
+                    "amount": 99.44999944241235,
+                    "currency": "GBP"
+                },
+                "combinedBalance": {
+                    "amount": 99.87999944241236,
+                    "currency": "GBP"
+                }
+            },
+            "balanceMoney": {
+                "amount": 99.87999944241236,
+                "currency": "GBP"
+            },
+            "basket": [],
+            "purchaseHistory": [
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 0
+                    },
+                    "id": "e30c5d12-b7b5-49c6-bbb8-c12806804da1",
+                    "name": "Broccoli (100g)",
+                    "retailer": {
+                        "id": "b27c5e7f-643e-4204-ae46-bbcdc342d17e",
+                        "name": "Coop",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 0.55,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 0.24,
+                    "GP": 65.0
+                },
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 3.62431974306361e-09
+                    },
+                    "id": "03604b87-aea7-492f-8f61-661af5c70349",
+                    "name": "Imported Potatoes",
+                    "retailer": {
+                        "id": "b27c5e7f-643e-4204-ae46-bbcdc342d17e",
+                        "name": "Coop",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 0.65,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 0.6,
+                    "GP": 43.0
+                }
+            ]
+        },
+        "Customer[4]": {
+            "id": "c6e6b672-4e4a-4753-9419-483e100a91e3",
+            "name": "Customer[4]",
+            "bank": {
+                "id": "353fb5d7-2ecc-46b2-8959-2f4065443ee1",
+                "name": "AMEX"
+            },
+            "balance": {
+                "viewCurrency": "GBP",
+                "underlyingCurrency": "GBP",
+                "greenPointsMonetaryValue": {
+                    "amount": 0.13,
+                    "currency": "GBP"
+                },
+                "greenPoints": 13.0,
+                "moneyBalance": {
+                    "amount": 93.81999944241235,
+                    "currency": "GBP"
+                },
+                "combinedBalance": {
+                    "amount": 93.94999944241235,
+                    "currency": "GBP"
+                }
+            },
+            "balanceMoney": {
+                "amount": 93.94999944241235,
+                "currency": "GBP"
+            },
+            "basket": [],
+            "purchaseHistory": [
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 0
+                    },
+                    "id": "46c4e97a-40bd-4e1a-8f4b-1d2b4c43d2fd",
+                    "name": "Chicken",
+                    "retailer": {
+                        "id": "2adba83d-fa01-474f-9a8d-a5b67525752b",
+                        "name": "ASDA",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 4.3,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 8.94,
+                    "GP": 2.0
+                },
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 1.1151753055580339e-10
+                    },
+                    "id": "27dcfae9-dc6f-4811-9b26-31e8a6940457",
+                    "name": "Imported Raspberries",
+                    "retailer": {
+                        "id": "b27c5e7f-643e-4204-ae46-bbcdc342d17e",
+                        "name": "Coop",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 1.9,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 1.5,
+                    "GP": 13.0
+                }
+            ]
+        },
+        "Customer[5]": {
+            "id": "ba61b6ca-156b-4027-a0f3-2d7edf728c65",
+            "name": "Customer[5]",
+            "bank": {
+                "id": "353fb5d7-2ecc-46b2-8959-2f4065443ee1",
+                "name": "AMEX"
+            },
+            "balance": {
+                "viewCurrency": "GBP",
+                "underlyingCurrency": "GBP",
+                "greenPointsMonetaryValue": {
+                    "amount": 0.02,
+                    "currency": "GBP"
+                },
+                "greenPoints": 2.0,
+                "moneyBalance": {
+                    "amount": 91.41999944241235,
+                    "currency": "GBP"
+                },
+                "combinedBalance": {
+                    "amount": 91.43999944241234,
+                    "currency": "GBP"
+                }
+            },
+            "balanceMoney": {
+                "amount": 91.43999944241234,
+                "currency": "GBP"
+            },
+            "basket": [],
+            "purchaseHistory": [
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 0
+                    },
+                    "id": "0a226fd4-b703-4cd9-8a5c-c7589321b93f",
+                    "name": "Chicken",
+                    "retailer": {
+                        "id": "2adba83d-fa01-474f-9a8d-a5b67525752b",
+                        "name": "ASDA",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 4.3,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 8.94,
+                    "GP": 2.0
+                },
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 1.1151753055580339e-10
+                    },
+                    "id": "f7cb805a-fd3e-4c97-ae1c-d51c858f055b",
+                    "name": "Chicken",
+                    "retailer": {
+                        "id": "2adba83d-fa01-474f-9a8d-a5b67525752b",
+                        "name": "ASDA",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 4.3,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 8.94,
+                    "GP": 2.0
+                }
+            ]
+        },
+        "Customer[6]": {
+            "id": "fb8f1178-3c81-4f30-b2a9-c9e152a8b945",
+            "name": "Customer[6]",
+            "bank": {
+                "id": "353fb5d7-2ecc-46b2-8959-2f4065443ee1",
+                "name": "AMEX"
+            },
+            "balance": {
+                "viewCurrency": "GBP",
+                "underlyingCurrency": "GBP",
+                "greenPointsMonetaryValue": {
+                    "amount": 1.7,
+                    "currency": "GBP"
+                },
+                "greenPoints": 170.0,
+                "moneyBalance": {
+                    "amount": 99.09999944241234,
+                    "currency": "GBP"
+                },
+                "combinedBalance": {
+                    "amount": 100.79999944241234,
+                    "currency": "GBP"
+                }
+            },
+            "balanceMoney": {
+                "amount": 100.79999944241234,
+                "currency": "GBP"
+            },
+            "basket": [],
+            "purchaseHistory": [
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 0
+                    },
+                    "id": "1997e6b0-3d87-4bac-8110-1ea601ed0573",
+                    "name": "Americano (Own Mug)",
+                    "retailer": {
+                        "id": "587d4659-97b7-408a-96a1-731d1e0f070e",
+                        "name": "Starbucks",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 0.9,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 0.1,
+                    "GP": 163.0
+                },
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 4.460701222232135e-09
+                    },
+                    "id": "92ea234f-fb95-49b8-add5-b0fdf144e6d8",
+                    "name": "Homegrown Potatoes",
+                    "retailer": {
+                        "id": "b27c5e7f-643e-4204-ae46-bbcdc342d17e",
+                        "name": "Coop",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 0.8,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 0.2,
+                    "GP": 87.0
+                }
+            ]
+        },
+        "Customer[7]": {
+            "id": "d88626ff-70b8-4159-ac90-f1ff0df09f80",
+            "name": "Customer[7]",
+            "bank": {
+                "id": "353fb5d7-2ecc-46b2-8959-2f4065443ee1",
+                "name": "AMEX"
+            },
+            "balance": {
+                "viewCurrency": "GBP",
+                "underlyingCurrency": "GBP",
+                "greenPointsMonetaryValue": {
+                    "amount": 0.05,
+                    "currency": "GBP"
+                },
+                "greenPoints": 5.0,
+                "moneyBalance": {
+                    "amount": 93.51999944241234,
+                    "currency": "GBP"
+                },
+                "combinedBalance": {
+                    "amount": 93.56999944241234,
+                    "currency": "GBP"
+                }
+            },
+            "balanceMoney": {
+                "amount": 93.56999944241234,
+                "currency": "GBP"
+            },
+            "basket": [],
+            "purchaseHistory": [
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 0
+                    },
+                    "id": "7337090d-30a8-46f5-828d-2a299d9b9b0f",
+                    "name": "Chicken",
+                    "retailer": {
+                        "id": "2adba83d-fa01-474f-9a8d-a5b67525752b",
+                        "name": "ASDA",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 4.3,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 8.94,
+                    "GP": 2.0
+                },
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 1.1151753055580339e-10
+                    },
+                    "id": "7bb2d4db-dadc-40d4-b194-1ce6a2b42253",
+                    "name": "Recylable Packaged Raspberries",
+                    "retailer": {
+                        "id": "2adba83d-fa01-474f-9a8d-a5b67525752b",
+                        "name": "ASDA",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 2.2,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 0.6,
+                    "GP": 5.0
+                }
+            ]
+        },
+        "Customer[8]": {
+            "id": "71281787-e5f5-4ef6-a091-301a87b36dd1",
+            "name": "Customer[8]",
+            "bank": {
+                "id": "353fb5d7-2ecc-46b2-8959-2f4065443ee1",
+                "name": "AMEX"
+            },
+            "balance": {
+                "viewCurrency": "GBP",
+                "underlyingCurrency": "GBP",
+                "greenPointsMonetaryValue": {
+                    "amount": 0.04,
+                    "currency": "GBP"
+                },
+                "greenPoints": 4.0,
+                "moneyBalance": {
+                    "amount": 90.03999944241235,
+                    "currency": "GBP"
+                },
+                "combinedBalance": {
+                    "amount": 90.07999944241236,
+                    "currency": "GBP"
+                }
+            },
+            "balanceMoney": {
+                "amount": 90.07999944241236,
+                "currency": "GBP"
+            },
+            "basket": [],
+            "purchaseHistory": [
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 0
+                    },
+                    "id": "f16dd837-815b-4bc5-aa07-6b04a1b4a1c9",
+                    "name": "Smoked Salmon",
+                    "retailer": {
+                        "id": "b27c5e7f-643e-4204-ae46-bbcdc342d17e",
+                        "name": "Coop",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 5.0,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 3.43,
+                    "GP": 4.0
+                },
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 2.2303506111160677e-10
+                    },
+                    "id": "709694f4-9119-483d-9eff-a01a7b218ddf",
+                    "name": "Smoked Salmon",
+                    "retailer": {
+                        "id": "b27c5e7f-643e-4204-ae46-bbcdc342d17e",
+                        "name": "Coop",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 5.0,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 3.43,
+                    "GP": 4.0
+                }
+            ]
+        },
+        "Customer[9]": {
+            "id": "580cf30f-3c53-46fe-b479-08e12751083f",
+            "name": "Customer[9]",
+            "bank": {
+                "id": "353fb5d7-2ecc-46b2-8959-2f4065443ee1",
+                "name": "AMEX"
+            },
+            "balance": {
+                "viewCurrency": "GBP",
+                "underlyingCurrency": "GBP",
+                "greenPointsMonetaryValue": {
+                    "amount": 0.53,
+                    "currency": "GBP"
+                },
+                "greenPoints": 53.0,
+                "moneyBalance": {
+                    "amount": 97.95999944241234,
+                    "currency": "GBP"
+                },
+                "combinedBalance": {
+                    "amount": 98.48999944241234,
+                    "currency": "GBP"
+                }
+            },
+            "balanceMoney": {
+                "amount": 98.48999944241234,
+                "currency": "GBP"
+            },
+            "basket": [],
+            "purchaseHistory": [
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 0
+                    },
+                    "id": "9da7f61b-ce39-4df7-8a8c-58285ae53d55",
+                    "name": "Chocolate Bar",
+                    "retailer": {
+                        "id": "3ff548b3-c03f-49f6-b36d-e16597869b18",
+                        "name": "Tescos",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 1.0,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 0.44,
+                    "GP": 36.0
+                },
+                {
+                    "totalGasBoughtWithMoney": {
+                        "amount": 0,
+                        "currency": "GBP"
+                    },
+                    "totalGasUsed": {
+                        "amount": 2.007315550004461e-09
+                    },
+                    "id": "c120d322-7253-461e-97dd-9f8147782199",
+                    "name": "Sparkling Water",
+                    "retailer": {
+                        "id": "2adba83d-fa01-474f-9a8d-a5b67525752b",
+                        "name": "ASDA",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "cost": {
+                        "amount": 1.4,
+                        "currency": "GBP"
+                    },
+                    "KGCo2": 0.35,
+                    "GP": 53.0
+                }
+            ]
+        }
+    }
+}

@@ -1,0 +1,2121 @@
+{
+    "transactionsFromEntity": [
+        {
+            "id": "58ffdab7-cda7-43e2-9f65-04fd97118e05",
+            "accountFrom": {
+                "id": "4ceae84b-0fc0-4b60-a053-83a22bd3cbc7",
+                "owner": {
+                    "id": "65320c3f-4d2f-4a3c-8eb3-28a646820505",
+                    "name": "Tescos",
+                    "strategy": 1.0,
+                    "sustainability": 0.0
+                },
+                "fiatCurrency": "GBP",
+                "bank": {
+                    "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                    "name": "AMEX"
+                },
+                "balance": {
+                    "viewCurrency": "GBP",
+                    "underlyingCurrency": "GBP",
+                    "greenPointsMonetaryValue": {
+                        "amount": 0.0,
+                        "currency": "GBP"
+                    },
+                    "greenPoints": 0.0,
+                    "moneyBalance": {
+                        "amount": -0.8600000000294113,
+                        "currency": "GBP"
+                    },
+                    "combinedBalance": {
+                        "amount": -0.8600000000294113,
+                        "currency": "GBP"
+                    }
+                },
+                "cryptoWallet": {
+                    "ethBalance": {
+                        "amount": 0.0
+                    },
+                    "gpBalance": 0.0,
+                    "owner": {
+                        "id": "65320c3f-4d2f-4a3c-8eb3-28a646820505",
+                        "name": "Tescos",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "ownerBankAccount": {
+                        "id": "4ceae84b-0fc0-4b60-a053-83a22bd3cbc7"
+                    },
+                    "ownerBank": {
+                        "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                        "name": "AMEX"
+                    }
+                }
+            },
+            "accountTo": {
+                "id": "9044a349-e972-47fb-b4e2-9f3b626409ca",
+                "owner": {
+                    "id": "e7d6efed-ea2a-408d-85c7-9904f1d94e22",
+                    "name": "Customer[0]"
+                },
+                "fiatCurrency": "GBP",
+                "bank": {
+                    "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                    "name": "AMEX"
+                },
+                "balance": {
+                    "viewCurrency": "GBP",
+                    "underlyingCurrency": "GBP",
+                    "greenPointsMonetaryValue": {
+                        "amount": 0.04,
+                        "currency": "GBP"
+                    },
+                    "greenPoints": 4.0,
+                    "moneyBalance": {
+                        "amount": 93.43999944241234,
+                        "currency": "GBP"
+                    },
+                    "combinedBalance": {
+                        "amount": 93.47999944241235,
+                        "currency": "GBP"
+                    }
+                },
+                "cryptoWallet": {
+                    "ethBalance": {
+                        "amount": 0.000999999776964939
+                    },
+                    "gpBalance": 4.0,
+                    "owner": {
+                        "id": "e7d6efed-ea2a-408d-85c7-9904f1d94e22",
+                        "name": "Customer[0]"
+                    },
+                    "ownerBankAccount": {
+                        "id": "9044a349-e972-47fb-b4e2-9f3b626409ca"
+                    },
+                    "ownerBank": {
+                        "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                        "name": "AMEX"
+                    }
+                }
+            },
+            "money": {
+                "amount": 0,
+                "currency": "GBP"
+            },
+            "ether": {
+                "ether": {
+                    "amount": 0
+                },
+                "gas": {
+                    "amount": 0
+                },
+                "money": {
+                    "amount": 0,
+                    "currency": "GBP"
+                }
+            },
+            "greenPoints": {
+                "greenPoints": {
+                    "amount": 4.0,
+                    "tokenValueInPeggedCurrency": 0.01,
+                    "valueInPeggedCurrency": {
+                        "amount": 0.04,
+                        "currency": "GBP"
+                    },
+                    "peggedCurrency": "GBP"
+                },
+                "gas": {
+                    "amount": -2.2303506111160677e-10
+                },
+                "money": {
+                    "amount": 1.243615962819879e-13,
+                    "currency": "GBP"
+                }
+            },
+            "totalMoneyCost": {
+                "amount": 1.243615962819879e-13,
+                "currency": "GBP"
+            },
+            "totalMoneyCostInclTopUps": {
+                "amount": 1.243615962819879e-13,
+                "currency": "GBP"
+            }
+        },
+        {
+            "id": "3c95d502-b461-4264-823a-44d619762814",
+            "accountFrom": {
+                "id": "4ceae84b-0fc0-4b60-a053-83a22bd3cbc7",
+                "owner": {
+                    "id": "65320c3f-4d2f-4a3c-8eb3-28a646820505",
+                    "name": "Tescos",
+                    "strategy": 1.0,
+                    "sustainability": 0.0
+                },
+                "fiatCurrency": "GBP",
+                "bank": {
+                    "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                    "name": "AMEX"
+                },
+                "balance": {
+                    "viewCurrency": "GBP",
+                    "underlyingCurrency": "GBP",
+                    "greenPointsMonetaryValue": {
+                        "amount": 0.0,
+                        "currency": "GBP"
+                    },
+                    "greenPoints": 0.0,
+                    "moneyBalance": {
+                        "amount": -0.8600000000294113,
+                        "currency": "GBP"
+                    },
+                    "combinedBalance": {
+                        "amount": -0.8600000000294113,
+                        "currency": "GBP"
+                    }
+                },
+                "cryptoWallet": {
+                    "ethBalance": {
+                        "amount": 0.0
+                    },
+                    "gpBalance": 0.0,
+                    "owner": {
+                        "id": "65320c3f-4d2f-4a3c-8eb3-28a646820505",
+                        "name": "Tescos",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "ownerBankAccount": {
+                        "id": "4ceae84b-0fc0-4b60-a053-83a22bd3cbc7"
+                    },
+                    "ownerBank": {
+                        "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                        "name": "AMEX"
+                    }
+                }
+            },
+            "accountTo": {
+                "id": "9044a349-e972-47fb-b4e2-9f3b626409ca",
+                "owner": {
+                    "id": "e7d6efed-ea2a-408d-85c7-9904f1d94e22",
+                    "name": "Customer[0]"
+                },
+                "fiatCurrency": "GBP",
+                "bank": {
+                    "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                    "name": "AMEX"
+                },
+                "balance": {
+                    "viewCurrency": "GBP",
+                    "underlyingCurrency": "GBP",
+                    "greenPointsMonetaryValue": {
+                        "amount": 0.04,
+                        "currency": "GBP"
+                    },
+                    "greenPoints": 4.0,
+                    "moneyBalance": {
+                        "amount": 93.43999944241234,
+                        "currency": "GBP"
+                    },
+                    "combinedBalance": {
+                        "amount": 93.47999944241235,
+                        "currency": "GBP"
+                    }
+                },
+                "cryptoWallet": {
+                    "ethBalance": {
+                        "amount": 0.000999999776964939
+                    },
+                    "gpBalance": 4.0,
+                    "owner": {
+                        "id": "e7d6efed-ea2a-408d-85c7-9904f1d94e22",
+                        "name": "Customer[0]"
+                    },
+                    "ownerBankAccount": {
+                        "id": "9044a349-e972-47fb-b4e2-9f3b626409ca"
+                    },
+                    "ownerBank": {
+                        "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                        "name": "AMEX"
+                    }
+                }
+            },
+            "money": {
+                "amount": 0,
+                "currency": "GBP"
+            },
+            "ether": {
+                "ether": {
+                    "amount": 0
+                },
+                "gas": {
+                    "amount": 0
+                },
+                "money": {
+                    "amount": 0,
+                    "currency": "GBP"
+                }
+            },
+            "greenPoints": {
+                "greenPoints": {
+                    "amount": 4.0,
+                    "tokenValueInPeggedCurrency": 0.01,
+                    "valueInPeggedCurrency": {
+                        "amount": 0.04,
+                        "currency": "GBP"
+                    },
+                    "peggedCurrency": "GBP"
+                },
+                "gas": {
+                    "amount": -2.2303506111160677e-10
+                },
+                "money": {
+                    "amount": 1.243615962819879e-13,
+                    "currency": "GBP"
+                }
+            },
+            "totalMoneyCost": {
+                "amount": 1.243615962819879e-13,
+                "currency": "GBP"
+            },
+            "totalMoneyCostInclTopUps": {
+                "amount": 1.243615962819879e-13,
+                "currency": "GBP"
+            }
+        },
+        {
+            "id": "cd8db9c9-1de2-41f9-8719-ba39ecb60494",
+            "accountFrom": {
+                "id": "4ceae84b-0fc0-4b60-a053-83a22bd3cbc7",
+                "owner": {
+                    "id": "65320c3f-4d2f-4a3c-8eb3-28a646820505",
+                    "name": "Tescos",
+                    "strategy": 1.0,
+                    "sustainability": 0.0
+                },
+                "fiatCurrency": "GBP",
+                "bank": {
+                    "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                    "name": "AMEX"
+                },
+                "balance": {
+                    "viewCurrency": "GBP",
+                    "underlyingCurrency": "GBP",
+                    "greenPointsMonetaryValue": {
+                        "amount": 0.0,
+                        "currency": "GBP"
+                    },
+                    "greenPoints": 0.0,
+                    "moneyBalance": {
+                        "amount": -0.8600000000294113,
+                        "currency": "GBP"
+                    },
+                    "combinedBalance": {
+                        "amount": -0.8600000000294113,
+                        "currency": "GBP"
+                    }
+                },
+                "cryptoWallet": {
+                    "ethBalance": {
+                        "amount": 0.0
+                    },
+                    "gpBalance": 0.0,
+                    "owner": {
+                        "id": "65320c3f-4d2f-4a3c-8eb3-28a646820505",
+                        "name": "Tescos",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "ownerBankAccount": {
+                        "id": "4ceae84b-0fc0-4b60-a053-83a22bd3cbc7"
+                    },
+                    "ownerBank": {
+                        "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                        "name": "AMEX"
+                    }
+                }
+            },
+            "accountTo": {
+                "id": "86624f75-de79-4daf-a772-b3104f9dd2b9",
+                "owner": {
+                    "id": "d32bf9ca-d895-43e6-8e19-aa885d727fe4",
+                    "name": "Customer[2]"
+                },
+                "fiatCurrency": "GBP",
+                "bank": {
+                    "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                    "name": "AMEX"
+                },
+                "balance": {
+                    "viewCurrency": "GBP",
+                    "underlyingCurrency": "GBP",
+                    "greenPointsMonetaryValue": {
+                        "amount": 0.78,
+                        "currency": "GBP"
+                    },
+                    "greenPoints": 78.0,
+                    "moneyBalance": {
+                        "amount": 96.25999944241235,
+                        "currency": "GBP"
+                    },
+                    "combinedBalance": {
+                        "amount": 97.03999944241235,
+                        "currency": "GBP"
+                    }
+                },
+                "cryptoWallet": {
+                    "ethBalance": {
+                        "amount": 0.0009999996654474084
+                    },
+                    "gpBalance": 78.0,
+                    "owner": {
+                        "id": "d32bf9ca-d895-43e6-8e19-aa885d727fe4",
+                        "name": "Customer[2]"
+                    },
+                    "ownerBankAccount": {
+                        "id": "86624f75-de79-4daf-a772-b3104f9dd2b9"
+                    },
+                    "ownerBank": {
+                        "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                        "name": "AMEX"
+                    }
+                }
+            },
+            "money": {
+                "amount": 0,
+                "currency": "GBP"
+            },
+            "ether": {
+                "ether": {
+                    "amount": 0
+                },
+                "gas": {
+                    "amount": 0
+                },
+                "money": {
+                    "amount": 0,
+                    "currency": "GBP"
+                }
+            },
+            "greenPoints": {
+                "greenPoints": {
+                    "amount": 6.0,
+                    "tokenValueInPeggedCurrency": 0.01,
+                    "valueInPeggedCurrency": {
+                        "amount": 0.06,
+                        "currency": "GBP"
+                    },
+                    "peggedCurrency": "GBP"
+                },
+                "gas": {
+                    "amount": -3.3455259166741016e-10
+                },
+                "money": {
+                    "amount": 1.8654239442298186e-13,
+                    "currency": "GBP"
+                }
+            },
+            "totalMoneyCost": {
+                "amount": 1.8654239442298186e-13,
+                "currency": "GBP"
+            },
+            "totalMoneyCostInclTopUps": {
+                "amount": 1.8654239442298186e-13,
+                "currency": "GBP"
+            }
+        },
+        {
+            "id": "29196fe7-b3ed-4c27-9e17-de234f2cf340",
+            "accountFrom": {
+                "id": "4ceae84b-0fc0-4b60-a053-83a22bd3cbc7",
+                "owner": {
+                    "id": "65320c3f-4d2f-4a3c-8eb3-28a646820505",
+                    "name": "Tescos",
+                    "strategy": 1.0,
+                    "sustainability": 0.0
+                },
+                "fiatCurrency": "GBP",
+                "bank": {
+                    "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                    "name": "AMEX"
+                },
+                "balance": {
+                    "viewCurrency": "GBP",
+                    "underlyingCurrency": "GBP",
+                    "greenPointsMonetaryValue": {
+                        "amount": 0.0,
+                        "currency": "GBP"
+                    },
+                    "greenPoints": 0.0,
+                    "moneyBalance": {
+                        "amount": -0.8600000000294113,
+                        "currency": "GBP"
+                    },
+                    "combinedBalance": {
+                        "amount": -0.8600000000294113,
+                        "currency": "GBP"
+                    }
+                },
+                "cryptoWallet": {
+                    "ethBalance": {
+                        "amount": 0.0
+                    },
+                    "gpBalance": 0.0,
+                    "owner": {
+                        "id": "65320c3f-4d2f-4a3c-8eb3-28a646820505",
+                        "name": "Tescos",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "ownerBankAccount": {
+                        "id": "4ceae84b-0fc0-4b60-a053-83a22bd3cbc7"
+                    },
+                    "ownerBank": {
+                        "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                        "name": "AMEX"
+                    }
+                }
+            },
+            "accountTo": {
+                "id": "14c238b0-dea7-467e-b2b8-ac2b8a0a8a69",
+                "owner": {
+                    "id": "bbed9dc5-e46b-41ff-998a-2ee2e22d097f",
+                    "name": "Customer[5]"
+                },
+                "fiatCurrency": "GBP",
+                "bank": {
+                    "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                    "name": "AMEX"
+                },
+                "balance": {
+                    "viewCurrency": "GBP",
+                    "underlyingCurrency": "GBP",
+                    "greenPointsMonetaryValue": {
+                        "amount": 0.36,
+                        "currency": "GBP"
+                    },
+                    "greenPoints": 36.0,
+                    "moneyBalance": {
+                        "amount": 98.35999944241235,
+                        "currency": "GBP"
+                    },
+                    "combinedBalance": {
+                        "amount": 98.71999944241234,
+                        "currency": "GBP"
+                    }
+                },
+                "cryptoWallet": {
+                    "ethBalance": {
+                        "amount": 0.00099999799268445
+                    },
+                    "gpBalance": 36.0,
+                    "owner": {
+                        "id": "bbed9dc5-e46b-41ff-998a-2ee2e22d097f",
+                        "name": "Customer[5]"
+                    },
+                    "ownerBankAccount": {
+                        "id": "14c238b0-dea7-467e-b2b8-ac2b8a0a8a69"
+                    },
+                    "ownerBank": {
+                        "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                        "name": "AMEX"
+                    }
+                }
+            },
+            "money": {
+                "amount": 0,
+                "currency": "GBP"
+            },
+            "ether": {
+                "ether": {
+                    "amount": 0
+                },
+                "gas": {
+                    "amount": 0
+                },
+                "money": {
+                    "amount": 0,
+                    "currency": "GBP"
+                }
+            },
+            "greenPoints": {
+                "greenPoints": {
+                    "amount": 36.0,
+                    "tokenValueInPeggedCurrency": 0.01,
+                    "valueInPeggedCurrency": {
+                        "amount": 0.36,
+                        "currency": "GBP"
+                    },
+                    "peggedCurrency": "GBP"
+                },
+                "gas": {
+                    "amount": -2.007315550004461e-09
+                },
+                "money": {
+                    "amount": 1.1192543665378908e-12,
+                    "currency": "GBP"
+                }
+            },
+            "totalMoneyCost": {
+                "amount": 1.1192543665378908e-12,
+                "currency": "GBP"
+            },
+            "totalMoneyCostInclTopUps": {
+                "amount": 1.1192543665378908e-12,
+                "currency": "GBP"
+            }
+        },
+        {
+            "id": "cd41be6c-80ff-4a9f-af76-91ffbbd34e8a",
+            "accountFrom": {
+                "id": "4ceae84b-0fc0-4b60-a053-83a22bd3cbc7",
+                "owner": {
+                    "id": "65320c3f-4d2f-4a3c-8eb3-28a646820505",
+                    "name": "Tescos",
+                    "strategy": 1.0,
+                    "sustainability": 0.0
+                },
+                "fiatCurrency": "GBP",
+                "bank": {
+                    "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                    "name": "AMEX"
+                },
+                "balance": {
+                    "viewCurrency": "GBP",
+                    "underlyingCurrency": "GBP",
+                    "greenPointsMonetaryValue": {
+                        "amount": 0.0,
+                        "currency": "GBP"
+                    },
+                    "greenPoints": 0.0,
+                    "moneyBalance": {
+                        "amount": -0.8600000000294113,
+                        "currency": "GBP"
+                    },
+                    "combinedBalance": {
+                        "amount": -0.8600000000294113,
+                        "currency": "GBP"
+                    }
+                },
+                "cryptoWallet": {
+                    "ethBalance": {
+                        "amount": 0.0
+                    },
+                    "gpBalance": 0.0,
+                    "owner": {
+                        "id": "65320c3f-4d2f-4a3c-8eb3-28a646820505",
+                        "name": "Tescos",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "ownerBankAccount": {
+                        "id": "4ceae84b-0fc0-4b60-a053-83a22bd3cbc7"
+                    },
+                    "ownerBank": {
+                        "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                        "name": "AMEX"
+                    }
+                }
+            },
+            "accountTo": {
+                "id": "14c238b0-dea7-467e-b2b8-ac2b8a0a8a69",
+                "owner": {
+                    "id": "bbed9dc5-e46b-41ff-998a-2ee2e22d097f",
+                    "name": "Customer[5]"
+                },
+                "fiatCurrency": "GBP",
+                "bank": {
+                    "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                    "name": "AMEX"
+                },
+                "balance": {
+                    "viewCurrency": "GBP",
+                    "underlyingCurrency": "GBP",
+                    "greenPointsMonetaryValue": {
+                        "amount": 0.36,
+                        "currency": "GBP"
+                    },
+                    "greenPoints": 36.0,
+                    "moneyBalance": {
+                        "amount": 98.35999944241235,
+                        "currency": "GBP"
+                    },
+                    "combinedBalance": {
+                        "amount": 98.71999944241234,
+                        "currency": "GBP"
+                    }
+                },
+                "cryptoWallet": {
+                    "ethBalance": {
+                        "amount": 0.00099999799268445
+                    },
+                    "gpBalance": 36.0,
+                    "owner": {
+                        "id": "bbed9dc5-e46b-41ff-998a-2ee2e22d097f",
+                        "name": "Customer[5]"
+                    },
+                    "ownerBankAccount": {
+                        "id": "14c238b0-dea7-467e-b2b8-ac2b8a0a8a69"
+                    },
+                    "ownerBank": {
+                        "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                        "name": "AMEX"
+                    }
+                }
+            },
+            "money": {
+                "amount": 0,
+                "currency": "GBP"
+            },
+            "ether": {
+                "ether": {
+                    "amount": 0
+                },
+                "gas": {
+                    "amount": 0
+                },
+                "money": {
+                    "amount": 0,
+                    "currency": "GBP"
+                }
+            },
+            "greenPoints": {
+                "greenPoints": {
+                    "amount": 36.0,
+                    "tokenValueInPeggedCurrency": 0.01,
+                    "valueInPeggedCurrency": {
+                        "amount": 0.36,
+                        "currency": "GBP"
+                    },
+                    "peggedCurrency": "GBP"
+                },
+                "gas": {
+                    "amount": -2.007315550004461e-09
+                },
+                "money": {
+                    "amount": 1.1192543665378908e-12,
+                    "currency": "GBP"
+                }
+            },
+            "totalMoneyCost": {
+                "amount": 1.1192543665378908e-12,
+                "currency": "GBP"
+            },
+            "totalMoneyCostInclTopUps": {
+                "amount": 1.1192543665378908e-12,
+                "currency": "GBP"
+            }
+        }
+    ],
+    "transactionsToEntity": [
+        {
+            "id": "c881dd88-d3da-4579-8476-e8f370eb85d5",
+            "accountFrom": {
+                "id": "9044a349-e972-47fb-b4e2-9f3b626409ca",
+                "owner": {
+                    "id": "e7d6efed-ea2a-408d-85c7-9904f1d94e22",
+                    "name": "Customer[0]"
+                },
+                "fiatCurrency": "GBP",
+                "bank": {
+                    "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                    "name": "AMEX"
+                },
+                "balance": {
+                    "viewCurrency": "GBP",
+                    "underlyingCurrency": "GBP",
+                    "greenPointsMonetaryValue": {
+                        "amount": 0.04,
+                        "currency": "GBP"
+                    },
+                    "greenPoints": 4.0,
+                    "moneyBalance": {
+                        "amount": 93.43999944241234,
+                        "currency": "GBP"
+                    },
+                    "combinedBalance": {
+                        "amount": 93.47999944241235,
+                        "currency": "GBP"
+                    }
+                },
+                "cryptoWallet": {
+                    "ethBalance": {
+                        "amount": 0.000999999776964939
+                    },
+                    "gpBalance": 4.0,
+                    "owner": {
+                        "id": "e7d6efed-ea2a-408d-85c7-9904f1d94e22",
+                        "name": "Customer[0]"
+                    },
+                    "ownerBankAccount": {
+                        "id": "9044a349-e972-47fb-b4e2-9f3b626409ca"
+                    },
+                    "ownerBank": {
+                        "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                        "name": "AMEX"
+                    }
+                }
+            },
+            "accountTo": {
+                "id": "a3af5cbb-6252-4e9e-922e-204e49dfc5d0",
+                "owner": {
+                    "id": "65320c3f-4d2f-4a3c-8eb3-28a646820505",
+                    "name": "Tescos",
+                    "strategy": 1.0,
+                    "sustainability": 0.0
+                },
+                "fiatCurrency": "GBP",
+                "bank": {
+                    "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                    "name": "AMEX"
+                },
+                "balance": {
+                    "viewCurrency": "GBP",
+                    "underlyingCurrency": "GBP",
+                    "greenPointsMonetaryValue": {
+                        "amount": 0.4,
+                        "currency": "GBP"
+                    },
+                    "greenPoints": 40.0,
+                    "moneyBalance": {
+                        "amount": 10010.199999999999,
+                        "currency": "GBP"
+                    },
+                    "combinedBalance": {
+                        "amount": 10010.599999999999,
+                        "currency": "GBP"
+                    }
+                },
+                "cryptoWallet": {
+                    "ethBalance": {
+                        "amount": 0.0
+                    },
+                    "gpBalance": 40.0,
+                    "owner": {
+                        "id": "65320c3f-4d2f-4a3c-8eb3-28a646820505",
+                        "name": "Tescos",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "ownerBankAccount": {
+                        "id": "a3af5cbb-6252-4e9e-922e-204e49dfc5d0"
+                    },
+                    "ownerBank": {
+                        "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                        "name": "AMEX"
+                    }
+                }
+            },
+            "money": {
+                "amount": 3.3,
+                "currency": "GBP"
+            },
+            "ether": {
+                "ether": {
+                    "amount": 0.0
+                },
+                "gas": {
+                    "amount": 0
+                },
+                "money": {
+                    "amount": 0,
+                    "currency": "GBP"
+                }
+            },
+            "greenPoints": {
+                "greenPoints": {
+                    "amount": 0.0,
+                    "tokenValueInPeggedCurrency": 0.01,
+                    "valueInPeggedCurrency": {
+                        "amount": 0.0,
+                        "currency": "GBP"
+                    },
+                    "peggedCurrency": "GBP"
+                },
+                "gas": {
+                    "amount": 0
+                },
+                "money": {
+                    "amount": 0,
+                    "currency": "GBP"
+                }
+            },
+            "totalMoneyCost": {
+                "amount": 0,
+                "currency": "GBP"
+            },
+            "totalMoneyCostInclTopUps": {
+                "amount": -5.575876530899209e-07,
+                "currency": "GBP"
+            }
+        },
+        {
+            "id": "c7ed6939-42fd-4f3a-a13a-5fbf5a155877",
+            "accountFrom": {
+                "id": "9044a349-e972-47fb-b4e2-9f3b626409ca",
+                "owner": {
+                    "id": "e7d6efed-ea2a-408d-85c7-9904f1d94e22",
+                    "name": "Customer[0]"
+                },
+                "fiatCurrency": "GBP",
+                "bank": {
+                    "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                    "name": "AMEX"
+                },
+                "balance": {
+                    "viewCurrency": "GBP",
+                    "underlyingCurrency": "GBP",
+                    "greenPointsMonetaryValue": {
+                        "amount": 0.04,
+                        "currency": "GBP"
+                    },
+                    "greenPoints": 4.0,
+                    "moneyBalance": {
+                        "amount": 93.43999944241234,
+                        "currency": "GBP"
+                    },
+                    "combinedBalance": {
+                        "amount": 93.47999944241235,
+                        "currency": "GBP"
+                    }
+                },
+                "cryptoWallet": {
+                    "ethBalance": {
+                        "amount": 0.000999999776964939
+                    },
+                    "gpBalance": 4.0,
+                    "owner": {
+                        "id": "e7d6efed-ea2a-408d-85c7-9904f1d94e22",
+                        "name": "Customer[0]"
+                    },
+                    "ownerBankAccount": {
+                        "id": "9044a349-e972-47fb-b4e2-9f3b626409ca"
+                    },
+                    "ownerBank": {
+                        "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                        "name": "AMEX"
+                    }
+                }
+            },
+            "accountTo": {
+                "id": "a3af5cbb-6252-4e9e-922e-204e49dfc5d0",
+                "owner": {
+                    "id": "65320c3f-4d2f-4a3c-8eb3-28a646820505",
+                    "name": "Tescos",
+                    "strategy": 1.0,
+                    "sustainability": 0.0
+                },
+                "fiatCurrency": "GBP",
+                "bank": {
+                    "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                    "name": "AMEX"
+                },
+                "balance": {
+                    "viewCurrency": "GBP",
+                    "underlyingCurrency": "GBP",
+                    "greenPointsMonetaryValue": {
+                        "amount": 0.4,
+                        "currency": "GBP"
+                    },
+                    "greenPoints": 40.0,
+                    "moneyBalance": {
+                        "amount": 10010.199999999999,
+                        "currency": "GBP"
+                    },
+                    "combinedBalance": {
+                        "amount": 10010.599999999999,
+                        "currency": "GBP"
+                    }
+                },
+                "cryptoWallet": {
+                    "ethBalance": {
+                        "amount": 0.0
+                    },
+                    "gpBalance": 40.0,
+                    "owner": {
+                        "id": "65320c3f-4d2f-4a3c-8eb3-28a646820505",
+                        "name": "Tescos",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "ownerBankAccount": {
+                        "id": "a3af5cbb-6252-4e9e-922e-204e49dfc5d0"
+                    },
+                    "ownerBank": {
+                        "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                        "name": "AMEX"
+                    }
+                }
+            },
+            "money": {
+                "amount": 3.26,
+                "currency": "GBP"
+            },
+            "ether": {
+                "ether": {
+                    "amount": 0.0
+                },
+                "gas": {
+                    "amount": 0
+                },
+                "money": {
+                    "amount": 0,
+                    "currency": "GBP"
+                }
+            },
+            "greenPoints": {
+                "greenPoints": {
+                    "amount": 4.0,
+                    "tokenValueInPeggedCurrency": 0.01,
+                    "valueInPeggedCurrency": {
+                        "amount": 0.04,
+                        "currency": "GBP"
+                    },
+                    "peggedCurrency": "GBP"
+                },
+                "gas": {
+                    "amount": 2.2303506111160677e-10
+                },
+                "money": {
+                    "amount": 0,
+                    "currency": "GBP"
+                }
+            },
+            "totalMoneyCost": {
+                "amount": 0,
+                "currency": "GBP"
+            },
+            "totalMoneyCostInclTopUps": {
+                "amount": 0.0,
+                "currency": "GBP"
+            }
+        },
+        {
+            "id": "77be200d-1386-40fb-8250-acbdc2ade9c7",
+            "accountFrom": {
+                "id": "86624f75-de79-4daf-a772-b3104f9dd2b9",
+                "owner": {
+                    "id": "d32bf9ca-d895-43e6-8e19-aa885d727fe4",
+                    "name": "Customer[2]"
+                },
+                "fiatCurrency": "GBP",
+                "bank": {
+                    "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                    "name": "AMEX"
+                },
+                "balance": {
+                    "viewCurrency": "GBP",
+                    "underlyingCurrency": "GBP",
+                    "greenPointsMonetaryValue": {
+                        "amount": 0.78,
+                        "currency": "GBP"
+                    },
+                    "greenPoints": 78.0,
+                    "moneyBalance": {
+                        "amount": 96.25999944241235,
+                        "currency": "GBP"
+                    },
+                    "combinedBalance": {
+                        "amount": 97.03999944241235,
+                        "currency": "GBP"
+                    }
+                },
+                "cryptoWallet": {
+                    "ethBalance": {
+                        "amount": 0.0009999996654474084
+                    },
+                    "gpBalance": 78.0,
+                    "owner": {
+                        "id": "d32bf9ca-d895-43e6-8e19-aa885d727fe4",
+                        "name": "Customer[2]"
+                    },
+                    "ownerBankAccount": {
+                        "id": "86624f75-de79-4daf-a772-b3104f9dd2b9"
+                    },
+                    "ownerBank": {
+                        "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                        "name": "AMEX"
+                    }
+                }
+            },
+            "accountTo": {
+                "id": "a3af5cbb-6252-4e9e-922e-204e49dfc5d0",
+                "owner": {
+                    "id": "65320c3f-4d2f-4a3c-8eb3-28a646820505",
+                    "name": "Tescos",
+                    "strategy": 1.0,
+                    "sustainability": 0.0
+                },
+                "fiatCurrency": "GBP",
+                "bank": {
+                    "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                    "name": "AMEX"
+                },
+                "balance": {
+                    "viewCurrency": "GBP",
+                    "underlyingCurrency": "GBP",
+                    "greenPointsMonetaryValue": {
+                        "amount": 0.4,
+                        "currency": "GBP"
+                    },
+                    "greenPoints": 40.0,
+                    "moneyBalance": {
+                        "amount": 10010.199999999999,
+                        "currency": "GBP"
+                    },
+                    "combinedBalance": {
+                        "amount": 10010.599999999999,
+                        "currency": "GBP"
+                    }
+                },
+                "cryptoWallet": {
+                    "ethBalance": {
+                        "amount": 0.0
+                    },
+                    "gpBalance": 40.0,
+                    "owner": {
+                        "id": "65320c3f-4d2f-4a3c-8eb3-28a646820505",
+                        "name": "Tescos",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "ownerBankAccount": {
+                        "id": "a3af5cbb-6252-4e9e-922e-204e49dfc5d0"
+                    },
+                    "ownerBank": {
+                        "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                        "name": "AMEX"
+                    }
+                }
+            },
+            "money": {
+                "amount": 2.0,
+                "currency": "GBP"
+            },
+            "ether": {
+                "ether": {
+                    "amount": 0.0
+                },
+                "gas": {
+                    "amount": 0
+                },
+                "money": {
+                    "amount": 0,
+                    "currency": "GBP"
+                }
+            },
+            "greenPoints": {
+                "greenPoints": {
+                    "amount": 0.0,
+                    "tokenValueInPeggedCurrency": 0.01,
+                    "valueInPeggedCurrency": {
+                        "amount": 0.0,
+                        "currency": "GBP"
+                    },
+                    "peggedCurrency": "GBP"
+                },
+                "gas": {
+                    "amount": 0
+                },
+                "money": {
+                    "amount": 0,
+                    "currency": "GBP"
+                }
+            },
+            "totalMoneyCost": {
+                "amount": 0,
+                "currency": "GBP"
+            },
+            "totalMoneyCostInclTopUps": {
+                "amount": -5.575876530899209e-07,
+                "currency": "GBP"
+            }
+        },
+        {
+            "id": "986cf699-7b0e-488c-8837-a719e0794fc7",
+            "accountFrom": {
+                "id": "14c238b0-dea7-467e-b2b8-ac2b8a0a8a69",
+                "owner": {
+                    "id": "bbed9dc5-e46b-41ff-998a-2ee2e22d097f",
+                    "name": "Customer[5]"
+                },
+                "fiatCurrency": "GBP",
+                "bank": {
+                    "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                    "name": "AMEX"
+                },
+                "balance": {
+                    "viewCurrency": "GBP",
+                    "underlyingCurrency": "GBP",
+                    "greenPointsMonetaryValue": {
+                        "amount": 0.36,
+                        "currency": "GBP"
+                    },
+                    "greenPoints": 36.0,
+                    "moneyBalance": {
+                        "amount": 98.35999944241235,
+                        "currency": "GBP"
+                    },
+                    "combinedBalance": {
+                        "amount": 98.71999944241234,
+                        "currency": "GBP"
+                    }
+                },
+                "cryptoWallet": {
+                    "ethBalance": {
+                        "amount": 0.00099999799268445
+                    },
+                    "gpBalance": 36.0,
+                    "owner": {
+                        "id": "bbed9dc5-e46b-41ff-998a-2ee2e22d097f",
+                        "name": "Customer[5]"
+                    },
+                    "ownerBankAccount": {
+                        "id": "14c238b0-dea7-467e-b2b8-ac2b8a0a8a69"
+                    },
+                    "ownerBank": {
+                        "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                        "name": "AMEX"
+                    }
+                }
+            },
+            "accountTo": {
+                "id": "a3af5cbb-6252-4e9e-922e-204e49dfc5d0",
+                "owner": {
+                    "id": "65320c3f-4d2f-4a3c-8eb3-28a646820505",
+                    "name": "Tescos",
+                    "strategy": 1.0,
+                    "sustainability": 0.0
+                },
+                "fiatCurrency": "GBP",
+                "bank": {
+                    "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                    "name": "AMEX"
+                },
+                "balance": {
+                    "viewCurrency": "GBP",
+                    "underlyingCurrency": "GBP",
+                    "greenPointsMonetaryValue": {
+                        "amount": 0.4,
+                        "currency": "GBP"
+                    },
+                    "greenPoints": 40.0,
+                    "moneyBalance": {
+                        "amount": 10010.199999999999,
+                        "currency": "GBP"
+                    },
+                    "combinedBalance": {
+                        "amount": 10010.599999999999,
+                        "currency": "GBP"
+                    }
+                },
+                "cryptoWallet": {
+                    "ethBalance": {
+                        "amount": 0.0
+                    },
+                    "gpBalance": 40.0,
+                    "owner": {
+                        "id": "65320c3f-4d2f-4a3c-8eb3-28a646820505",
+                        "name": "Tescos",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "ownerBankAccount": {
+                        "id": "a3af5cbb-6252-4e9e-922e-204e49dfc5d0"
+                    },
+                    "ownerBank": {
+                        "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                        "name": "AMEX"
+                    }
+                }
+            },
+            "money": {
+                "amount": 1.0,
+                "currency": "GBP"
+            },
+            "ether": {
+                "ether": {
+                    "amount": 0.0
+                },
+                "gas": {
+                    "amount": 0
+                },
+                "money": {
+                    "amount": 0,
+                    "currency": "GBP"
+                }
+            },
+            "greenPoints": {
+                "greenPoints": {
+                    "amount": 0.0,
+                    "tokenValueInPeggedCurrency": 0.01,
+                    "valueInPeggedCurrency": {
+                        "amount": 0.0,
+                        "currency": "GBP"
+                    },
+                    "peggedCurrency": "GBP"
+                },
+                "gas": {
+                    "amount": 0
+                },
+                "money": {
+                    "amount": 0,
+                    "currency": "GBP"
+                }
+            },
+            "totalMoneyCost": {
+                "amount": 0,
+                "currency": "GBP"
+            },
+            "totalMoneyCostInclTopUps": {
+                "amount": -5.575876530899209e-07,
+                "currency": "GBP"
+            }
+        },
+        {
+            "id": "414dcb3e-20dc-49e6-8a08-e3e95d0cd31c",
+            "accountFrom": {
+                "id": "14c238b0-dea7-467e-b2b8-ac2b8a0a8a69",
+                "owner": {
+                    "id": "bbed9dc5-e46b-41ff-998a-2ee2e22d097f",
+                    "name": "Customer[5]"
+                },
+                "fiatCurrency": "GBP",
+                "bank": {
+                    "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                    "name": "AMEX"
+                },
+                "balance": {
+                    "viewCurrency": "GBP",
+                    "underlyingCurrency": "GBP",
+                    "greenPointsMonetaryValue": {
+                        "amount": 0.36,
+                        "currency": "GBP"
+                    },
+                    "greenPoints": 36.0,
+                    "moneyBalance": {
+                        "amount": 98.35999944241235,
+                        "currency": "GBP"
+                    },
+                    "combinedBalance": {
+                        "amount": 98.71999944241234,
+                        "currency": "GBP"
+                    }
+                },
+                "cryptoWallet": {
+                    "ethBalance": {
+                        "amount": 0.00099999799268445
+                    },
+                    "gpBalance": 36.0,
+                    "owner": {
+                        "id": "bbed9dc5-e46b-41ff-998a-2ee2e22d097f",
+                        "name": "Customer[5]"
+                    },
+                    "ownerBankAccount": {
+                        "id": "14c238b0-dea7-467e-b2b8-ac2b8a0a8a69"
+                    },
+                    "ownerBank": {
+                        "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                        "name": "AMEX"
+                    }
+                }
+            },
+            "accountTo": {
+                "id": "a3af5cbb-6252-4e9e-922e-204e49dfc5d0",
+                "owner": {
+                    "id": "65320c3f-4d2f-4a3c-8eb3-28a646820505",
+                    "name": "Tescos",
+                    "strategy": 1.0,
+                    "sustainability": 0.0
+                },
+                "fiatCurrency": "GBP",
+                "bank": {
+                    "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                    "name": "AMEX"
+                },
+                "balance": {
+                    "viewCurrency": "GBP",
+                    "underlyingCurrency": "GBP",
+                    "greenPointsMonetaryValue": {
+                        "amount": 0.4,
+                        "currency": "GBP"
+                    },
+                    "greenPoints": 40.0,
+                    "moneyBalance": {
+                        "amount": 10010.199999999999,
+                        "currency": "GBP"
+                    },
+                    "combinedBalance": {
+                        "amount": 10010.599999999999,
+                        "currency": "GBP"
+                    }
+                },
+                "cryptoWallet": {
+                    "ethBalance": {
+                        "amount": 0.0
+                    },
+                    "gpBalance": 40.0,
+                    "owner": {
+                        "id": "65320c3f-4d2f-4a3c-8eb3-28a646820505",
+                        "name": "Tescos",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "ownerBankAccount": {
+                        "id": "a3af5cbb-6252-4e9e-922e-204e49dfc5d0"
+                    },
+                    "ownerBank": {
+                        "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                        "name": "AMEX"
+                    }
+                }
+            },
+            "money": {
+                "amount": 0.64,
+                "currency": "GBP"
+            },
+            "ether": {
+                "ether": {
+                    "amount": 0.0
+                },
+                "gas": {
+                    "amount": 0
+                },
+                "money": {
+                    "amount": 0,
+                    "currency": "GBP"
+                }
+            },
+            "greenPoints": {
+                "greenPoints": {
+                    "amount": 36.0,
+                    "tokenValueInPeggedCurrency": 0.01,
+                    "valueInPeggedCurrency": {
+                        "amount": 0.36,
+                        "currency": "GBP"
+                    },
+                    "peggedCurrency": "GBP"
+                },
+                "gas": {
+                    "amount": 2.007315550004461e-09
+                },
+                "money": {
+                    "amount": 0,
+                    "currency": "GBP"
+                }
+            },
+            "totalMoneyCost": {
+                "amount": 0,
+                "currency": "GBP"
+            },
+            "totalMoneyCostInclTopUps": {
+                "amount": 0.0,
+                "currency": "GBP"
+            }
+        },
+        {
+            "id": "1ba73858-61d0-425b-8fef-8a255cab662f",
+            "accountFrom": {
+                "id": "9952e212-f7e8-4309-999a-8d7eed1c07d5",
+                "owner": {
+                    "id": "7294069c-efa9-4133-aa50-b05ef0b09927",
+                    "name": "GreenPointsHouse"
+                },
+                "fiatCurrency": "GBP",
+                "bank": {
+                    "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                    "name": "AMEX"
+                },
+                "balance": {
+                    "viewCurrency": "GBP",
+                    "underlyingCurrency": "GBP",
+                    "greenPointsMonetaryValue": {
+                        "amount": 21474822.19,
+                        "currency": "GBP"
+                    },
+                    "greenPoints": 2147482219.0,
+                    "moneyBalance": {
+                        "amount": 14.29000557636524,
+                        "currency": "GBP"
+                    },
+                    "combinedBalance": {
+                        "amount": 21474836.480005577,
+                        "currency": "GBP"
+                    }
+                },
+                "cryptoWallet": {
+                    "ethBalance": {
+                        "amount": 2147483647.9900007
+                    },
+                    "gpBalance": 2147482219.0,
+                    "owner": {
+                        "id": "7294069c-efa9-4133-aa50-b05ef0b09927",
+                        "name": "GreenPointsHouse"
+                    },
+                    "ownerBankAccount": {
+                        "id": "9952e212-f7e8-4309-999a-8d7eed1c07d5"
+                    },
+                    "ownerBank": {
+                        "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                        "name": "AMEX"
+                    }
+                }
+            },
+            "accountTo": {
+                "id": "4ceae84b-0fc0-4b60-a053-83a22bd3cbc7",
+                "owner": {
+                    "id": "65320c3f-4d2f-4a3c-8eb3-28a646820505",
+                    "name": "Tescos",
+                    "strategy": 1.0,
+                    "sustainability": 0.0
+                },
+                "fiatCurrency": "GBP",
+                "bank": {
+                    "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                    "name": "AMEX"
+                },
+                "balance": {
+                    "viewCurrency": "GBP",
+                    "underlyingCurrency": "GBP",
+                    "greenPointsMonetaryValue": {
+                        "amount": 0.0,
+                        "currency": "GBP"
+                    },
+                    "greenPoints": 0.0,
+                    "moneyBalance": {
+                        "amount": -0.8600000000294113,
+                        "currency": "GBP"
+                    },
+                    "combinedBalance": {
+                        "amount": -0.8600000000294113,
+                        "currency": "GBP"
+                    }
+                },
+                "cryptoWallet": {
+                    "ethBalance": {
+                        "amount": 0.0
+                    },
+                    "gpBalance": 0.0,
+                    "owner": {
+                        "id": "65320c3f-4d2f-4a3c-8eb3-28a646820505",
+                        "name": "Tescos",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "ownerBankAccount": {
+                        "id": "4ceae84b-0fc0-4b60-a053-83a22bd3cbc7"
+                    },
+                    "ownerBank": {
+                        "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                        "name": "AMEX"
+                    }
+                }
+            },
+            "money": {
+                "amount": 0,
+                "currency": "GBP"
+            },
+            "ether": {
+                "ether": {
+                    "amount": 0
+                },
+                "gas": {
+                    "amount": 0
+                },
+                "money": {
+                    "amount": 0,
+                    "currency": "GBP"
+                }
+            },
+            "greenPoints": {
+                "greenPoints": {
+                    "amount": 4.0,
+                    "tokenValueInPeggedCurrency": 0.01,
+                    "valueInPeggedCurrency": {
+                        "amount": 0.04,
+                        "currency": "GBP"
+                    },
+                    "peggedCurrency": "GBP"
+                },
+                "gas": {
+                    "amount": 0
+                },
+                "money": {
+                    "amount": -0.04000000000124362,
+                    "currency": "GBP"
+                }
+            },
+            "totalMoneyCost": {
+                "amount": -0.04000000000124362,
+                "currency": "GBP"
+            },
+            "totalMoneyCostInclTopUps": {
+                "amount": -0.04000000000124362,
+                "currency": "GBP"
+            }
+        },
+        {
+            "id": "9b720378-786b-4299-8e7c-25ec813a20a7",
+            "accountFrom": {
+                "id": "9952e212-f7e8-4309-999a-8d7eed1c07d5",
+                "owner": {
+                    "id": "7294069c-efa9-4133-aa50-b05ef0b09927",
+                    "name": "GreenPointsHouse"
+                },
+                "fiatCurrency": "GBP",
+                "bank": {
+                    "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                    "name": "AMEX"
+                },
+                "balance": {
+                    "viewCurrency": "GBP",
+                    "underlyingCurrency": "GBP",
+                    "greenPointsMonetaryValue": {
+                        "amount": 21474822.19,
+                        "currency": "GBP"
+                    },
+                    "greenPoints": 2147482219.0,
+                    "moneyBalance": {
+                        "amount": 14.29000557636524,
+                        "currency": "GBP"
+                    },
+                    "combinedBalance": {
+                        "amount": 21474836.480005577,
+                        "currency": "GBP"
+                    }
+                },
+                "cryptoWallet": {
+                    "ethBalance": {
+                        "amount": 2147483647.9900007
+                    },
+                    "gpBalance": 2147482219.0,
+                    "owner": {
+                        "id": "7294069c-efa9-4133-aa50-b05ef0b09927",
+                        "name": "GreenPointsHouse"
+                    },
+                    "ownerBankAccount": {
+                        "id": "9952e212-f7e8-4309-999a-8d7eed1c07d5"
+                    },
+                    "ownerBank": {
+                        "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                        "name": "AMEX"
+                    }
+                }
+            },
+            "accountTo": {
+                "id": "4ceae84b-0fc0-4b60-a053-83a22bd3cbc7",
+                "owner": {
+                    "id": "65320c3f-4d2f-4a3c-8eb3-28a646820505",
+                    "name": "Tescos",
+                    "strategy": 1.0,
+                    "sustainability": 0.0
+                },
+                "fiatCurrency": "GBP",
+                "bank": {
+                    "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                    "name": "AMEX"
+                },
+                "balance": {
+                    "viewCurrency": "GBP",
+                    "underlyingCurrency": "GBP",
+                    "greenPointsMonetaryValue": {
+                        "amount": 0.0,
+                        "currency": "GBP"
+                    },
+                    "greenPoints": 0.0,
+                    "moneyBalance": {
+                        "amount": -0.8600000000294113,
+                        "currency": "GBP"
+                    },
+                    "combinedBalance": {
+                        "amount": -0.8600000000294113,
+                        "currency": "GBP"
+                    }
+                },
+                "cryptoWallet": {
+                    "ethBalance": {
+                        "amount": 0.0
+                    },
+                    "gpBalance": 0.0,
+                    "owner": {
+                        "id": "65320c3f-4d2f-4a3c-8eb3-28a646820505",
+                        "name": "Tescos",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "ownerBankAccount": {
+                        "id": "4ceae84b-0fc0-4b60-a053-83a22bd3cbc7"
+                    },
+                    "ownerBank": {
+                        "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                        "name": "AMEX"
+                    }
+                }
+            },
+            "money": {
+                "amount": 0,
+                "currency": "GBP"
+            },
+            "ether": {
+                "ether": {
+                    "amount": 0
+                },
+                "gas": {
+                    "amount": 0
+                },
+                "money": {
+                    "amount": 0,
+                    "currency": "GBP"
+                }
+            },
+            "greenPoints": {
+                "greenPoints": {
+                    "amount": 4.0,
+                    "tokenValueInPeggedCurrency": 0.01,
+                    "valueInPeggedCurrency": {
+                        "amount": 0.04,
+                        "currency": "GBP"
+                    },
+                    "peggedCurrency": "GBP"
+                },
+                "gas": {
+                    "amount": 0
+                },
+                "money": {
+                    "amount": -0.04000000000124362,
+                    "currency": "GBP"
+                }
+            },
+            "totalMoneyCost": {
+                "amount": -0.04000000000124362,
+                "currency": "GBP"
+            },
+            "totalMoneyCostInclTopUps": {
+                "amount": -0.04000000000124362,
+                "currency": "GBP"
+            }
+        },
+        {
+            "id": "00f0adc6-5032-4d91-981f-dc21860c653a",
+            "accountFrom": {
+                "id": "9952e212-f7e8-4309-999a-8d7eed1c07d5",
+                "owner": {
+                    "id": "7294069c-efa9-4133-aa50-b05ef0b09927",
+                    "name": "GreenPointsHouse"
+                },
+                "fiatCurrency": "GBP",
+                "bank": {
+                    "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                    "name": "AMEX"
+                },
+                "balance": {
+                    "viewCurrency": "GBP",
+                    "underlyingCurrency": "GBP",
+                    "greenPointsMonetaryValue": {
+                        "amount": 21474822.19,
+                        "currency": "GBP"
+                    },
+                    "greenPoints": 2147482219.0,
+                    "moneyBalance": {
+                        "amount": 14.29000557636524,
+                        "currency": "GBP"
+                    },
+                    "combinedBalance": {
+                        "amount": 21474836.480005577,
+                        "currency": "GBP"
+                    }
+                },
+                "cryptoWallet": {
+                    "ethBalance": {
+                        "amount": 2147483647.9900007
+                    },
+                    "gpBalance": 2147482219.0,
+                    "owner": {
+                        "id": "7294069c-efa9-4133-aa50-b05ef0b09927",
+                        "name": "GreenPointsHouse"
+                    },
+                    "ownerBankAccount": {
+                        "id": "9952e212-f7e8-4309-999a-8d7eed1c07d5"
+                    },
+                    "ownerBank": {
+                        "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                        "name": "AMEX"
+                    }
+                }
+            },
+            "accountTo": {
+                "id": "4ceae84b-0fc0-4b60-a053-83a22bd3cbc7",
+                "owner": {
+                    "id": "65320c3f-4d2f-4a3c-8eb3-28a646820505",
+                    "name": "Tescos",
+                    "strategy": 1.0,
+                    "sustainability": 0.0
+                },
+                "fiatCurrency": "GBP",
+                "bank": {
+                    "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                    "name": "AMEX"
+                },
+                "balance": {
+                    "viewCurrency": "GBP",
+                    "underlyingCurrency": "GBP",
+                    "greenPointsMonetaryValue": {
+                        "amount": 0.0,
+                        "currency": "GBP"
+                    },
+                    "greenPoints": 0.0,
+                    "moneyBalance": {
+                        "amount": -0.8600000000294113,
+                        "currency": "GBP"
+                    },
+                    "combinedBalance": {
+                        "amount": -0.8600000000294113,
+                        "currency": "GBP"
+                    }
+                },
+                "cryptoWallet": {
+                    "ethBalance": {
+                        "amount": 0.0
+                    },
+                    "gpBalance": 0.0,
+                    "owner": {
+                        "id": "65320c3f-4d2f-4a3c-8eb3-28a646820505",
+                        "name": "Tescos",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "ownerBankAccount": {
+                        "id": "4ceae84b-0fc0-4b60-a053-83a22bd3cbc7"
+                    },
+                    "ownerBank": {
+                        "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                        "name": "AMEX"
+                    }
+                }
+            },
+            "money": {
+                "amount": 0,
+                "currency": "GBP"
+            },
+            "ether": {
+                "ether": {
+                    "amount": 0
+                },
+                "gas": {
+                    "amount": 0
+                },
+                "money": {
+                    "amount": 0,
+                    "currency": "GBP"
+                }
+            },
+            "greenPoints": {
+                "greenPoints": {
+                    "amount": 6.0,
+                    "tokenValueInPeggedCurrency": 0.01,
+                    "valueInPeggedCurrency": {
+                        "amount": 0.06,
+                        "currency": "GBP"
+                    },
+                    "peggedCurrency": "GBP"
+                },
+                "gas": {
+                    "amount": 0
+                },
+                "money": {
+                    "amount": -0.06000000000186542,
+                    "currency": "GBP"
+                }
+            },
+            "totalMoneyCost": {
+                "amount": -0.06000000000186542,
+                "currency": "GBP"
+            },
+            "totalMoneyCostInclTopUps": {
+                "amount": -0.06000000000186542,
+                "currency": "GBP"
+            }
+        },
+        {
+            "id": "5024059e-3412-4f67-9a9f-0bc279aa704c",
+            "accountFrom": {
+                "id": "9952e212-f7e8-4309-999a-8d7eed1c07d5",
+                "owner": {
+                    "id": "7294069c-efa9-4133-aa50-b05ef0b09927",
+                    "name": "GreenPointsHouse"
+                },
+                "fiatCurrency": "GBP",
+                "bank": {
+                    "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                    "name": "AMEX"
+                },
+                "balance": {
+                    "viewCurrency": "GBP",
+                    "underlyingCurrency": "GBP",
+                    "greenPointsMonetaryValue": {
+                        "amount": 21474822.19,
+                        "currency": "GBP"
+                    },
+                    "greenPoints": 2147482219.0,
+                    "moneyBalance": {
+                        "amount": 14.29000557636524,
+                        "currency": "GBP"
+                    },
+                    "combinedBalance": {
+                        "amount": 21474836.480005577,
+                        "currency": "GBP"
+                    }
+                },
+                "cryptoWallet": {
+                    "ethBalance": {
+                        "amount": 2147483647.9900007
+                    },
+                    "gpBalance": 2147482219.0,
+                    "owner": {
+                        "id": "7294069c-efa9-4133-aa50-b05ef0b09927",
+                        "name": "GreenPointsHouse"
+                    },
+                    "ownerBankAccount": {
+                        "id": "9952e212-f7e8-4309-999a-8d7eed1c07d5"
+                    },
+                    "ownerBank": {
+                        "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                        "name": "AMEX"
+                    }
+                }
+            },
+            "accountTo": {
+                "id": "4ceae84b-0fc0-4b60-a053-83a22bd3cbc7",
+                "owner": {
+                    "id": "65320c3f-4d2f-4a3c-8eb3-28a646820505",
+                    "name": "Tescos",
+                    "strategy": 1.0,
+                    "sustainability": 0.0
+                },
+                "fiatCurrency": "GBP",
+                "bank": {
+                    "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                    "name": "AMEX"
+                },
+                "balance": {
+                    "viewCurrency": "GBP",
+                    "underlyingCurrency": "GBP",
+                    "greenPointsMonetaryValue": {
+                        "amount": 0.0,
+                        "currency": "GBP"
+                    },
+                    "greenPoints": 0.0,
+                    "moneyBalance": {
+                        "amount": -0.8600000000294113,
+                        "currency": "GBP"
+                    },
+                    "combinedBalance": {
+                        "amount": -0.8600000000294113,
+                        "currency": "GBP"
+                    }
+                },
+                "cryptoWallet": {
+                    "ethBalance": {
+                        "amount": 0.0
+                    },
+                    "gpBalance": 0.0,
+                    "owner": {
+                        "id": "65320c3f-4d2f-4a3c-8eb3-28a646820505",
+                        "name": "Tescos",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "ownerBankAccount": {
+                        "id": "4ceae84b-0fc0-4b60-a053-83a22bd3cbc7"
+                    },
+                    "ownerBank": {
+                        "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                        "name": "AMEX"
+                    }
+                }
+            },
+            "money": {
+                "amount": 0,
+                "currency": "GBP"
+            },
+            "ether": {
+                "ether": {
+                    "amount": 0
+                },
+                "gas": {
+                    "amount": 0
+                },
+                "money": {
+                    "amount": 0,
+                    "currency": "GBP"
+                }
+            },
+            "greenPoints": {
+                "greenPoints": {
+                    "amount": 36.0,
+                    "tokenValueInPeggedCurrency": 0.01,
+                    "valueInPeggedCurrency": {
+                        "amount": 0.36,
+                        "currency": "GBP"
+                    },
+                    "peggedCurrency": "GBP"
+                },
+                "gas": {
+                    "amount": 0
+                },
+                "money": {
+                    "amount": -0.36000000001119253,
+                    "currency": "GBP"
+                }
+            },
+            "totalMoneyCost": {
+                "amount": -0.36000000001119253,
+                "currency": "GBP"
+            },
+            "totalMoneyCostInclTopUps": {
+                "amount": -0.36000000001119253,
+                "currency": "GBP"
+            }
+        },
+        {
+            "id": "5edb8ca6-83de-4848-a27b-c54db25d0178",
+            "accountFrom": {
+                "id": "9952e212-f7e8-4309-999a-8d7eed1c07d5",
+                "owner": {
+                    "id": "7294069c-efa9-4133-aa50-b05ef0b09927",
+                    "name": "GreenPointsHouse"
+                },
+                "fiatCurrency": "GBP",
+                "bank": {
+                    "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                    "name": "AMEX"
+                },
+                "balance": {
+                    "viewCurrency": "GBP",
+                    "underlyingCurrency": "GBP",
+                    "greenPointsMonetaryValue": {
+                        "amount": 21474822.19,
+                        "currency": "GBP"
+                    },
+                    "greenPoints": 2147482219.0,
+                    "moneyBalance": {
+                        "amount": 14.29000557636524,
+                        "currency": "GBP"
+                    },
+                    "combinedBalance": {
+                        "amount": 21474836.480005577,
+                        "currency": "GBP"
+                    }
+                },
+                "cryptoWallet": {
+                    "ethBalance": {
+                        "amount": 2147483647.9900007
+                    },
+                    "gpBalance": 2147482219.0,
+                    "owner": {
+                        "id": "7294069c-efa9-4133-aa50-b05ef0b09927",
+                        "name": "GreenPointsHouse"
+                    },
+                    "ownerBankAccount": {
+                        "id": "9952e212-f7e8-4309-999a-8d7eed1c07d5"
+                    },
+                    "ownerBank": {
+                        "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                        "name": "AMEX"
+                    }
+                }
+            },
+            "accountTo": {
+                "id": "4ceae84b-0fc0-4b60-a053-83a22bd3cbc7",
+                "owner": {
+                    "id": "65320c3f-4d2f-4a3c-8eb3-28a646820505",
+                    "name": "Tescos",
+                    "strategy": 1.0,
+                    "sustainability": 0.0
+                },
+                "fiatCurrency": "GBP",
+                "bank": {
+                    "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                    "name": "AMEX"
+                },
+                "balance": {
+                    "viewCurrency": "GBP",
+                    "underlyingCurrency": "GBP",
+                    "greenPointsMonetaryValue": {
+                        "amount": 0.0,
+                        "currency": "GBP"
+                    },
+                    "greenPoints": 0.0,
+                    "moneyBalance": {
+                        "amount": -0.8600000000294113,
+                        "currency": "GBP"
+                    },
+                    "combinedBalance": {
+                        "amount": -0.8600000000294113,
+                        "currency": "GBP"
+                    }
+                },
+                "cryptoWallet": {
+                    "ethBalance": {
+                        "amount": 0.0
+                    },
+                    "gpBalance": 0.0,
+                    "owner": {
+                        "id": "65320c3f-4d2f-4a3c-8eb3-28a646820505",
+                        "name": "Tescos",
+                        "strategy": 1.0,
+                        "sustainability": 0.0
+                    },
+                    "ownerBankAccount": {
+                        "id": "4ceae84b-0fc0-4b60-a053-83a22bd3cbc7"
+                    },
+                    "ownerBank": {
+                        "id": "14db4744-e8e7-471b-80e2-6a966891c5e5",
+                        "name": "AMEX"
+                    }
+                }
+            },
+            "money": {
+                "amount": 0,
+                "currency": "GBP"
+            },
+            "ether": {
+                "ether": {
+                    "amount": 0
+                },
+                "gas": {
+                    "amount": 0
+                },
+                "money": {
+                    "amount": 0,
+                    "currency": "GBP"
+                }
+            },
+            "greenPoints": {
+                "greenPoints": {
+                    "amount": 36.0,
+                    "tokenValueInPeggedCurrency": 0.01,
+                    "valueInPeggedCurrency": {
+                        "amount": 0.36,
+                        "currency": "GBP"
+                    },
+                    "peggedCurrency": "GBP"
+                },
+                "gas": {
+                    "amount": 0
+                },
+                "money": {
+                    "amount": -0.36000000001119253,
+                    "currency": "GBP"
+                }
+            },
+            "totalMoneyCost": {
+                "amount": -0.36000000001119253,
+                "currency": "GBP"
+            },
+            "totalMoneyCostInclTopUps": {
+                "amount": -0.36000000001119253,
+                "currency": "GBP"
+            }
+        }
+    ]
+}
