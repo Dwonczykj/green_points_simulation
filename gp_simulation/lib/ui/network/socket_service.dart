@@ -2,8 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
-import 'package:webtemplate/ui/network/web_socket/web_socket_message_type.dart';
 import 'package:ansicolor/ansicolor.dart';
+
+import 'package:webtemplate/ui/network/web_socket/web_socket_message_type.dart';
 import 'package:webtemplate/utils/ansi_print_colors.dart';
 
 class SocketService extends ChangeNotifier {
@@ -22,11 +23,13 @@ class SocketService extends ChangeNotifier {
 
   String get protocol => _socketInst?.io.uri ?? 'N/A';
 
-  String get connectionStatus =>
+  String get connectionStatusMessage =>
       ((_socketInst?.connected ?? false)
-          ? 'WS Connected to ${_socketInst?.id}'
+          ? 'WS $connectionStatus to ${_socketInst?.id}'
           : null) ??
-      'WS Disconnected';
+      'WS $connectionStatus';
+
+  String connectionStatus = 'disconnected';
 
   bool connected = false;
 
@@ -48,52 +51,62 @@ class SocketService extends ChangeNotifier {
 
   // get closeReason => _streamController.closeReason;
 
-  createSocketConnection(String socketIoUrl) {
+  createSocketConnection(String socketIoUrl, [void Function()? onReconnect]) {
     socketUri = socketIoUrl;
 
     var _socket = io.io(socketUri, {
       'transports': ['websocket'],
       'autoConnect': true,
     });
-    // ..on('connect', (_) {
-    //   print('connected to socketio from flutter SocketService');
-    // })
-    // ..on('disconnect', (_) {
-    //   print('disconnected from socketio in flutter SocketService');
-    // });
-    // ..on('json', _jsonEventHandler);
 
     _socketInst = _socket;
+    registerConnectionHandlers(onReconnect);
+  }
 
-    _socket.onConnect((_) {
-      print(PrintPens.cyanPen(
-          'WS Connected to ${_socket.io.uri} ${_socket.nsp} with timeout: ${_socket.io.timeout} ms'));
-      connected = true;
-      notifyListeners();
-    });
-    _socket.onReconnect((_) {
-      print(PrintPens.cyanPen(
-          'WS Reconnected to ${_socket.io.uri} ${_socket.nsp} with timeout: ${_socket.io.timeout} ms'));
-      connected = true;
-      notifyListeners();
-    });
+  void registerConnectionHandlers([void Function()? onReconnect]) {
+    if (_socketInst != null) {
+      final _socket = _socketInst!;
+      _socket.onConnect((_) {
+        print(PrintPens.cyanPen(
+            'WS Connected to ${_socket.io.uri} ${_socket.nsp} with timeout: ${_socket.io.timeout} ms'));
+        connected = true;
+        connectionStatus = 'connected';
+        if (onReconnect != null) {
+          onReconnect();
+        }
+        notifyListeners();
+      });
 
-    _socket.onReconnecting((_) {
-      print(PrintPens.cyanPen(
-          'WS reconnecting to ${_socket.io.uri} ${_socket.nsp} with timeout: ${_socket.io.timeout} ms'));
-      connected = false;
-      notifyListeners();
-    });
+      _socket.onReconnect((_) {
+        print(PrintPens.cyanPen(
+            'WS Reconnected to ${_socket.io.uri} ${_socket.nsp} with timeout: ${_socket.io.timeout} ms'));
+        connected = true;
+        connectionStatus = 'reconnected';
+        if (onReconnect != null) {
+          onReconnect();
+        }
+        notifyListeners();
+      });
 
-    _socket.onDisconnect((reason) {
-      print(PrintPens.peachPen(
-          'Socketio disconnected from $protocol with reason: $reason')); //BUG: https://github.com/Dwonczykj/gp_simulation_frontend/issues/1
-      connected = false;
-      notifyListeners();
-    });
+      _socket.onReconnecting((_) {
+        print(PrintPens.cyanPen(
+            'WS reconnecting to ${_socket.io.uri} ${_socket.nsp} with timeout: ${_socket.io.timeout} ms'));
+        connected = false;
+        connectionStatus = 'reconnecting';
+        notifyListeners();
+      });
 
-    // _socket.onPing((data) => print(PrintPens.greyPen('client was pinged')));
-    // _socket.onPong((data) => print(PrintPens.brownPen('client was ponged')));
+      _socket.onDisconnect((reason) {
+        print(PrintPens.peachPen(
+            'Socketio disconnected from $protocol with reason: $reason')); //BUG: https://github.com/Dwonczykj/gp_simulation_frontend/issues/1
+        connected = false;
+        connectionStatus = 'disconnected';
+        notifyListeners();
+      });
+
+      // _socket.onPing((data) => print(PrintPens.greyPen('client was pinged')));
+      // _socket.onPong((data) => print(PrintPens.brownPen('client was ponged')));
+    }
   }
 
   bool socketOnEvent(

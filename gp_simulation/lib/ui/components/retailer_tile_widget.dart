@@ -12,11 +12,13 @@ class RetailerTileWidget extends StatefulWidget {
     required this.retailer,
     required this.boxConstraints,
     this.onLongTap,
+    this.onDoubleTap,
     required this.retailerRadiusPcnt,
   }) : super(key: key);
   final RetailerModel retailer;
   final BoxConstraints boxConstraints;
   final void Function()? onLongTap;
+  final void Function()? onDoubleTap;
   final double retailerRadiusPcnt;
   @override
   _RetailerTileWidgetState createState() => _RetailerTileWidgetState();
@@ -44,6 +46,13 @@ class _RetailerTileWidgetState extends State<RetailerTileWidget> {
       },
       onLongPress: () {
         if (widget.onLongTap != null) {
+          widget.onLongTap!();
+        }
+      },
+      onDoubleTap: () {
+        if (widget.onDoubleTap != null) {
+          widget.onDoubleTap!();
+        } else if (widget.onLongTap != null) {
           widget.onLongTap!();
         }
       },

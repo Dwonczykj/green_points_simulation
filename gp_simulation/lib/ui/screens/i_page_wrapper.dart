@@ -34,7 +34,7 @@ class _IPageWrapperState extends State<IPageWrapper> {
     return Consumer<IMarketStateViewer>(
         builder: (context, marketStateService, child) {
       return FutureBuilder<LoadEntitiesResult>(
-          future: marketStateService.loadEntities(),
+          future: marketStateService.loadEntitiesAndInitApp(),
           initialData: LoadEntitiesResult(
               customers: <CustomerModel>[],
               retailers: <RetailerModel>[],

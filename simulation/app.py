@@ -7,6 +7,7 @@ from colorama import Fore, Style
 import socketioRoutes # type:ignore
 HOST:str = flaskHttpAppWithRoutes.config.get('GEMBER_BIND_HOST') # type:ignore
 PORT:int = flaskHttpAppWithRoutes.config.get('GEMBER_PORT') # type:ignore
+WSPORT:int = flaskHttpAppWithRoutes.config.get('GEMBER_WS_PORT') # type:ignore
 def run_app():
     # logging.getLogger().setLevel(logging.DEBUG)
     logging.basicConfig(level=logging.DEBUG,
@@ -16,6 +17,9 @@ def run_app():
     print(Fore.BLUE + Style.DIM + f'Running FLASK http server in {flaskHttpAppWithRoutes.env} mode with debug:={flaskHttpAppWithRoutes.debug}' + Style.RESET_ALL)
     # print(flaskHttpAppWithRoutes.url_map._rules)
     # print(Fore.GREEN + f'module name: {__name__}' + Style.RESET_ALL)
+    
+    # flaskHttpAppWithRoutes.run(host=HOST,
+    #                            port=PORT)
     socketio.run(flaskHttpAppWithRoutes, 
                  host=HOST, port=PORT, 
                  log_output=True, 

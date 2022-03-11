@@ -89,24 +89,17 @@ class _CustomersViewState extends State<CustomersView>
 
   int _selectedIndex = 0;
 
+  bool retailerClusterExpanded = false;
+
   @override
   void initState() {
     super.initState();
-    // _controller = AnimationController(
-    //   vsync: this,
-    //   duration: Duration(seconds: 3),
-    // );
-    // _controller.value = 1.0;
     numCustomers = widget.numCustomers;
-    // _consumerPositions =
-    //     getPointsPercentages(widget.customers.length, consumerRadiusPcnt);
-    // var _consumersAligned = widget.customers
-    //     .mapIndexed((e, i) => AlignedEntity(
-    //         entity: e,
-    //         alignment: getPointAlignment(
-    //             i, widget.customers.length, consumerRadiusPcnt)))
-    //     .toList();
+    _updateAlignmentMap();
+    registerTransactionNotifactions();
+  }
 
+  void _updateAlignmentMap() {
     _alignmentMap = Map<String, Alignment>.fromEntries(widget.customers
         .mapIndexed((e, i) => AlignedEntity(
             entity: e,
@@ -124,14 +117,14 @@ class _CustomersViewState extends State<CustomersView>
             getPointAlignment(i, widget.retailers.length, retailerRadiusPcnt);
         return AlignedEntity(
           entity: e,
-          alignment: Alignment(alignment.x * 1.0, alignment.y * 1.0),
+          alignment: retailerClusterExpanded
+              ? Alignment(alignment.x * 1.0, alignment.y * 1.0)
+              : const Alignment(0, 0),
         );
       }).map(
         (alignedEntity) => MapEntry<String, Alignment>(
             alignedEntity.entity.id, alignedEntity.alignment),
       )));
-
-    registerTransactionNotifactions();
   }
 
   void registerTransactionNotifactions() {
@@ -191,24 +184,18 @@ class _CustomersViewState extends State<CustomersView>
                 retailersCluster: widget.retailersCluster,
                 underlyingRetailers: widget.retailers,
                 filteredRetailerInd: null,
-                alignmentMap: _alignmentMap,
                 retailerRadiusPcnt: retailerRadiusPcnt,
                 customerRadiusPcnt: customerRadiusPcnt,
+                onRetailerClusterExpandedStateChanged: (expanded) {
+                  setState(() {
+                    retailerClusterExpanded = expanded;
+                  });
+                  _updateAlignmentMap();
+                },
+                alignmentMap: _alignmentMap,
                 alignmentCluster: _alignmentMap["RETAILER_CLUSTER"] ??
                     const Alignment(0.0, 0.0),
               ),
-              // if (_transactionJourney != null &&
-              //     _transactionLatest != null)
-              //   MoneySendAnimationWidget(
-              //     consumerRadiusPcnt: consumerRadiusPcnt,
-              //     startingAlignmentForAnimation:
-              //         _transactionJourney!.start,
-              //     endingAlignmentForAnimation: _transactionJourney!.end,
-              //     transaction: _transactionLatest,
-              //     onAnimationCompleted: (transaction) {
-              //       _transactionsLatestList.remove();
-              //     },
-              //   ),
               ...(_transactionsLatestList
                   .map((e) => MoneySendAnimationWidget(
                         consumerRadiusPcnt: customerRadiusPcnt,
@@ -224,51 +211,6 @@ class _CustomersViewState extends State<CustomersView>
             ]),
           ),
         ),
-        // Row(
-        //   children: <Widget>[
-        //     Padding(
-        //       padding: const EdgeInsets.only(left: 24.0, right: 0.0),
-        //       child: Text('Show Dots'),
-        //     ),
-        //     Switch(
-        //       value: showDots,
-        //       onChanged: (value) {
-        //         setState(() {
-        //           showDots = value;
-        //         });
-        //       },
-        //     ),
-        //     Padding(
-        //       padding: const EdgeInsets.only(left: 24.0, right: 0.0),
-        //       child: Text('Show Path'),
-        //     ),
-        //     Switch(
-        //       value: showPath,
-        //       onChanged: (value) {
-        //         setState(() {
-        //           showPath = value;
-        //         });
-        //       },
-        //     ),
-        //   ],
-        // ),
-        // Padding(
-        //   padding: const EdgeInsets.only(left: 24.0),
-        //   child: Text('Circles'),
-        // ),
-        // Slider(
-        //   value: numConsumers.toDouble(),
-        //   min: 1.0,
-        //   max: 10.0,
-        //   divisions: 9,
-        //   label: numConsumers.toInt().toString(),
-        //   onChanged: (value) {
-        //     setState(() {
-        //       numConsumers = value.toInt();
-        //     });
-        //   },
-        // ),
-
         Row(children: [
           const Padding(
             padding: EdgeInsets.only(left: 24.0),
@@ -310,13 +252,13 @@ class _CustomersViewState extends State<CustomersView>
             },
           ),
         ),
-
         StackedBalancesChart(
           chartTitle: 'Retailer Sales',
           series: widget.retailersCluster.totalSales.totalCostByCcy.keys
               .map((ccy) => charts.Series(
                     id: 'Retailer Sales [$ccy component]',
-                    data: widget.retailers,
+                    data: widget.retailers
+                        .sortCopy((a, b) => a.name.compareTo(b.name)),
                     domainFn: (RetailerModel seriesItem, int? i) =>
                         seriesItem.name,
                     measureFn: (RetailerModel seriesItem, int? i) =>

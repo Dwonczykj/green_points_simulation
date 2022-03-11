@@ -69,14 +69,14 @@ class WebSocketMessageHandler {
   bool looksLikeEntityJson() {
     if (data is Map<String, dynamic>) {
       try {
-        model = CustomerModel.fromJson(data);
+        model = RetailerModel.fromJson(data);
         return true;
       } on JsonParseException {
       } catch (e) {
         return false;
       }
       try {
-        model = RetailerModel.fromJson(data);
+        model = CustomerModel.fromJson(data);
         return true;
       } on JsonParseException {
         return false;

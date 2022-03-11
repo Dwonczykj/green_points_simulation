@@ -44,12 +44,19 @@ class _CustomerWidgetState extends State<CustomerWidget> {
           child: Builder(builder: (context) {
             return InkWell(
               key: Key(widget.customer.name),
-              child: SvgPicture.asset('images/noun-person-4574021.svg',
-                  key: avgAssetRectKey,
-                  height: widget.consumerRadiusPcnt * constraints.maxHeight,
-                  width: widget.consumerRadiusPcnt * constraints.maxWidth,
-                  color: Theme.of(context).iconTheme.color,
-                  semanticsLabel: 'A consumer'),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SvgPicture.asset('images/noun-person-4574021.svg',
+                      key: avgAssetRectKey,
+                      height: widget.consumerRadiusPcnt * constraints.maxHeight,
+                      width: widget.consumerRadiusPcnt * constraints.maxWidth,
+                      color: Theme.of(context).iconTheme.color,
+                      semanticsLabel: 'A consumer'),
+                  Text(widget.customer.name,
+                      style: Theme.of(context).textTheme.displaySmall),
+                ],
+              ),
               onTap: () {
                 showConsumerDetails(customer: widget.customer);
               },

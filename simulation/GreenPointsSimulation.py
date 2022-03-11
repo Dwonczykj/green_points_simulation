@@ -1,14 +1,14 @@
 from __future__ import annotations
-import queue
 from typing import Any, Callable, Tuple
+import eventlet
 import time
+from eventlet import queue
 import uuid
 from colorama import Fore, Back, Style
 # from queue_main_global import QueueHolder
 import logging
 import pandas as pd
 import numpy as np
-import json
 from flask_socketio import SocketIO
 
 # from Singleton import classproperty
@@ -71,7 +71,7 @@ class GreenPointsLoyaltyApp():
             self._customers = []
             self._initialised = False
             self._simsRun: int = 0
-            self._secondsBetweenPurchases = 1.0
+            self._secondsBetweenPurchases = 2.0
             self._df_strategized: pd.DataFrame | None = None
             self._simulation_results: list[pd.DataFrame] = []
             
@@ -85,7 +85,7 @@ class GreenPointsLoyaltyApp():
     #         except queue.Empty: #raised when queue is empty
     #             break
     #         callback()
-    #         time.sleep(secs=2)
+    #         eventlet.sleep(secs=2)
       
     @property          
     def initialEntitiesSnapshot(self):
@@ -544,7 +544,7 @@ class GreenPointsLoyaltyApp():
             self.runningHistory:list[GreenPointsLoyaltyApp.IterationResultRunningAverage] = []
             self.numIterationsCalculated = 0
             
-            self._retailerAdjustmentsQueue: queue.Queue[Callable[[], dict[str,Retailer]]] = queue.Queue()
+            self._retailerAdjustmentsQueue: queue.Queue = queue.Queue()
             
         @property
         def banks_registered(self):
@@ -710,7 +710,7 @@ class GreenPointsLoyaltyApp():
                                     if run_isolated_iteration:
                                         # Only allowed to insert delay for isolated_iteration
                                         # sleep for x:float seconds
-                                        time.sleep(self.gpApp.secondsBetweenPurchases)
+                                        eventlet.sleep(round(self.gpApp.secondsBetweenPurchases))
                                     break
                         except Exception as e:
                             from colorama import Fore, Back, Style
@@ -824,7 +824,7 @@ class GreenPointsLoyaltyApp():
                 self.numIterationsCalculated = iterCounter
                 self.gpApp._emit_event(event_name=WebSocketServerResponseEvent.simulation_iteration_completed,
                                        data=runningAverage.toJson())
-                # time.sleep(5.0)
+                # eventlet.sleep(5.0)
             return self.summarise_simulation()
             
         def summarise_simulation(self, debug:bool=False):

@@ -1,7 +1,7 @@
 {
     "cmake.configureOnOpen": false,
-    "python.defaultInterpreterPath": "/Users/joeyd/opt/anaconda3/envs/gpsim2/bin/python",
-    "python.pythonPath": "/Users/joeyd/opt/anaconda3/envs/gpsim2/bin/python",
+    "python.defaultInterpreterPath": "/Users/joeyd/opt/anaconda3/envs/gpsim/bin/python",
+    "python.pythonPath": "/Users/joeyd/opt/anaconda3/envs/gpsim/bin/python",
     "python.testing.pytestArgs": [],
     "python.testing.pytestEnabled": true,
     "python.analysis.extraPaths": [
@@ -23,4 +23,6 @@
         "reportMissingSuperCall": "none",
         "reportUnnecessaryIsInstance": "none"
     },
+    "dart.openDevTools": "never",
+    "dart.devToolsReuseWindows": true,
 }

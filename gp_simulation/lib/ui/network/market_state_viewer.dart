@@ -24,9 +24,12 @@ const String apiKey = '<Your Key>';
 const String apiId = '<your ID>';
 const String appHost = '127.0.0.1';
 const String appPort = '8443';
+const String appWSPort = '8443';
+
 const String apiUrl = 'http://$appHost:$appPort';
+const String apiWSUrl = 'http://$appHost:$appWSPort';
 // const String wsUrl = 'ws://$appHost:$appPort/websocket';
-const String wsSocketioUrl = 'ws://$appHost:$appPort/socket.io';
+const String wsSocketioUrl = 'ws://$appHost:$appWSPort/socket.io';
 
 class HttpClientGember extends http.BaseClient {
   final _httpClient = http.Client();
@@ -95,7 +98,7 @@ mixin WSBaseMixin on IMarketStateViewer {
 }
 
 abstract class WebSocketHandlers extends IMarketStateViewer with WSBaseMixin {
-  late final transactionHandlers = <String, dynamic Function(dynamic data)>{
+  late final transactionHandlers = <String, void Function(dynamic data)>{
     WebSocketServerResponseEvent.bank_transaction_completed: (dynamic data) {
       if (_transactionEmitterController.hasListener) {
         WebSocketMessageHandler parser = SocketioMessageHandler(
@@ -111,7 +114,7 @@ abstract class WebSocketHandlers extends IMarketStateViewer with WSBaseMixin {
     },
   };
 
-  late final simulationHandlers = <String, dynamic Function(dynamic data)>{
+  late final simulationHandlers = <String, void Function(dynamic data)>{
     WebSocketServerResponseEvent.simulation_iteration_completed:
         (dynamic data) {
       if (_simulationProgressEmitterController.hasListener) {
@@ -124,7 +127,7 @@ abstract class WebSocketHandlers extends IMarketStateViewer with WSBaseMixin {
     },
   };
 
-  late final globalNamespaceHandlers = <String, dynamic Function(dynamic data)>{
+  late final globalNamespaceHandlers = <String, void Function(dynamic data)>{
     WebSocketServerResponseEvent.purchase_delay: (dynamic data) {
       if (_simulationProgressEmitterController.hasListener) {
         purchaseDelaySeconds =
@@ -250,7 +253,7 @@ abstract class IMarketStateViewer extends ChangeNotifier {
     }
   }
 
-  Future<LoadEntitiesResult> loadEntities();
+  Future<LoadEntitiesResult> loadEntitiesAndInitApp();
 
   void _loadEntities(String? data) {
     try {
@@ -519,9 +522,12 @@ class MarketStateViewer extends SocketIoMixin with HttpRequestMixin {
     onSimulationProgress =
         _simulationProgressEmitterController.stream.asBroadcastStream();
 
-    onInit();
+    onInit(onReconnect: () {
+      loadEntitiesAndInitApp();
+    });
+
     if (webSocketConnected) {
-      wsConnectionStatus = globalNspChannel.connectionStatus;
+      wsConnectionStatus = globalNspChannel.connectionStatusMessage;
     }
 
     // checkClientAcceptsWSEventNames().then((inSync) {
@@ -641,7 +647,7 @@ class MarketStateViewer extends SocketIoMixin with HttpRequestMixin {
   }
 
   @override
-  Future<LoadEntitiesResult> loadEntities() async {
+  Future<LoadEntitiesResult> loadEntitiesAndInitApp() async {
     if (_EntityCatalog.isEmpty && !loadingEntities) {
       loadingEntities = true;
       try {
@@ -970,21 +976,10 @@ class MarketStateViewerMock extends IMarketStateViewer {
   }
 
   @override
-  Future<LoadEntitiesResult> loadEntities() async {
+  Future<LoadEntitiesResult> loadEntitiesAndInitApp() async {
     if (_EntityCatalog.isEmpty) {
       var data = await rootBundle.loadString('mock_data/entities.json');
       _loadEntities(data);
-      // _EntityCatalog = LoadEntitiesResult(
-      //     retailers: (dataMap['retailers'] as Map<String, dynamic>)
-      //         .values
-      //         .map((element) =>
-      //             RetailerModel.fromJson(element as Map<String, dynamic>))
-      //         .toList(),
-      //     customers: (dataMap['customers'] as Map<String, dynamic>)
-      //         .values
-      //         .map((element) =>
-      //             CustomerModel.fromJson(element as Map<String, dynamic>))
-      //         .toList());
     }
     return _EntityCatalog;
   }

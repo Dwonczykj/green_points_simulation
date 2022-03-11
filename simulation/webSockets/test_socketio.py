@@ -1,5 +1,5 @@
 import json
-import time
+import eventlet
 import unittest
 import os
 import logging
@@ -366,7 +366,7 @@ class TestSocketIO(unittest.TestCase):
         # w2.start()
         # w.start()
         t.start()
-        time.sleep(1)
+        eventlet.sleep(1)
         _f()
         
         t.join() # finish task before logging test output.

@@ -1,6 +1,8 @@
 # from app_init import flaskHttpApp
 
-from multiprocessing.pool import ThreadPool, AsyncResult, Pool
+# http://eventlet.net/doc/patching.html
+from eventlet.greenpool import GreenPool
+from eventlet.greenthread import GreenThread
 from http import HTTPStatus
 from typing import Any, Callable
 import uuid
@@ -10,6 +12,8 @@ from functools import wraps
 import os
 import json
 from dotenv import load_dotenv
+# import eventlet
+# eventlet.monkey_patch() # locate monkey_patching before all my own imports IF i do NOT want to patch some of my own modules.
 
 
 from event_names import WebSocketClientEvent, WebSocketServerResponseEvent
@@ -60,9 +64,9 @@ def require_appkey(view_function:Callable):
 #     return 'Hello, World!'
 
 
-tasks: dict[str, AsyncResult] = {}
+tasks: dict[str, GreenThread] = {}
 taskPresenters: dict[str, Callable[[Any], Any]] = {}
-dual_pool = Pool(processes=2)
+dual_pool = GreenPool(size=2) # Dont use python lib ThreadPool that will break eventlet threads https://bleepcoder.com/flask-socketio/201694856/emit-in-loop-not-sending-until-loop-completion-when-using
 
 
 @flaskHttpApp.route('/')
@@ -101,11 +105,13 @@ def testWsEventMemory():
                               'data': f'test message {N}'})
     
     if flaskHttpApp.config["ALLOW_THREADING"]:
-        async_result = dual_pool.apply_async(
-            _emitNEvents, args=[2], kwds={}, callback=None)
-        tasks[taskId] = async_result
+        
+        # http://eventlet.net/doc/patching.html
+        green_thread = dual_pool.spawn(_emitNEvents, N=20)
+        tasks[taskId] = green_thread
         #BUG: This will cause a memory leak given enough time as this store should be on disk on a db....
         #  we can just delete old tasks by popping them once accessed as they should only be asked fro once if one client has the taskid.
+        
         taskPresenters[taskId] = lambda res: res.to_json()
         # do some other stuff in the main process ...
         # resultDf = async_result.get()
@@ -221,9 +227,9 @@ def run_isolated_simulation():
     taskId = str(uuid.uuid4())
     
     if flaskHttpApp.config["ALLOW_THREADING"]:
-        async_result = dual_pool.apply_async(
-            gpApp.run_isolated_iteration, args=(), kwds={}, callback=None)
-        tasks[taskId] = async_result
+        # http://eventlet.net/doc/patching.html
+        green_thread = dual_pool.spawn(gpApp.run_isolated_iteration)
+        tasks[taskId] = green_thread
         #BUG: This will cause a memory leak given enough time as this store should be on disk on a db....
         #  we can just delete old tasks by popping them once accessed as they should only be asked fro once if one client has the taskid.
         taskPresenters[taskId] = lambda res: res.to_json()
@@ -257,9 +263,11 @@ def run_simulation():
     taskId = str(uuid.uuid4())
     simId = gpApp.simulationEnvironmentToken()
     if flaskHttpApp.config["ALLOW_THREADING"]:
-        async_result = dual_pool.apply_async(
-            lambda: gpApp.run_full_simulation(simulationId=simId, **kwds), callback=None)
-        tasks[taskId] = async_result
+        # async_result = dual_pool.apply_async(
+        #     lambda: gpApp.run_full_simulation(simulationId=simId, **kwds), callback=None)
+        # tasks[taskId] = async_result
+        green_thread = dual_pool.spawn(gpApp.run_full_simulation, simulationId=simId, **kwds)
+        tasks[taskId] = green_thread
         #BUG: This will cause a memory leak given enough time as this store should be on disk on a db....
         #  we can just delete old tasks by popping them once accessed as they should only be asked fro once if one client has the taskid.
         taskPresenters[taskId] = lambda res: res.to_json()

@@ -22,6 +22,7 @@ class RetailerClusterWidget extends StatefulWidget with SpiderLayoutMixin {
     required this.alignmentMap,
     required this.retailerRadiusPcnt,
     required this.customerRadiusPcnt,
+    this.onRetailerClusterExpandedStateChanged,
   }) : super(key: key);
 
   final AggregatedRetailers retailersCluster;
@@ -31,6 +32,7 @@ class RetailerClusterWidget extends StatefulWidget with SpiderLayoutMixin {
   final Map<String, Alignment> alignmentMap;
   final double retailerRadiusPcnt;
   final double customerRadiusPcnt;
+  final void Function(bool expanded)? onRetailerClusterExpandedStateChanged;
 
   // Alignment get alignment => const Alignment(0.0, 0.0);
 
@@ -66,62 +68,44 @@ class _RetailerClusterWidgetState extends State<RetailerClusterWidget> {
                   math.min(
                       constraints.maxWidth - (2.0 * widget.customerRadiusPcnt),
                       200)),
-              child:
-                  // !expanded
-                  //   ? InkWell(
-                  //       key: clusterWidgetKey,
-                  //       onTap: () {
-                  //         showClusterDetails(
-                  //             retailersCluster: widget.retailersCluster,
-                  //             key: clusterWidgetKey);
-                  //         if (!expanded) {
-                  //           setState(() {
-                  //             expanded = true;
-                  //           });
-                  //         } else {
-                  //           setState(() {
-                  //             expanded = false;
-                  //           });
-                  //         }
-                  //       },
-                  //       child: SvgPicture.asset(
-                  //           'images/noun-buildings-4201535.svg',
-                  //           key: clusterWidgetKey,
-                  //           height: math.min(constraints.maxHeight / 4, 50),
-                  //           width: math.min(constraints.maxWidth / 4, 50),
-                  //           color: expanded
-                  //               ? Theme.of(context).iconTheme.color
-                  //               : Colors.redAccent,
-                  //           semanticsLabel: 'Retailer Cluster'))
-                  //   :
-                  Stack(
+              child: Stack(
                 children: widget.underlyingRetailers
                     .take(5)
                     .mapIndexed(
                       (retailer, i) => AnimatedAlign(
                         duration: const Duration(seconds: 1),
-                        // startingAlignment: Alignment(
-                        //     widget.alignmentMap[retailer.id]?.x ?? 0.0 * 0.25,
-                        //     widget.alignmentMap[retailer.id]?.y ?? 0.0 * 0.25),
-                        // endingAlignment: widget.alignmentMap[retailer.id] ??
-                        //     const Alignment(0, 0),
-                        //BUG: The alignments here are not dignificanbt enough to see a change
                         alignment: expanded
                             ? widget.alignmentMap[retailer.id]!
-                            : const Alignment(0, 0),
+                            : widget.alignmentMap[
+                                retailer.id]!, //const Alignment(0, 0),
                         curve: Curves.decelerate,
-                        // onEnd: (status, atEndAlignment) {
-                        //   setState(() {
-                        //     expanded = status == AnimationStatus.completed;
-                        //   });
-                        // },
                         child: RetailerTileWidget(
                           retailer: retailer,
                           boxConstraints: constraints,
                           retailerRadiusPcnt: widget.retailerRadiusPcnt,
                           onLongTap: () {
                             setState(() {
-                              expanded = !expanded;
+                              final newState = !expanded;
+                              if (widget
+                                      .onRetailerClusterExpandedStateChanged !=
+                                  null) {
+                                widget.onRetailerClusterExpandedStateChanged!(
+                                    newState);
+                              }
+                              setState(() {
+                                expanded = newState;
+                              });
+                            });
+                          },
+                          onDoubleTap: () {
+                            final newState = !expanded;
+                            if (widget.onRetailerClusterExpandedStateChanged !=
+                                null) {
+                              widget.onRetailerClusterExpandedStateChanged!(
+                                  newState);
+                            }
+                            setState(() {
+                              expanded = newState;
                             });
                           },
                         ),

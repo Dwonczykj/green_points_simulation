@@ -17,7 +17,7 @@ class StackedBalancesChart extends StatelessWidget {
     return charts.BarChart(
       series,
       animate: true,
-      animationDuration: Duration(seconds: 10),
+      animationDuration: Duration(seconds: 3),
       defaultInteractions: true,
       // behaviors: [
 

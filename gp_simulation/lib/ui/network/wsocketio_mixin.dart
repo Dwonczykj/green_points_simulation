@@ -13,20 +13,23 @@ import 'web_socket/web_socket_message_handler.dart';
 import 'web_socket/web_socket_message_type.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-abstract class SocketIoMixin extends WebSocketHandlers {
+mixin ReloadAppMixin {}
+
+abstract class SocketIoMixin extends WebSocketHandlers with ReloadAppMixin {
   static const socketIoUrl = wsSocketioUrl;
   var connectionStates = <String, bool>{};
 
-  final globalNspChannel = SocketService()..createSocketConnection('$apiUrl/');
+  final globalNspChannel = SocketService()
+    ..createSocketConnection('$apiWSUrl/');
 
   final transactionsChannel = SocketService()
-    ..createSocketConnection('$apiUrl/transactions');
+    ..createSocketConnection('$apiWSUrl/transactions');
 
   final simulationChannel = SocketService()
-    ..createSocketConnection('$apiUrl/simulation');
+    ..createSocketConnection('$apiWSUrl/simulation');
 
   final socketioChannel = SocketService()
-    ..createSocketConnection('$apiUrl/socket.io');
+    ..createSocketConnection('$apiWSUrl/socket.io');
 
   List<SocketService> get channels => <SocketService>[
         globalNspChannel,
@@ -42,40 +45,43 @@ abstract class SocketIoMixin extends WebSocketHandlers {
     }
   }
 
-  dynamic printPipe(dynamic data, [AnsiPen? pen]) {
+  dynamic printPipe<T>(dynamic data, T Function(dynamic data) handler,
+      [AnsiPen? pen]) {
     pen ??= PrintPens.bluePen;
     print(pen(data));
-    return data;
+    return handler(data);
   }
 
-  void onInit() {
+  void onInit({void Function()? onReconnect}) {
     print('WS: Connected to channel: ${globalNspChannel.protocol}');
 
     transactionHandlers.entries.forEach((element) {
       transactionsChannel.socketOnEvent(element.key,
-          (event) => printPipe(element.value(event), PrintPens.orangePen));
+          (event) => printPipe(event, element.value, PrintPens.orangePen));
     });
 
     simulationHandlers.entries.forEach((element) {
       simulationChannel.socketOnEvent(element.key,
-          (event) => printPipe(element.value(event), PrintPens.orangePen));
+          (event) => printPipe(event, element.value, PrintPens.orangePen));
     });
 
     globalNamespaceHandlers.entries.forEach((element) {
       globalNspChannel.socketOnEvent(element.key,
-          (event) => printPipe(element.value(event), PrintPens.orangePen));
+          (event) => printPipe(event, element.value, PrintPens.orangePen));
     });
 
     for (var channel in channels) {
       channel.addListener(connectionStatusChanged);
+      channel.registerConnectionHandlers(onReconnect);
     }
 
     eventNamesClientSendsToServerSynced = true;
   }
 
   void connectionStatusChanged() {
-    connectionStates = Map.fromEntries(channels
-        .map((channel) => MapEntry(channel.socketUri, channel.connected)));
+    // connectionStates = Map.fromEntries(channels
+    //     .map((channel) => MapEntry(channel.socketUri, channel.connected)));
+    final connected = channels.any((channel) => channel.connected == false);
     notifyListeners();
   }
 

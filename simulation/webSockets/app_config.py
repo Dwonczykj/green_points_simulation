@@ -6,6 +6,7 @@ flaskHttpAppConfig['GEMBER_HTTPS_KEYFILE'] = '/private/etc/ssl/localhost/localho
 flaskHttpAppConfig['GEMBER_HTTPS_CERTFILE'] = '/private/etc/ssl/localhost/localhost.crt'
 flaskHttpAppConfig['GEMBER_BIND_HOST'] = '127.0.0.1'
 flaskHttpAppConfig['GEMBER_PORT'] = 8443
+flaskHttpAppConfig['GEMBER_WS_PORT'] = 5001
 flaskHttpAppConfig['SECRET_KEY'] = os.urandom(24)
 flaskHttpAppConfig["ALLOW_THREADING"] = False
 flaskHttpAppConfig['DEBUG_APP'] = True
