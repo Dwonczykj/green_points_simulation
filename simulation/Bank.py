@@ -5,9 +5,10 @@ from functools import reduce
 import uuid
 import enum
 import abc
-from typing import Tuple, Any, Callable, Literal, Iterable, DefaultDict
+from typing import Tuple, Any, Callable, Literal, Iterable, DefaultDict, TypeVar
 from typing_extensions import Self
 from collections import defaultdict
+import xdrlib
 import numpy as np
 import logging
 
@@ -21,6 +22,23 @@ from Observer import Observable, Observer
 from Transfer import GreenPointTransfer, MoneyTransfer, Transfer
 from ChainLinkDummyDataFeed import ChainLinkDummyDataFeed
 
+        
+
+_RT = TypeVar('_RT')
+def tryInline(func:Callable[[],_RT]) -> _RT | None:
+    try:
+        x = func()
+    except:
+        x = None
+    return x
+
+
+def isnum(o:Any):
+    try:
+        x = int(o)
+        return True
+    except:
+        return False
 
 
 debug = False
@@ -2452,10 +2470,10 @@ class CustomerChosenItemWithAttributes():
     
     def withGreenPointRewards(self, amountGP:float, retailer:str=''):
         '''Add GP Reward to item in basket after updating the item for the retailer's green points strategy'''
-        if not isinstance(amountGP,float):
+        if not isnum(amountGP):
             print(amountGP)
             print(retailer)
-        assert isinstance(amountGP,float)
+        assert isnum(amountGP)
         self._baseline_gpRewardsForItem = amountGP
         self._gpRewardsForItem:float = np.round(self._baseline_gpRewardsForItem * self._retailer.strategy * 10)
         self._gpRewardsForItem: float = np.round(min(max(

@@ -5,6 +5,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:logging/logging.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/status.dart' as status;
@@ -91,7 +92,7 @@ mixin WSBaseMixin on IMarketStateViewer {
       return SimulationProgressData(
           data: event, iterationNumber: event["iteration_number"]);
     } on Exception catch (e) {
-      print('market_state_viewer._parseSimulationProgressData threw $e');
+      log.fine('market_state_viewer._parseSimulationProgressData threw $e');
       return null;
     }
   }
@@ -154,7 +155,7 @@ abstract class WebSocketHandlers extends IMarketStateViewer with WSBaseMixin {
       _updateRetailerSustainabilityRating(data['name'], data['sustainability']);
     },
     WebSocketServerResponseEvent.pong: (dynamic data) {
-      print(PrintPens.orangePen('pong received'));
+      log.fine(PrintPens.orangePen('pong received'));
     },
   };
 }
@@ -176,8 +177,10 @@ abstract class IMarketStateViewer extends ChangeNotifier {
   late bool eventNamesClientSendsToServerSynced;
   late bool eventNamesServerSendsToClientSynced;
 
-  abstract String wsConnectionStatus;
+  abstract String connectionStatus;
   bool get webSocketConnected => false;
+
+  final log = Logger('MarketStateViewer');
 
   /// the subscription that we use to subscribe to the websockets entire channel
   late StreamSubscription<dynamic>? _websocketChannelSubscription;
@@ -289,9 +292,10 @@ abstract class IMarketStateViewer extends ChangeNotifier {
           retailersCluster: retailerCluster,
           customers: customers,
         );
+        notifyListeners();
       }
     } catch (err) {
-      print(err);
+      log.fine(err);
     }
   }
 
@@ -338,6 +342,7 @@ abstract class IMarketStateViewer extends ChangeNotifier {
         var name = entity.runtimeType.toString();
         throw Exception('Unhandled Entity type: $name seen to update catalog.');
       }
+      notifyListeners();
     }
   }
 
@@ -356,6 +361,7 @@ abstract class IMarketStateViewer extends ChangeNotifier {
               .map((element) =>
                   TransactionModel.fromJson(element as Map<String, dynamic>))
               .toList());
+      notifyListeners();
       return _transactions[entityId]!;
     }
     return LoadTransactionsForEntityResult(
@@ -375,6 +381,7 @@ abstract class IMarketStateViewer extends ChangeNotifier {
               .map((element) =>
                   SaleModel.fromJson(element as Map<String, dynamic>))
               .toList());
+      notifyListeners();
       return _salesByitem[itemName]!;
     }
     return LoadSalesForItem(salesForItem: <SaleModel>[]);
@@ -388,6 +395,7 @@ abstract class IMarketStateViewer extends ChangeNotifier {
       _allTransactions = AppTransactionsStateModel.fromJson(
           Map<String, dynamic>.from(dataMap));
     }
+    notifyListeners();
     return _allTransactions;
   }
 
@@ -440,7 +448,7 @@ mixin HttpRequestMixin on SocketIoMixin, IMarketStateViewer {
 
   Future<String?> getData(String url, {Map<String, String>? headers}) async {
     final uri = _addKeyToUri(url);
-    print(PrintPens.orangePen('[GET]: Calling uri: $uri'));
+    log.fine(PrintPens.orangePen('[GET]: Calling uri: $uri'));
     http.Response response;
 
     try {
@@ -450,15 +458,15 @@ mixin HttpRequestMixin on SocketIoMixin, IMarketStateViewer {
         notifyListeners();
       }
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        print(PrintPens.orangePen('[GET]: Received response for: $uri'));
+        log.fine(PrintPens.orangePen('[GET]: Received response for: $uri'));
         return response.body;
       } else {
-        print(response.statusCode);
+        log.fine(response.statusCode);
         return null;
       }
     } catch (e) {
-      print("[GET ERROR]: Calling uri: $uri: ${e}");
-      print(e);
+      log.fine("[GET ERROR]: Calling uri: $uri: ${e}");
+      log.fine(e);
     }
   }
 
@@ -467,7 +475,7 @@ mixin HttpRequestMixin on SocketIoMixin, IMarketStateViewer {
     Map<String, String> headers = HashMap();
     headers['Accept'] = 'application/json';
 
-    print(PrintPens.orangePen('[POST]: Calling uri: $uri'));
+    log.fine(PrintPens.orangePen('[POST]: Calling uri: $uri'));
     try {
       /* [body] sets the body of the request. It can be a [String], a [List] or a [Map<String, String>]. If it's a String, it's encoded using [encoding] and used as the body of the request. The content-type of the request will default to "text/plain".
 
@@ -486,21 +494,21 @@ mixin HttpRequestMixin on SocketIoMixin, IMarketStateViewer {
       }
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        print(PrintPens.orangePen('[POST]: Received response for: $uri'));
+        log.fine(PrintPens.orangePen('[POST]: Received response for: $uri'));
         return response.body;
       } else {
-        print(PrintPens.peachPen(
+        log.fine(PrintPens.peachPen(
             'App need to handle HTTP Response Status Code: ${response.statusCode}'));
         return null;
       }
 
       // } on XMLHttpRequestError catch (e) {
-      //   print(e.message);
+      //   log.fine(e.message);
     } catch (e) {
       backendServerDead = true;
       notifyListeners();
-      print("[POST ERROR]: Calling uri: $uri: ${e}");
-      print(
+      log.fine("[POST ERROR]: Calling uri: $uri: ${e}");
+      log.fine(
           'May need to restart python server as issue when closing this app that kills the socket and errors in flask app');
       channels.forEach((element) => element.tryReconnect());
     }
@@ -526,9 +534,10 @@ class MarketStateViewer extends SocketIoMixin with HttpRequestMixin {
       loadEntitiesAndInitApp();
     });
 
-    if (webSocketConnected) {
-      wsConnectionStatus = globalNspChannel.connectionStatusMessage;
-    }
+    // if (webSocketConnected) {
+    //   wsConnectionStatus = globalNspChannel.connectionStatus;
+    //   notifyListeners();
+    // }
 
     // checkClientAcceptsWSEventNames().then((inSync) {
     //   eventNamesClientSendsToServerSynced = inSync;
@@ -540,6 +549,7 @@ class MarketStateViewer extends SocketIoMixin with HttpRequestMixin {
     //   eventNamesServerSendsToClientSynced = inSync;
     //   notifyListeners();
     // });
+
   }
 
   @override
@@ -725,7 +735,7 @@ class MarketStateViewer extends SocketIoMixin with HttpRequestMixin {
   @override
   Future<void> startIsolatedSimIteration() async {
     final response = await postData('$apiUrl/run', {});
-    // print(response);
+    // log.fine(response);
     //TODO P2: Load the results into all entity detail cards.
   }
 
@@ -738,10 +748,10 @@ class MarketStateViewer extends SocketIoMixin with HttpRequestMixin {
     });
     await Future.delayed(Duration(seconds: 3));
 
-    print(PrintPens.orangePen('pinging the client'));
+    log.fine(PrintPens.orangePen('pinging the client'));
     globalNspChannel.emit('ping', 'PINGING');
     return _loadSimulationEnvironment(response);
-    // print(response);
+    // log.fine(response);
     //TODO P2: Load the results into all entity detail cards.
   }
 
@@ -947,7 +957,8 @@ class MarketStateViewerMock extends IMarketStateViewer {
     }
   }
 
-  String wsConnectionStatus = 'Mock ws -> N/A';
+  @override
+  String connectionStatus = 'Mock ws -> N/A';
 
   static MarketStateViewerMock? _instance;
 
@@ -992,7 +1003,7 @@ class MarketStateViewerMock extends IMarketStateViewer {
     //   'convergence_threshold': "0.1",
     //   'maxN': "20",
     // });
-    // print(response);
+    // log.fine(response);
     //TODO P2: Load the results into all entity detail cards.
   }
 

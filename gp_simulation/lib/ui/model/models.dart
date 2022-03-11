@@ -1,4 +1,5 @@
 import 'dart:html';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -223,7 +224,21 @@ class RetailerModel extends EntityModel {
       'salesHistory': salesHistory.map((e) => e.toJson()).toList(),
       'totalSales': totalSales.toJson(),
     });
+
+  Color get retailerColor =>
+      colorMap[name] ??
+      Color.fromRGBO(Random().nextInt(255), Random().nextInt(255),
+          Random().nextInt(255), Random().nextInt(100) / 100.0);
+  
 }
+
+final colorMap = <String, Color>{
+  'ASDA': Color.fromARGB(255, 120, 180, 51),
+  'Coop': Color.fromARGB(255, 14, 194, 179),
+  'Tescos': Color.fromARGB(255, 35, 47, 117),
+  'VW': Color.fromARGB(255, 87, 87, 86),
+  'Starbucks': Color.fromARGB(255, 6, 59, 28),
+};
 
 class BankModelLight extends InstitutionModel {
   BankModelLight({

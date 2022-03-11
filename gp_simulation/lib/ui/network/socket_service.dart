@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 import 'package:ansicolor/ansicolor.dart';
+import 'package:logging/logging.dart';
 
 import 'package:webtemplate/ui/network/web_socket/web_socket_message_type.dart';
 import 'package:webtemplate/utils/ansi_print_colors.dart';
@@ -16,10 +17,13 @@ class SocketService extends ChangeNotifier {
   get isPaused => _streamController.isPaused;
   get hasListener => _streamController.hasListener;
   get done => _streamController.done;
+  Logger get log => Logger('SocketService');
 
   late io.Socket? _socketInst;
 
   late final String socketUri;
+
+  late DateTime? connectedAt;
 
   String get protocol => _socketInst?.io.uri ?? 'N/A';
 
@@ -67,8 +71,10 @@ class SocketService extends ChangeNotifier {
     if (_socketInst != null) {
       final _socket = _socketInst!;
       _socket.onConnect((_) {
-        print(PrintPens.cyanPen(
-            'WS Connected to ${_socket.io.uri} ${_socket.nsp} with timeout: ${_socket.io.timeout} ms'));
+        connectedAt = DateTime.now();
+        var connectedAtStr = connectedAt.toString();
+        log.info(PrintPens.cyanPen(
+            'WS Connected to ${_socket.io.uri} ${_socket.nsp} with timeout: ${_socket.io.timeout} ms at $connectedAtStr'));
         connected = true;
         connectionStatus = 'connected';
         if (onReconnect != null) {
@@ -78,9 +84,10 @@ class SocketService extends ChangeNotifier {
       });
 
       _socket.onReconnect((_) {
-        print(PrintPens.cyanPen(
+        log.info(PrintPens.cyanPen(
             'WS Reconnected to ${_socket.io.uri} ${_socket.nsp} with timeout: ${_socket.io.timeout} ms'));
         connected = true;
+        connectedAt = DateTime.now();
         connectionStatus = 'reconnected';
         if (onReconnect != null) {
           onReconnect();
@@ -89,7 +96,7 @@ class SocketService extends ChangeNotifier {
       });
 
       _socket.onReconnecting((_) {
-        print(PrintPens.cyanPen(
+        log.info(PrintPens.cyanPen(
             'WS reconnecting to ${_socket.io.uri} ${_socket.nsp} with timeout: ${_socket.io.timeout} ms'));
         connected = false;
         connectionStatus = 'reconnecting';
@@ -97,15 +104,16 @@ class SocketService extends ChangeNotifier {
       });
 
       _socket.onDisconnect((reason) {
-        print(PrintPens.peachPen(
-            'Socketio disconnected from $protocol with reason: $reason')); //BUG: https://github.com/Dwonczykj/gp_simulation_frontend/issues/1
+        var timeTaken = DateTime.now().difference(connectedAt!).toString();
+        log.warning(PrintPens.peachPen(
+            'Socketio disconnected from $protocol with reason: $reason after $timeTaken')); //BUG: https://github.com/Dwonczykj/gp_simulation_frontend/issues/1
         connected = false;
         connectionStatus = 'disconnected';
         notifyListeners();
       });
 
-      // _socket.onPing((data) => print(PrintPens.greyPen('client was pinged')));
-      // _socket.onPong((data) => print(PrintPens.brownPen('client was ponged')));
+      // _socket.onPing((data) => log.info(PrintPens.greyPen('client was pinged')));
+      // _socket.onPong((data) => log.info(PrintPens.brownPen('client was ponged')));
     }
   }
 
@@ -118,48 +126,6 @@ class SocketService extends ChangeNotifier {
     return true;
   }
 
-  // void addHandlers(
-  //     [Map<String, dynamic Function(dynamic data)> handlers =
-  //         const <String, dynamic Function(dynamic data)>{}]) {
-  //   var socket = _socketInst!;
-
-  //   void _registerHandler(String eventName, dynamic Function(dynamic event) handler){
-  //     socket.on(eventName,(dynamic object) {
-  //       handler(_wrapEvent(eventName, object));
-  //     });
-  //   }
-
-  //   // socket.on('message', (dynamic object) {
-  //   //   _eventHandler(_wrapEvent('message', object));
-  //   // });
-  //   _registerHandler(WebSocketServerResponseEvent.message, _eventHandler);
-  //   socket.on('json', _jsonEventHandler);
-
-  //   // Custom Handlers
-  //   _registerHandler('broadcastFromServer', _eventHandler);
-  //   socket.on(WebSocketServerResponseEvent.bank_transaction_completed, (dynamic obj) {
-  //     if (_transactionEmitterController.hasListener)
-  //   });
-
-  //   // overwrite any handlers with these:
-  //   for (var entry in handlers.entries) {
-  //     socket.on(entry.key, entry.value);
-  //   }
-  // }
-
-  // Map<String, dynamic> _wrapEvent(String eventName, dynamic object) =>
-  //     <String, dynamic>{'type': eventName, 'data': object};
-
   /// emit from socketInstance which has its namespace embedded within the connection
   emit(String eventName, dynamic data) => _socketInst?.emit(eventName, data);
-
-  // void _eventHandler(dynamic object) {
-  //   print(object);
-  //   _streamController.add(object);
-  // }
-
-  // void _jsonEventHandler(dynamic object) {
-  //   print('json event handler: $object');
-  //   _streamController.add(object);
-  // }
 }

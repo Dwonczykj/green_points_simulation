@@ -782,8 +782,7 @@ class GreenPointsLoyaltyApp():
             retailersFixedForSimIteration = self._run_iteration(run_isolated_iteration=True)
             return self._getSummaryDf(result=self.summarise_isolated_iteration(retailersSnapshot=retailersFixedForSimIteration, debug=debug), debug=debug)
             
-        
-        def run_simulation(self, maxN:int, convergence_threshold:float):
+        def run_simulation(self, maxN: int, convergence_threshold: float, betweenIterationCallback: Callable[[], None]):
             '''
             Run a Monte Carlo simulation with a maximum of N iterations & minimum of 2.
             @param: convergence_threshold:float stop the MC simulation once running variance of results drops below convergence_threshold.
@@ -807,20 +806,27 @@ class GreenPointsLoyaltyApp():
             self.numIterationsCalculated = iterCounter
             self.gpApp._emit_event(event_name=WebSocketServerResponseEvent.simulation_iteration_completed,
                                    data=runningAverage.toJson())
-            
-            convergence_TH_maintained = True
-            while iterCounter < maxN and convergence_TH_maintained:
+            betweenIterationCallback()
+            convergence_TH_not_reached = True
+            while iterCounter < maxN and convergence_TH_not_reached:
                 iterCounter = iterCounter + 1
                 retailersFixedForSimIteration = self._run_iteration(run_isolated_iteration=False, iterationCounter=iterCounter)
                 runningAverage = self.summarise_subsequent_iteration(retailersSnapshot=retailersFixedForSimIteration, 
                                                                      iterationCounter=iterCounter, 
                                                                      runningAverage=runningAverage, 
                                                                      debug=False)
+                betweenIterationCallback()
+                
                 self.runningHistory.append(runningAverage)
-                if (iterCounter > 1 and 
+                if iterCounter > 1 and \
                     (runningAverage.runningVariance.salesCount.max(axis=0) < convergence_threshold and
-                    runningAverage.runningVariance.greenPointsIssued.max(axis=0) < convergence_threshold)):
-                    convergence_TH_maintained = False
+                    runningAverage.runningVariance.greenPointsIssued.max(axis=0) < convergence_threshold):
+                        convergence_TH_not_reached = False
+                else:
+                    maxSalesCountRunningVar = runningAverage.runningVariance.salesCount.max(axis=0)
+                    maxGPIssuedRunningVar = runningAverage.runningVariance.greenPointsIssued.max(
+                        axis=0)
+                    logging.debug(f'Running Variance for Sim: iter[{iterCounter}] ; SalesCount:{maxSalesCountRunningVar}; GPIssues:{maxGPIssuedRunningVar}')
                 self.numIterationsCalculated = iterCounter
                 self.gpApp._emit_event(event_name=WebSocketServerResponseEvent.simulation_iteration_completed,
                                        data=runningAverage.toJson())
@@ -875,7 +881,7 @@ class GreenPointsLoyaltyApp():
                     f'Bad SimulationID passed. No Active Simulation Environment is registered to {simulationId}')
             return None
     
-    def run_full_simulation(self, simulationId:str, maxN: int = 100, convergence_threshold: float = 0.1):
+    def run_full_simulation(self, simulationId: str, betweenIterationCallback: Callable[[],None], maxN: int = 100, convergence_threshold: float = 0.1):
         
         if simulationId not in self._simulationEnvironments.keys():
             raise KeyError(f'Bad SimulationID passed. No Active Simulation Environment is registered to {simulationId}')
@@ -885,7 +891,8 @@ class GreenPointsLoyaltyApp():
             # assert self.active_simulation_environment is not None, 'Must init a new simulation before starting the app'
             self._running = True
             active_simulation_environment = self._simulationEnvironments[simulationId][1]
-            resultDf = active_simulation_environment.run_simulation(maxN=maxN, convergence_threshold=convergence_threshold)
+            resultDf = active_simulation_environment.run_simulation(
+                maxN=maxN, convergence_threshold=convergence_threshold, betweenIterationCallback=betweenIterationCallback)
             self._simsRun += 1
             self._running = False
             self._simulationEnvironments.pop(simulationId)

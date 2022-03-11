@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:webtemplate/ui/style/app_theme.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:logging/logging.dart';
 
 import 'navigation/app_router.gr.dart';
 import 'ui/model/models.dart';
@@ -9,8 +10,19 @@ import 'ui/network/network.dart';
 import 'ui/screens/screens.dart';
 
 Future main() async {
+  _setupLogging();
+  WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: '.env');
   runApp(MyApp());
+}
+
+void _setupLogging() {
+  Logger.root.level = Level.INFO;
+  Logger.root.onRecord.listen(
+    (rec) {
+      print('${rec.level.name}: ${rec.time}: ${rec.message}');
+    },
+  );
 }
 
 class MyApp extends StatelessWidget {

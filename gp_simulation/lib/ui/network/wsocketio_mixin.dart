@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:html';
 
 import 'package:ansicolor/ansicolor.dart';
+import 'package:logging/logging.dart';
 import 'package:flutter/material.dart';
 
 import '../../utils/ansi_print_colors.dart';
@@ -19,6 +20,8 @@ abstract class SocketIoMixin extends WebSocketHandlers with ReloadAppMixin {
   static const socketIoUrl = wsSocketioUrl;
   var connectionStates = <String, bool>{};
 
+  Logger get log => Logger('SocketIoMixin');
+
   final globalNspChannel = SocketService()
     ..createSocketConnection('$apiWSUrl/');
 
@@ -28,14 +31,14 @@ abstract class SocketIoMixin extends WebSocketHandlers with ReloadAppMixin {
   final simulationChannel = SocketService()
     ..createSocketConnection('$apiWSUrl/simulation');
 
-  final socketioChannel = SocketService()
-    ..createSocketConnection('$apiWSUrl/socket.io');
+  // final socketioChannel = SocketService()
+  //   ..createSocketConnection('$apiWSUrl/socket.io');
 
   List<SocketService> get channels => <SocketService>[
         globalNspChannel,
         transactionsChannel,
         simulationChannel,
-        socketioChannel,
+        // socketioChannel,
       ];
 
   void onDispose() {
@@ -48,12 +51,12 @@ abstract class SocketIoMixin extends WebSocketHandlers with ReloadAppMixin {
   dynamic printPipe<T>(dynamic data, T Function(dynamic data) handler,
       [AnsiPen? pen]) {
     pen ??= PrintPens.bluePen;
-    print(pen(data));
+    log.fine(pen(data));
     return handler(data);
   }
 
   void onInit({void Function()? onReconnect}) {
-    print('WS: Connected to channel: ${globalNspChannel.protocol}');
+    log.fine('WS: Connected to channel: ${globalNspChannel.protocol}');
 
     transactionHandlers.entries.forEach((element) {
       transactionsChannel.socketOnEvent(element.key,
@@ -81,11 +84,22 @@ abstract class SocketIoMixin extends WebSocketHandlers with ReloadAppMixin {
   void connectionStatusChanged() {
     // connectionStates = Map.fromEntries(channels
     //     .map((channel) => MapEntry(channel.socketUri, channel.connected)));
-    final connected = channels.any((channel) => channel.connected == false);
+    
+    final disconnectedChannelName = tryCatchWrap(
+        () => channels
+            .firstWhere((channel) => channel.connected == false)
+            .socketUri,
+        throwErr: false);
+    if (disconnectedChannelName == null) {
+      connectionStatus = 'connected';
+    } else {
+      connectionStatus = '$disconnectedChannelName disconnected';
+    }
     notifyListeners();
   }
 
-  bool get webSocketConnected => globalNspChannel.isClosed == false;
+  String connectionStatus = 'N/A';
+  // bool get webSocketConnected => globalNspChannel.isClosed == false;
 
   void emitToWSServer({required String type, dynamic data}) {
     if (globalNspChannel.isClosed == false) {

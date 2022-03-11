@@ -91,12 +91,18 @@ class _CustomersViewState extends State<CustomersView>
 
   bool retailerClusterExpanded = false;
 
+  List<RetailerModel> get sortedRetailers =>
+      widget.retailers.sortCopy((a, b) => a.name.compareTo(b.name));
+
+  String connectionStatus = 'N/A';
+
   @override
   void initState() {
     super.initState();
     numCustomers = widget.numCustomers;
     _updateAlignmentMap();
     registerTransactionNotifactions();
+    widget.marketStateViewer.addListener(_listenSocket);
   }
 
   void _updateAlignmentMap() {
@@ -111,10 +117,10 @@ class _CustomersViewState extends State<CustomersView>
         ))
       ..addAll(
           <String, Alignment>{"RETAILER_CLUSTER": const Alignment(0.0, 0.0)})
-      ..addAll(Map<String, Alignment>.fromEntries(
-          widget.retailers.mapIndexed((e, i) {
+      ..addAll(
+          Map<String, Alignment>.fromEntries(sortedRetailers.mapIndexed((e, i) {
         var alignment =
-            getPointAlignment(i, widget.retailers.length, retailerRadiusPcnt);
+            getPointAlignment(i, sortedRetailers.length, retailerRadiusPcnt);
         return AlignedEntity(
           entity: e,
           alignment: retailerClusterExpanded
@@ -182,7 +188,7 @@ class _CustomersViewState extends State<CustomersView>
                   .toList(),
               RetailerClusterWidget(
                 retailersCluster: widget.retailersCluster,
-                underlyingRetailers: widget.retailers,
+                underlyingRetailers: sortedRetailers,
                 filteredRetailerInd: null,
                 retailerRadiusPcnt: retailerRadiusPcnt,
                 customerRadiusPcnt: customerRadiusPcnt,
@@ -257,19 +263,20 @@ class _CustomersViewState extends State<CustomersView>
           series: widget.retailersCluster.totalSales.totalCostByCcy.keys
               .map((ccy) => charts.Series(
                     id: 'Retailer Sales [$ccy component]',
-                    data: widget.retailers
+                    data: sortedRetailers
                         .sortCopy((a, b) => a.name.compareTo(b.name)),
                     domainFn: (RetailerModel seriesItem, int? i) =>
                         seriesItem.name,
                     measureFn: (RetailerModel seriesItem, int? i) =>
                         seriesItem.totalSales.totalCostByCcy[ccy]?.amount,
-                    colorFn: (RetailerModel seriesItem, int? i) => charts
-                        .MaterialPalette
-                        .blue
-                        .shadeDefault, //TODO: Use theme to colour charts -> Theme.of(context).
                     // colorFn: (RetailerModel seriesItem, int? i) =>
-                    //     charts.ColorUtil.fromDartColor(Colors
-                    //         .grey),
+                    //   charts
+                    //     .MaterialPalette
+                    //     .blue
+                    //     .shadeDefault, //TODO: Use theme to colour charts -> Theme.of(context).
+                    colorFn: (RetailerModel seriesItem, int? i) =>
+                        charts.ColorUtil.fromDartColor(
+                            seriesItem.retailerColor),
                   ))
               .toList(), //TODO show strategy dict from entities
         )
@@ -277,9 +284,16 @@ class _CustomersViewState extends State<CustomersView>
     );
   }
 
+  _listenSocket() {
+    setState(() {
+      connectionStatus = widget.marketStateViewer.connectionStatus;
+    });
+  }
+
   @override
   void dispose() {
     _subscription?.cancel();
+    widget.marketStateViewer.removeListener(_listenSocket);
     super.dispose();
   }
 

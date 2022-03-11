@@ -4,7 +4,7 @@
 from eventlet.greenpool import GreenPool
 from eventlet.greenthread import GreenThread
 from http import HTTPStatus
-from typing import Any, Callable
+from typing import Any, Callable, Tuple, Type, TypeAlias, Generic, TypeVar
 import uuid
 from flask import request, make_response, abort, render_template, jsonify
 from flask.wrappers import Response
@@ -12,7 +12,7 @@ from functools import wraps
 import os
 import json
 from dotenv import load_dotenv
-# import eventlet
+import eventlet
 # eventlet.monkey_patch() # locate monkey_patching before all my own imports IF i do NOT want to patch some of my own modules.
 
 
@@ -45,12 +45,11 @@ def thread_caller(fn: Callable[[], Any],
 load_dotenv()
 
 # The actual decorator function
-
-
 def require_appkey(view_function:Callable):
     @wraps(view_function)
     # the new, post-decoration function. Note *args and **kwargs here.
-    def decorated_function(*args, **kwargs):
+    # def foo(*args: str, **kwds: int): ...
+    def decorated_function(*args:Any, **kwargs:Any):
         if request.args.get('GEMBER_API_KEY') and request.args.get('GEMBER_API_KEY') == os.getenv('APPKEY'):
             return view_function(*args, **kwargs)
         else:
@@ -58,15 +57,68 @@ def require_appkey(view_function:Callable):
             abort(401)
     return decorated_function
 
-# @flaskHttpApp.route('/')
-# @flaskHttpApp.route('/hello')
-# def hello():
-#     return 'Hello, World!'
 
 
-tasks: dict[str, GreenThread] = {}
-taskPresenters: dict[str, Callable[[Any], Any]] = {}
-dual_pool = GreenPool(size=2) # Dont use python lib ThreadPool that will break eventlet threads https://bleepcoder.com/flask-socketio/201694856/emit-in-loop-not-sending-until-loop-completion-when-using
+GreenThreadCallBack: TypeAlias = Callable[[GreenThread, list, dict],Any]
+GreenThreadResultCallBack: TypeAlias = Callable[[GreenThread, Any, Any],Any]
+GreenThreadResultCallBackSimple: TypeAlias = Callable[[Any],Any]
+
+
+
+
+_RT = TypeVar("_RT")
+class TypedGreenThread(GreenThread,Generic[_RT]):
+    def __init__(self, gt:GreenThread):
+        self.greenThread = gt
+        result:_RT|None=None
+        _completed:bool=False
+     
+    @property   
+    def completed(self):
+        return self._completed
+    
+    def link(self, func: Callable[[GreenThread, Any, Any], Any], *curried_args, **curried_kwargs):
+        return self.greenThread.link(func, *curried_args, **curried_kwargs)
+    
+    # def linkWait(self, func: Callable[[GreenThread, _RT, list, dict],Any], *curried_args, **curried_kwargs):
+    #     return self.greenThread.link(func, *curried_args, **curried_kwargs)
+    
+    def unlink(self, func: GreenThreadCallBack, *curried_args, **curried_kwargs):
+        return self.greenThread.unlink(func, *curried_args, **curried_kwargs)
+    
+    def wait(self) -> _RT | None:
+        x: _RT | None = self.greenThread.wait()  # type:ignore
+        self._completed = True
+        self.result = x
+        taskResults[self] = x
+        return x
+    
+    def getGreenThreadResult(self, callback: Callable[[_RT | None], Any]) -> Callable[[GreenThread, Any, Any], Any]:
+        '''wrap the link func so that we can just handle the result of the thread'''
+        def _greenThreadResultCallBack(gt: GreenThread, *args: list, **kwargs: dict):
+            try:
+                res = self.wait()
+            except Exception as e:
+                raise e
+            try:
+                return callback(res)
+            except Exception as e:
+                raise e
+        return _greenThreadResultCallBack
+    
+    
+class TypedGreenPool(GreenPool):
+    def spawn(self, function:Callable[...,_RT], *args, **kwargs:Any) -> TypedGreenThread[_RT]:
+        return TypedGreenThread(super().spawn(function, *args, **kwargs))
+
+
+
+# Implement GreenThread result handlers as in docs: http://eventlet.net/doc/modules/greenthread.html#eventlet.greenthread.GreenThread
+# http://eventlet.net/doc/modules/greenthread.html#eventlet.greenthread.GreenThread
+tasks: dict[str, TypedGreenThread] = {}
+taskResults: dict[TypedGreenThread, Any] = {}
+# taskPresenters: dict[str, Callable[[Any], Any]] = {} 
+dual_pool = TypedGreenPool(size=100) # Dont use python lib ThreadPool that will break eventlet threads https://bleepcoder.com/flask-socketio/201694856/emit-in-loop-not-sending-until-loop-completion-when-using
 
 
 @flaskHttpApp.route('/')
@@ -108,11 +160,14 @@ def testWsEventMemory():
         
         # http://eventlet.net/doc/patching.html
         green_thread = dual_pool.spawn(_emitNEvents, N=20)
+        if green_thread in taskResults:
+            taskResults.pop(green_thread)
         tasks[taskId] = green_thread
+        
         #BUG: This will cause a memory leak given enough time as this store should be on disk on a db....
         #  we can just delete old tasks by popping them once accessed as they should only be asked fro once if one client has the taskid.
         
-        taskPresenters[taskId] = lambda res: res.to_json()
+        
         # do some other stuff in the main process ...
         # resultDf = async_result.get()
         # response = make_response(resultDf.to_json())
@@ -213,6 +268,8 @@ def adjust_retailer_in_sim():
     return wrap_CORS_response(make_response(gpApp.initialEntitiesSnapshot))
 
 
+
+
 @require_appkey
 @flaskHttpApp.route('/run', methods=['POST'])
 def run_isolated_simulation():
@@ -229,10 +286,13 @@ def run_isolated_simulation():
     if flaskHttpApp.config["ALLOW_THREADING"]:
         # http://eventlet.net/doc/patching.html
         green_thread = dual_pool.spawn(gpApp.run_isolated_iteration)
+        green_thread.link(green_thread.getGreenThreadResult(lambda res: res[0].to_json() if res is not None else None))
+        if green_thread in taskResults:
+            taskResults.pop(green_thread)
         tasks[taskId] = green_thread
         #BUG: This will cause a memory leak given enough time as this store should be on disk on a db....
         #  we can just delete old tasks by popping them once accessed as they should only be asked fro once if one client has the taskid.
-        taskPresenters[taskId] = lambda res: res.to_json()
+        
         # do some other stuff in the main process ...
         # resultDf = async_result.get()
         # response = make_response(resultDf.to_json())
@@ -262,15 +322,26 @@ def run_simulation():
             data['convergence_threshold'])
     taskId = str(uuid.uuid4())
     simId = gpApp.simulationEnvironmentToken()
+    def cb():
+        eventlet.sleep(1)
     if flaskHttpApp.config["ALLOW_THREADING"]:
         # async_result = dual_pool.apply_async(
         #     lambda: gpApp.run_full_simulation(simulationId=simId, **kwds), callback=None)
-        # tasks[taskId] = async_result
-        green_thread = dual_pool.spawn(gpApp.run_full_simulation, simulationId=simId, **kwds)
+        kwds = {
+            **kwds,
+            'simulationId':simId,
+            'betweenIterationCallback':cb
+        }
+        green_thread = dual_pool.spawn(
+            gpApp.run_full_simulation, **kwds)
+        green_thread.link(green_thread.getGreenThreadResult(
+            lambda res: res.to_json() if res is not None else None))
+        if green_thread in taskResults:
+            taskResults.pop(green_thread)
         tasks[taskId] = green_thread
         #BUG: This will cause a memory leak given enough time as this store should be on disk on a db....
         #  we can just delete old tasks by popping them once accessed as they should only be asked fro once if one client has the taskid.
-        taskPresenters[taskId] = lambda res: res.to_json()
+        # taskPresenters[taskId] = lambda res: res.to_json()
         # do some other stuff in the main process ...
         # resultDf = async_result.get()
 
@@ -282,7 +353,7 @@ def run_simulation():
                                                     'simulation_id': simId
                                                     }, return_status_code))
     else:
-        df = gpApp.run_full_simulation(simulationId=simId, **kwds)
+        df = gpApp.run_full_simulation(simulationId=simId, betweenIterationCallback=cb, **kwds)
         return_status_code = HTTPStatus.ACCEPTED
         return wrap_CORS_response(make_response({'status': return_status_code,
                                                     'message': 'simulation_ran',
@@ -296,16 +367,15 @@ def run_simulation():
 
 def get_task_result():
     taskId: str = request.args['taskId']
-    if taskId in tasks:
-        async_result = tasks[taskId]
-        if async_result.successful():
-            result_df = async_result.get()
-            response = wrap_CORS_response(
-                make_response(taskPresenters[taskId](result_df)))
-            # response.headers['Access-Control-Allow-Origin'] = request.origin
-            return response
-        else:
-            abort(403, 'Task still running')
+    dual_pool.starmap
+    if taskId in taskResults:
+        gt = tasks.pop(taskId)
+        res = taskResults.pop(gt)
+        response = wrap_CORS_response(
+            make_response(jsonify(res)))
+        return response
+    elif taskId in tasks:
+        return wrap_CORS_response(make_response(jsonify('Task still running'),HTTPStatus.PROCESSING))
     else:
         abort(404, 'Bad Request: taskId not found!')
 

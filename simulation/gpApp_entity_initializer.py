@@ -1,5 +1,6 @@
 from __future__ import annotations
 import pandas as pd
+from app_config import BASKET_FULL_SIZE, NUM_SHOP_TRIPS_PER_ITERATION, NUM_CUSTOMERS
 
 from Bank import Customer, GPStrategyMultiplier, Retailer, RetailerSustainabilityIntercept
 
@@ -11,9 +12,9 @@ class SimStamp:
 
 class EntityInitialiser:
     # Declare Simulation Constants
-    BASKET_FULL_SIZE = 1
-    NUM_SHOP_TRIPS_PER_ITERATION = 1
-    NUM_CUSTOMERS = 4
+    BASKET_FULL_SIZE = BASKET_FULL_SIZE
+    NUM_SHOP_TRIPS_PER_ITERATION = NUM_SHOP_TRIPS_PER_ITERATION
+    NUM_CUSTOMERS = NUM_CUSTOMERS
 
     def __init__(self, df: pd.DataFrame):
         self._df = df

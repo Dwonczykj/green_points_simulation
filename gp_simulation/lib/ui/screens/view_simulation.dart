@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:charts_flutter/flutter.dart' as charts;
+import 'package:logging/logging.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:webtemplate/ui/network/market_state_viewer.dart';
@@ -13,7 +14,7 @@ enum ViewMeasureType { salesCount, greenPointsIssued }
 
 class ViewSimulationPage extends StatelessWidget {
   const ViewSimulationPage({Key? key}) : super(key: key);
-  static const title = 'View Simulation';
+  static const title = 'Retailer Simulation Results';
 
   @override
   Widget build(BuildContext context) {
@@ -39,14 +40,16 @@ class _ViewSimulationState extends State<ViewSimulation> {
   StreamSubscription<dynamic>? _subscription;
 
   var chartData = <charts.Series<IterationDataPoint, int>>[];
+  final log = Logger('_ViewSimulationState');
   List<String> runningSimulationsWithIds = <String>[];
   late List<String>? retailerNames = null;
   late Map<String, Color>? retailerColorMap = null;
   late SimulationDataCache? data = null;
   var viewAggType = ViewAggregationType.runningAverage;
-  var viewMeasType = ViewMeasureType.salesCount;
+  ViewMeasureType viewMeasType = ViewMeasureType.salesCount;
   var backingData = <String,
       Map<String, Map<String, charts.Series<IterationDataPoint, int>>>>{};
+  String connectionStatus = 'N/A';
 
   List<charts.Series<IterationDataPoint, int>> get chartDataGetter =>
       backingData.entries
@@ -82,10 +85,10 @@ class _ViewSimulationState extends State<ViewSimulation> {
                     seriesByRetailer.map((rname, datapoints) => MapEntry(
                         rname,
                         charts.Series<IterationDataPoint, int>(
-                          id: '$seriesName ($aggType) $rname',
+                          id: '$rname $seriesName ($aggType)',
                           seriesCategory: aggType,
                           labelAccessorFn: (datapoint, _) =>
-                              '$seriesName ($aggType) $rname',
+                              '$rname $seriesName ($aggType)',
                           colorFn: (_, __) => charts.ColorUtil.fromDartColor(
                               retailerColorMap?[rname] ??
                                   const Color.fromRGBO(100, 100, 100, 1)),
@@ -106,7 +109,7 @@ class _ViewSimulationState extends State<ViewSimulation> {
         }
       },
       onDone: () {
-        print('Transaction stream closed!');
+        log.info('Transaction stream closed!');
       },
     );
   }
@@ -114,6 +117,14 @@ class _ViewSimulationState extends State<ViewSimulation> {
   @override
   void initState() {
     registerWSSNotifactions();
+    widget.marketStateViewer.addListener(_listenSocket);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    widget.marketStateViewer.removeListener(_listenSocket);
+    _subscription!.cancel();
   }
 
   static List<charts.Series<IterationDataPoint, int>> _createSampleData() {
@@ -135,237 +146,240 @@ class _ViewSimulationState extends State<ViewSimulation> {
     ];
   }
 
+  _listenSocket() {
+    setState(() {
+      connectionStatus = widget.marketStateViewer.connectionStatus;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final marketStateService = widget.marketStateViewer;
-    return Scaffold(
-          appBar: AppBar(
-          backgroundColor: Theme.of(context).bottomAppBarColor,
-          title: Text(title),
-          actions: <Widget>[
-            Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: marketStateService.webSocketConnected
-                    ? [
-                        Icon(Icons.wifi, size: 25),
-                        Text(marketStateService.wsConnectionStatus),
-                      ]
-                    : [
-                        Icon(Icons.wifi_off, size: 25),
-                        Text(marketStateService.wsConnectionStatus),
-                      ])
-          ], 
-          ),
-          body: SafeArea(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                Expanded(
-                    child: Center(
-                  child: Stack(
-                    alignment: Alignment.center,
+    // return Scaffold(
+    //       appBar: AppBar(
+    //       backgroundColor: Theme.of(context).bottomAppBarColor,
+    //       title: Text(title),
+    //       actions: <Widget>[
+    //         Padding(
+    //           padding: const EdgeInsets.only(right: 8.0),
+    //           child: Column(
+    //               mainAxisAlignment: MainAxisAlignment.center,
+    //               children: marketStateService.webSocketConnected
+    //                   ? [
+    //                       Icon(Icons.wifi, size: 25),
+    //                       Text(marketStateService.connectionStatus),
+    //                     ]
+    //                   : [
+    //                       Icon(Icons.wifi_off, size: 25),
+    //                       Text(marketStateService.connectionStatus),
+    //                     ]),
+    //         )
+    //       ],
+    //       ),
+    //       body: SafeArea(
+    //         child:
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        Expanded(
+            child: Center(
+          child: Stack(
+            alignment: Alignment.center,
+            children: <Widget>[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Column(
                     children: <Widget>[
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          Column(
-                            children: <Widget>[
-                              Padding(
-                                padding: EdgeInsets.only(left: 24.0),
-                                child: Text(
-                                    'Measure: ${viewMeasType.name.toSentenceCaseFromCamelCase()}'),
-                              ),
-                              Align(
-                                alignment: Alignment.topRight,
-                                child: SizedBox(
-                                  width: 400,
-                                  height: 40,
-                                  child: Slider(
-                                    value: viewMeasType.index.toDouble(),
-                                    label: viewMeasType.name,
-                                    divisions:
-                                        (ViewMeasureType.values.length - 1),
-                                    min: 0.0,
-                                    max: (ViewMeasureType.values.length - 1)
-                                        .toDouble(),
-                                    onChangeEnd: (value) {
-                                      var i = value.round();
-                                      setState(() {
-                                        viewMeasType =
-                                            ViewMeasureType.values[i];
-                                        chartData = backingData.entries
-                                            .where((element) =>
-                                                element.key == viewAggType.name)
-                                            .expand((element) => element
-                                                .value.entries
-                                                .where((subMeas) =>
-                                                    subMeas.key ==
-                                                    viewMeasType.name)
-                                                .expand((subEl) => subEl
-                                                    .value.entries
-                                                    .map((retailerName) =>
-                                                        retailerName.value)
-                                                    .toList()))
-                                            .toList();
-                                      });
-                                    },
-                                    onChanged: (double value) {
-                                      // setState({});
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          Column(
-                            children: <Widget>[
-                              Padding(
-                                padding: EdgeInsets.only(left: 24.0),
-                                child: Text(
-                                    'Aggregation: ${viewAggType.name.toSentenceCaseFromCamelCase()}'),
-                              ),
-                              Align(
-                                alignment: Alignment.topRight,
-                                child: SizedBox(
-                                  width: 400,
-                                  height: 40,
-                                  child: Slider(
-                                    value: viewAggType.index.toDouble(),
-                                    label: viewAggType.name,
-                                    divisions:
-                                        (ViewAggregationType.values.length - 1),
-                                    min: 0.0,
-                                    max: (ViewAggregationType.values.length - 1)
-                                        .toDouble(),
-                                    onChangeEnd: (value) {
-                                      var i = value.round();
-                                      setState(() {
-                                        viewAggType =
-                                            ViewAggregationType.values[i];
-                                        chartData = backingData.entries
-                                            .where((element) =>
-                                                element.key == viewAggType.name)
-                                            .expand((element) => element
-                                                .value.entries
-                                                .expand((subEl) => subEl
-                                                    .value.entries
-                                                    .where((subMeas) =>
-                                                        subMeas.key ==
-                                                        viewMeasType.name)
-                                                    .map((retailerName) =>
-                                                        retailerName.value)
-                                                    .toList()))
-                                            .toList();
-                                      });
-                                    },
-                                    onChanged: (double value) {
-                                      // setState({});
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                      Padding(
+                        padding: EdgeInsets.only(left: 24.0),
+                        child: Text(
+                            'Measure: ${viewMeasType.name.toSentenceCaseFromCamelCase()}'),
                       ),
-                      // SimpleLineChart.withSampleData(),
-                      chartData.isNotEmpty
-                          ? charts.LineChart(
-                              chartDataGetter, //TODO P1: See if still works with the getter -> [this.chartDataGetter]
-                              animate:
-                                  true, //TODO P1: Also filter SalesCount vs GPIssues with a slider
-                              animationDuration: const Duration(
-                                  milliseconds:
-                                      200), //TODO: Improve the potential speed of a simulation.
-                              defaultInteractions: true,
-                              // Add the legend behavior to the chart to turn on legends.
-                              // This example shows how to change the position and justification of
-                              // the legend, in addition to altering the max rows and padding.
-                              behaviors: [
-                                charts.SeriesLegend(
-                                  // Positions for "start" and "end" will be left and right respectively
-                                  // for widgets with a build context that has directionality ltr.
-                                  // For rtl, "start" and "end" will be right and left respectively.
-                                  // Since this example has directionality of ltr, the legend is
-                                  // positioned on the right side of the chart.
-                                  position: charts.BehaviorPosition.end,
-                                  // For a legend that is positioned on the left or right of the chart,
-                                  // setting the justification for [endDrawArea] is aligned to the
-                                  // bottom of the chart draw area.
-                                  outsideJustification:
-                                      charts.OutsideJustification.endDrawArea,
-                                  // By default, if the position of the chart is on the left or right of
-                                  // the chart, [horizontalFirst] is set to false. This means that the
-                                  // legend entries will grow as new rows first instead of a new column.
-                                  horizontalFirst: false,
-                                  // By setting this value to 2, the legend entries will grow up to two
-                                  // rows before adding a new column.
-                                  // desiredMaxRows: 2,
-                                  // By setting this value to 2, the legend entries will grow up to two
-                                  // rows before adding a new column.
-                                  desiredMaxColumns: 2,
-                                  // This defines the padding around each legend entry.
-                                  cellPadding: new EdgeInsets.only(
-                                      right: 4.0, bottom: 4.0),
-                                  // Render the legend entry text with custom styles.
-                                  entryTextStyle: charts.TextStyleSpec(
-                                      color: charts.ColorUtil.fromDartColor(
-                                          Colors.lime),
-                                      fontFamily: 'Georgia',
-                                      fontSize: 16),
-                                ),
-                              ],
-                              domainAxis: const charts.AxisSpec<num>(
-                                  renderSpec: charts.SmallTickRendererSpec(
-                                      labelStyle: charts.TextStyleSpec(
-                                          fontSize: 12,
-                                          color: charts.Color.white)),
-                                  showAxisLine: true),
-                              primaryMeasureAxis: const charts.NumericAxisSpec(
-                                  renderSpec: charts.SmallTickRendererSpec(
-                                      labelStyle: charts.TextStyleSpec(
-                                          fontSize: 12,
-                                          color: charts.Color.white)),
-                                  showAxisLine: true),
-                            )
-                          : const FlutterLogo(
-                              size: 100.0,
-                              duration: Duration(seconds: 5),
-                              curve: Curves.bounceInOut),
-                      Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: <Widget>[
-                          Align(
-                            alignment: Alignment.bottomCenter,
-                            child: RaisedButton(
-                              child: const Text('Run Simulation'),
-                              onPressed: () {
-                                marketStateService
-                                    .startFullSimulation(0.1, 5)
-                                    .then((value) {
-                                  if (value != null) {
-                                    setState(() {
-                                      runningSimulationsWithIds
-                                          .add(value.simulationId);
-                                    });
-                                  }
-                                });
-                              },
-                            )),
-                          Padding(
-                            padding: EdgeInsets.only(left: 4.0),
-                          child: Text(''),
+                      Align(
+                        alignment: Alignment.topLeft,
+                        child: SizedBox(
+                          width: ViewMeasureType.values.length * 100,
+                          height: 40,
+                          child: Slider(
+                            value: viewMeasType.index.toDouble(),
+                            label: viewMeasType.name,
+                            divisions: (ViewMeasureType.values.length - 1),
+                            min: 0.0,
+                            max: (ViewMeasureType.values.length - 1).toDouble(),
+                            onChangeEnd: (value) {
+                              var i = value.round();
+                              setState(() {
+                                viewMeasType = ViewMeasureType.values[i];
+                                chartData = backingData.entries
+                                    .where((element) =>
+                                        element.key == viewAggType.name)
+                                    .expand((element) => element.value.entries
+                                        .where((subMeas) =>
+                                            subMeas.key == viewMeasType.name)
+                                        .expand((subEl) => subEl.value.entries
+                                            .map((retailerName) =>
+                                                retailerName.value)
+                                            .toList()))
+                                    .toList();
+                              });
+                            },
+                            onChanged: (double value) {
+                              // setState({});
+                            },
                           ),
-                        ],
-                      )
+                        ),
+                      ),
                     ],
                   ),
-                ))
-              ],
-            ),
-        ));
+                  Column(
+                    children: <Widget>[
+                      Padding(
+                        padding: EdgeInsets.only(left: 24.0),
+                        child: Text(
+                            'Aggregation: ${viewAggType.name.toSentenceCaseFromCamelCase()}'),
+                      ),
+                      Align(
+                        alignment: Alignment.topRight,
+                        child: SizedBox(
+                          width: ViewAggregationType.values.length * 100,
+                          height: 40,
+                          child: Slider(
+                            value: viewAggType.index.toDouble(),
+                            label: viewAggType.name,
+                            divisions: (ViewAggregationType.values.length - 1),
+                            min: 0.0,
+                            max: (ViewAggregationType.values.length - 1)
+                                .toDouble(),
+                            onChangeEnd: (value) {
+                              var i = value.round();
+                              setState(() {
+                                viewAggType = ViewAggregationType.values[i];
+                                chartData = backingData.entries
+                                    .where((element) =>
+                                        element.key == viewAggType.name)
+                                    .expand((element) => element.value.entries
+                                        .expand((subEl) => subEl.value.entries
+                                            .where((subMeas) =>
+                                                subMeas.key ==
+                                                viewMeasType.name)
+                                            .map((retailerName) =>
+                                                retailerName.value)
+                                            .toList()))
+                                    .toList();
+                              });
+                            },
+                            onChanged: (double value) {
+                              // setState({});
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              // SimpleLineChart.withSampleData(),
+              chartData.isNotEmpty
+                  ? charts.LineChart(
+                      chartDataGetter, //TODO P1: See if still works with the getter -> [this.chartDataGetter]
+                      // customSeriesRenderers: [],
+                      animate:
+                          true, //TODO P1: Also filter SalesCount vs GPIssues with a slider
+                      animationDuration: const Duration(
+                          milliseconds:
+                              50), //TODO: Improve the potential speed of a simulation.
+                      defaultInteractions: true,
+                      // Add the legend behavior to the chart to turn on legends.
+                      // This example shows how to change the position and justification of
+                      // the legend, in addition to altering the max rows and padding.
+                      behaviors: [
+                        charts.SeriesLegend(
+                          // Positions for "start" and "end" will be left and right respectively
+                          // for widgets with a build context that has directionality ltr.
+                          // For rtl, "start" and "end" will be right and left respectively.
+                          // Since this example has directionality of ltr, the legend is
+                          // positioned on the right side of the chart.
+                          position: charts.BehaviorPosition.end,
+                          // For a legend that is positioned on the left or right of the chart,
+                          // setting the justification for [endDrawArea] is aligned to the
+                          // bottom of the chart draw area.
+                          outsideJustification:
+                              charts.OutsideJustification.endDrawArea,
+                          // By default, if the position of the chart is on the left or right of
+                          // the chart, [horizontalFirst] is set to false. This means that the
+                          // legend entries will grow as new rows first instead of a new column.
+                          horizontalFirst: false,
+                          // By setting this value to 2, the legend entries will grow up to two
+                          // rows before adding a new column.
+                          // desiredMaxRows: 2,
+                          // By setting this value to 2, the legend entries will grow up to two
+                          // rows before adding a new column.
+                          desiredMaxColumns: 2,
+                          // This defines the padding around each legend entry.
+                          cellPadding:
+                              new EdgeInsets.only(right: 4.0, bottom: 4.0),
+                          // Render the legend entry text with custom styles.
+                          entryTextStyle: charts.TextStyleSpec(
+                              color: charts.ColorUtil.fromDartColor(
+                                  Theme.of(context)
+                                          .primaryTextTheme
+                                          .displaySmall
+                                          ?.color ??
+                                      Colors.lime),
+                              // fontFamily: 'Georgia',
+                              fontSize: 16),
+                        ),
+                      ],
+                      domainAxis: const charts.AxisSpec<num>(
+                          renderSpec: charts.SmallTickRendererSpec(
+                              labelStyle: charts.TextStyleSpec(
+                                  fontSize: 12, color: charts.Color.white)),
+                          showAxisLine: true),
+                      primaryMeasureAxis: const charts.NumericAxisSpec(
+                          renderSpec: charts.SmallTickRendererSpec(
+                              labelStyle: charts.TextStyleSpec(
+                                  fontSize: 12, color: charts.Color.white)),
+                          showAxisLine: true),
+                    )
+                  : const FlutterLogo(
+                      size: 100.0,
+                      duration: Duration(seconds: 5),
+                      curve: Curves.bounceInOut),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: <Widget>[
+                  Align(
+                      alignment: Alignment.bottomCenter,
+                      child: RaisedButton(
+                        child: const Text('Run Simulation'),
+                        onPressed: () {
+                          marketStateService
+                              .startFullSimulation(0.1, 500)
+                              .then((value) {
+                            if (value != null) {
+                              setState(() {
+                                runningSimulationsWithIds
+                                    .add(value.simulationId);
+                              });
+                            }
+                          });
+                        },
+                      )),
+                  Padding(
+                    padding: EdgeInsets.only(left: 4.0),
+                    child: Text(''),
+                  ),
+                ],
+              )
+            ],
+          ),
+        ))
+      ],
+    );
+    // ));
   }
 }
 
