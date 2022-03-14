@@ -20,3 +20,11 @@ V? pipe_if_exists<T, V>(T? val, V Function(T a) pipeTo) {
     return null;
   }
 }
+
+V? pipe_if_func_exists<T, V>(T val, V Function(T a)? pipeTo) {
+  if (pipeTo != null) {
+    return pipeTo(val);
+  } else {
+    return null;
+  }
+}

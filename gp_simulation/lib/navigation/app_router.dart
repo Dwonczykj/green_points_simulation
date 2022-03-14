@@ -1,6 +1,9 @@
+/// auto_route docs: -> https://autoroute.vercel.app/introduction, https://www.notion.so/gember/Dart-Flutter-Cheat-Sheet-33f53ff62f334411ab02640c3b931bd8#593631677e4d4358a0c37c0f9f40bded
 import 'package:auto_route/auto_route.dart';
 
 import '../ui/screens/screens.dart';
+
+
 
 // @CupertinoAutoRouter
 // @AdaptiveAutoRouter

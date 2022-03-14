@@ -10,6 +10,10 @@ class WebSocketClientEvent {
   static String get change_customer_stickyness_factor =>
       'change customer stickyness factor';
 
+  static String get num_customers_requested => 'num customers requested';
+  static String get basket_full_size_requested => 'basket full size requested';
+  static String get num_shop_trips_requested => 'num shop trips requested';
+
   static List<String> get all_members => <String>[
         connection_success_event,
         message,
@@ -19,6 +23,9 @@ class WebSocketClientEvent {
         change_retailer_strategy,
         change_retailer_sustainability_multiplier,
         change_customer_stickyness_factor,
+        num_customers_requested,
+        basket_full_size_requested,
+        num_shop_trips_requested,
       ];
 }
 
@@ -55,6 +62,10 @@ class WebSocketServerResponseEvent {
       'retailer sustainbility changed';
 
   static String get pong => 'pong';
+
+  static String get num_customers_requested => 'num customers requested';
+  static String get basket_full_size_requested => 'basket full size requested';
+  static String get num_shop_trips_requested => 'num shop trips requested';
       
 
   static List<String> get all_members => <String>[
@@ -77,5 +88,8 @@ class WebSocketServerResponseEvent {
         retailer_strategy_changed,
         retailer_sustainbility_changed,
         pong,
+        num_customers_requested,
+        basket_full_size_requested,
+        num_shop_trips_requested,
       ];
 }

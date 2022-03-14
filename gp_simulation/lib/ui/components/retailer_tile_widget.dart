@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:math' as math;
 
-import '../model/models.dart';
+import '../model/all_models.dart';
 import 'retailer_detail_card.dart';
 import 'show_more_popup.dart';
 

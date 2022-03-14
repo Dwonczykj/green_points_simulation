@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:webtemplate/ui/network/network.dart';
 import 'package:webtemplate/utils/number_formatting.dart';
 
+import '../model/models.dart';
+
 class RetailerClusterDetailCard extends StatelessWidget {
   const RetailerClusterDetailCard({Key? key, required this.retailerCluster})
       : super(key: key);

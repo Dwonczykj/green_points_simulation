@@ -1,8 +1,11 @@
 # from app_init import flaskHttpApp
 
 # http://eventlet.net/doc/patching.html
+from enum import Enum
+import logging
 from eventlet.greenpool import GreenPool
 from eventlet.greenthread import GreenThread
+import cachetools
 from http import HTTPStatus
 from typing import Any, Callable, Tuple, Type, TypeAlias, Generic, TypeVar
 import uuid
@@ -18,8 +21,9 @@ import eventlet
 
 from event_names import WebSocketClientEvent, WebSocketServerResponseEvent
 from http_validators import validate_retailer_name, validate_retailer_sustainability, validate_retailer_strategy
-from Bank import GPStrategyMultiplier, RetailerSustainabilityIntercept
+from Bank import RetailerStrategyGPMultiplier, RetailerSustainabilityIntercept, ControlRetailer, InvalidRetailerReason
 from app_init import flaskHttpApp
+from app_config import SimulationConfig, SimulationIterationConfig
 from app_globals import gpApp, flaskHttpAppConfig
 for k in flaskHttpAppConfig:
     flaskHttpApp.config[k] = flaskHttpAppConfig[k]
@@ -53,7 +57,7 @@ def require_appkey(view_function:Callable):
         if request.args.get('GEMBER_API_KEY') and request.args.get('GEMBER_API_KEY') == os.getenv('APPKEY'):
             return view_function(*args, **kwargs)
         else:
-            print('Unauthenticated client refused access.')
+            logging.debug('Unauthenticated client refused access.')
             abort(401)
     return decorated_function
 
@@ -115,10 +119,29 @@ class TypedGreenPool(GreenPool):
 
 # Implement GreenThread result handlers as in docs: http://eventlet.net/doc/modules/greenthread.html#eventlet.greenthread.GreenThread
 # http://eventlet.net/doc/modules/greenthread.html#eventlet.greenthread.GreenThread
-tasks: dict[str, TypedGreenThread] = {}
-taskResults: dict[TypedGreenThread, Any] = {}
+tasks = cachetools.TTLCache[str, TypedGreenThread](maxsize=10000,ttl=10*60)
+taskResults = cachetools.TTLCache[TypedGreenThread, Any](maxsize=10000,ttl=10*60)
 # taskPresenters: dict[str, Callable[[Any], Any]] = {} 
 dual_pool = TypedGreenPool(size=100) # Dont use python lib ThreadPool that will break eventlet threads https://bleepcoder.com/flask-socketio/201694856/emit-in-loop-not-sending-until-loop-completion-when-using
+
+@require_appkey
+@flaskHttpApp.route('/task-result', methods=['POST'])
+def get_task_result():
+    data = _loadRequestData()
+    if 'taskId' not in data.keys():
+        abort(HTTPStatus.BAD_REQUEST, 'No taskId in request')
+    taskId: str = data['taskId']
+    
+    if taskId in taskResults:
+        gt = tasks.pop(taskId)
+        res = taskResults.pop(gt)
+        response = wrap_CORS_response(
+            make_response(jsonify(res)))
+        return response
+    elif taskId in tasks:
+        return wrap_CORS_response(make_response(jsonify('Task still running'), HTTPStatus.PROCESSING))
+    else:
+        abort(404, 'Bad Request: taskId not found!')
 
 
 @flaskHttpApp.route('/')
@@ -178,159 +201,148 @@ def testWsEventMemory():
         statusId = HTTPStatus.OK
         return wrap_CORS_response(make_response({'status': statusId, 'message': 'test-ws-event-memory_ran', 'task_id': taskId}, statusId))
 
+def _loadRequestData():
+    '''get the data from the request body'''
+    data = {}
+    if request.data:
+        data = {**data, **json.loads(request.data)}
+    elif len(request.form) > 0:
+        data = {**data, **request.form}
+    return data
+
+
+    
+
+def _validateRetailerInRequestData(data:dict):
+    
+    valid_retailer_name = validate_retailer_name(
+        data['retailer_name'])
+    
+    if not valid_retailer_name:
+        return (InvalidRetailerReason.invalidName, None)
+
+    valid_retailer_strategy = validate_retailer_strategy(
+        data['retailer_name'], data['retailer_strategy'])
+    if not valid_retailer_strategy:
+        return (InvalidRetailerReason.invalidStrategy, None)
+    
+    valid_retailer_sustainability = validate_retailer_sustainability(
+        data['retailer_name'], data['retailer_sustainability'])
+    if not valid_retailer_sustainability:
+        return (InvalidRetailerReason.invalidSustainability, None)
+    
+    return (InvalidRetailerReason.validRetailer, 
+            ControlRetailer(name=data['retailer_name'], 
+                            strategy=RetailerStrategyGPMultiplier[data['retailer_strategy']], 
+                            sustainability=RetailerSustainabilityIntercept[data['retailer_sustainability']]))
+    
 
 @require_appkey
 @flaskHttpApp.route('/init', methods=['POST'])
-def init_simulation():
-    print('init gpApp')
-    response = wrap_CORS_response(make_response({}))
+def init_gpApp():
+    '''Initialise the entire app, reading data sources etc'''
     if not gpApp.initialised():
-        data = {}
-        if request.data:
-            data = {**data, **json.loads(request.data)}
-        elif len(request.form) > 0:
-            data = {**data, **request.form}
-        valid_retailer_name = validate_retailer_name(
-            data['retailer_name'])
-        if valid_retailer_name:
-            valid_retailer_strategy = validate_retailer_strategy(
-                data['retailer_name'], data['retailer_strategy'])
-            valid_retailer_sustainability = validate_retailer_sustainability(
-                data['retailer_name'], data['retailer_sustainability'])
-            if valid_retailer_strategy and valid_retailer_sustainability:
-                (_, entities) = gpApp.initNewSim()
-
-                response = wrap_CORS_response(make_response(entities))
-                # response.headers['Access-Control-Allow-Origin'] = request.origin
-            else:
-                abort(wrap_CORS_response(Response(
-                    'Strategy / Sustainability enum name passed to simulation init request not found', status=404)))
+        res = gpApp.initNewSim()
+        if res.initialised:
+            return_status_code = HTTPStatus.OK
+            return wrap_CORS_response(
+                make_response({
+                    'status': return_status_code,
+                    'message': 'application initialised',
+                }, return_status_code))
         else:
             abort(wrap_CORS_response(Response(
-                'retailer_name passed to simulation init request not found', status=404)))
+                'app failed to initialise', status=HTTPStatus.INTERNAL_SERVER_ERROR)))
     return wrap_CORS_response(make_response(gpApp.initialEntitiesSnapshot))
 
-
-@require_appkey
-@flaskHttpApp.route('/adjust-retailer', methods=['POST'])
-def adjust_retailer_in_sim():
-    response = wrap_CORS_response(make_response({}))
-    kwds = {}
-    data = {}
-    if request.data:
-        data = {**data, **json.loads(request.data)}
-    elif len(request.form) > 0:
-        data = {**data, **request.form}
-
-    if 'simulation_id' in data:
-        simId = data['simulation_id']
-        valid_simId = gpApp.getSimulationEnvironment(
-            simulationId=simId) is not None
-    else:
-        statusId = 404
+def _abortBadRetailerRequest(validateRetailer:InvalidRetailerReason):
+    if validateRetailer == InvalidRetailerReason.invalidName:
         abort(wrap_CORS_response(Response(
-            'retailer_name passed to adjust-retailer POST request not found', status=statusId)))
-
-    if 'retailer_name' in data:
-        retailerName = data['retailer_name']
-        valid_retailer_name = validate_retailer_name(retailerName)
-    else:
-        statusId = 404
+            'retailer_name passed to simulation init request not found', status=HTTPStatus.NOT_FOUND)))
+    elif validateRetailer == InvalidRetailerReason.invalidStrategy:
         abort(wrap_CORS_response(Response(
-            'retailer_name passed to adjust-retailer POST request not found', status=statusId)))
-
-    valid_retailer_strategy = False
-    valid_retailer_sustainability = False
-    retailerStrategy = ''
-    retailerSustainability = ''
-    if 'retailer_strategy' in data:
-        retailerStrategy = data['retailer_strategy']
-        valid_retailer_strategy = validate_retailer_strategy(
-            retailerName, retailerStrategy)
-
-    if 'retailer_sustainability' in data:
-        retailerSustainability = data['retailer_sustainability']
-        valid_retailer_strategy = validate_retailer_strategy(
-            retailerName, retailerSustainability)
-
-    if valid_simId and valid_retailer_strategy and valid_retailer_sustainability:
-        taskId = gpApp.adjustSimParameters(simId, retailerName,
-                                           GPStrategyMultiplier[retailerStrategy],
-                                           RetailerSustainabilityIntercept[retailerSustainability])
-        statusId = HTTPStatus.ACCEPTED
-        return wrap_CORS_response(make_response({'status': statusId, 'message': 'retailer_asjustment_accepted', 'task_id': taskId}, statusId))
-
-    else:
-        statusId = 404
+            'Strategy enum name passed to simulation init request not found', status=HTTPStatus.NOT_FOUND)))
+    elif validateRetailer == InvalidRetailerReason.invalidSustainability:
         abort(wrap_CORS_response(Response(
-            'Strategy / Sustainability enum name passed to simulation init request not found', status=statusId)))
+            'Sustainability enum name passed to simulation init request not found', status=HTTPStatus.NOT_FOUND)))
+    else:
+        abort(wrap_CORS_response(Response(
+            'Invalid data supplied to init-sim request', status=HTTPStatus.NOT_FOUND)))
 
-    return wrap_CORS_response(make_response(gpApp.initialEntitiesSnapshot))
+# @require_appkey
+# @flaskHttpApp.route('/init-new-sim', methods=['POST'])
 
-
-
-
-@require_appkey
-@flaskHttpApp.route('/run', methods=['POST'])
-def run_isolated_simulation():
-    print('Running isolated iteration example')
-    if not gpApp.initialised():
-        abort(403, 'Cant run a simulation when the app is not Initialised yet.')
-
-    # T1 = Thread(target=gpApp.run, args=(), kwargs={}, name="simulation_runner_thread")
-    # T1.start()
-    # resultDf = T1.join()
-
-    taskId = str(uuid.uuid4())
     
-    if flaskHttpApp.config["ALLOW_THREADING"]:
-        # http://eventlet.net/doc/patching.html
-        green_thread = dual_pool.spawn(gpApp.run_isolated_iteration)
-        green_thread.link(green_thread.getGreenThreadResult(lambda res: res[0].to_json() if res is not None else None))
-        if green_thread in taskResults:
-            taskResults.pop(green_thread)
-        tasks[taskId] = green_thread
-        #BUG: This will cause a memory leak given enough time as this store should be on disk on a db....
-        #  we can just delete old tasks by popping them once accessed as they should only be asked fro once if one client has the taskid.
-        
-        # do some other stuff in the main process ...
-        # resultDf = async_result.get()
-        # response = make_response(resultDf.to_json())
-        statusId = HTTPStatus.ACCEPTED
-        return wrap_CORS_response(make_response({'status': statusId, 'message': 'simulation_running', 'task_id': taskId}, statusId))
-    else:
-        df = gpApp.run_isolated_iteration()
-        statusId = HTTPStatus.OK
-        return wrap_CORS_response(make_response({'status': statusId, 'message': 'simulation_ran', 'task_id': taskId}, statusId))
+    
+def _loadSimulationId() -> str:
+    data = _loadRequestData()
+    if 'simulationId' not in data:
+        abort(wrap_CORS_response(Response(
+            'No Simulation ID supplied to run-full-sim request', status=HTTPStatus.NOT_FOUND)))
+    simId = data['simulationId']
+    return simId
 
+# def require_queryparam(view_function:Callable[[str,str],Any], queryparam_name:str):
+#     pass
 
+# def require_simulationid(view_function:Callable):
+#     @wraps(view_function)
+#     # the new, post-decoration function. Note *args and **kwargs here.
+#     # def foo(*args: str, **kwds: int): ...
+#     def decorated_function(*args:Any, **kwargs:Any):
+#         simId = _loadSimulationId()
+#         setattr(request,'gember_args', object())
+#         request.gember_args.__doc__ = 'custom args from the request for gember only'
+#         setattr(request.gember_args,'simId', simId)
+#     return decorated_function
 
+# def require_simulation_config(view_function:Callable):
+#     @wraps(view_function)
+#     # the new, post-decoration function. Note *args and **kwargs here.
+#     # def foo(*args: str, **kwds: int): ...
+#     def decorated_function(*args:Any, **kwargs:Any):
+#         simId = _loadSimulationId()
+#         setattr(request,'gember_args', object())
+#         request.gember_args.__doc__ = 'custom args from the request for gember only'
+#         setattr(request.gember_args,'simId', simId)
+#         data = _loadRequestData()
+#         simConfig = SimulationIterationConfig.createFromDict(data)
+#         setattr(request.gember_args, 'simConfig', simConfig)
+#     return decorated_function
+
+def eventlet_sleep_thread():
+    eventlet.sleep(1)
+    
 @require_appkey
 @flaskHttpApp.route('/run-full-sim', methods=['POST'])
 def run_simulation():
-    
-    kwds = {}
-    data = {}
-    if request.data:
-        data = {**data, **json.loads(request.data)}
-    elif len(request.form) > 0:
-        data = {**data, **request.form}
-    if 'maxN' in data:
-        kwds['maxN'] = int(data['maxN'])
-    if 'convergence_threshold' in data:
-        kwds['convergence_threshold'] = float(
-            data['convergence_threshold'])
+    '''Initialise a new single iteration simulation environment and start it.
+        --
+        Required query params: 
+            - simulation configuration params
+        '''
+    if not gpApp.initialised():
+        status = HTTPStatus.BAD_REQUEST
+        abort(wrap_CORS_response(Response(
+            'app must first be initialised to create a simulation environment', status=status)))
+
+    data = _loadRequestData()
+    simConfig = SimulationConfig.createFromDict(data)
+
+    simId, simType = gpApp.initSimulationFullEnvironment(
+        simConfig=simConfig,
+    )
+
     taskId = str(uuid.uuid4())
-    simId = gpApp.simulationEnvironmentToken()
-    def cb():
-        eventlet.sleep(1)
+    
+
     if flaskHttpApp.config["ALLOW_THREADING"]:
         # async_result = dual_pool.apply_async(
         #     lambda: gpApp.run_full_simulation(simulationId=simId, **kwds), callback=None)
         kwds = {
             **kwds,
-            'simulationId':simId,
-            'betweenIterationCallback':cb
+            'simulationId': simId,
+            'betweenIterationCallback': eventlet_sleep_thread
         }
         green_thread = dual_pool.spawn(
             gpApp.run_full_simulation, **kwds)
@@ -339,46 +351,117 @@ def run_simulation():
         if green_thread in taskResults:
             taskResults.pop(green_thread)
         tasks[taskId] = green_thread
-        #BUG: This will cause a memory leak given enough time as this store should be on disk on a db....
-        #  we can just delete old tasks by popping them once accessed as they should only be asked fro once if one client has the taskid.
-        # taskPresenters[taskId] = lambda res: res.to_json()
-        # do some other stuff in the main process ...
-        # resultDf = async_result.get()
-
-        # response = make_response(resultDf.to_json())
+        
         return_status_code = HTTPStatus.ACCEPTED
         return wrap_CORS_response(make_response({'status': return_status_code,
-                                                    'message': 'simulation_running',
-                                                    'task_id': taskId,
-                                                    'simulation_id': simId
-                                                    }, return_status_code))
+                                                 'message': 'simulation_running',
+                                                 'task_id': taskId,
+                                                 'simulation_id': simId,
+                                                 'simulation_type': simType,
+                                                 }, return_status_code))
     else:
-        df = gpApp.run_full_simulation(simulationId=simId, betweenIterationCallback=cb, **kwds)
+        df = gpApp.run_full_simulation(
+            simulationId=simId, betweenIterationCallback=eventlet_sleep_thread, **kwds)
         return_status_code = HTTPStatus.ACCEPTED
         return wrap_CORS_response(make_response({'status': return_status_code,
-                                                    'message': 'simulation_ran',
-                                                    'task_id': taskId,
-                                                    'simulation_id': simId
-                                                    }, return_status_code))
+                                                 'message': 'simulation_ran',
+                                                 'task_id': taskId,
+                                                 'simulation_id': simId
+                                                 }, return_status_code))
+    
 
-    # response.headers['Access-Control-Allow-Origin'] = request.origin
-    # return response
+@require_appkey
+@flaskHttpApp.route('/run-scenario', methods=['POST'])
+def run_realtime_scenario():
+    '''Initialise a new scenario runner simulation environment and start it.
+        --
+        Required query params: 
+            - simulation configuration params
+        '''
+#     if not gpApp.initialised():
+#         status = HTTPStatus.BAD_REQUEST
+#         abort(wrap_CORS_response(Response(
+#             'app must first be initialised to create a simulation environment', status=status)))
 
+#     data = _loadRequestData()
+#     simConfig = SimulationIterationConfig.createFromDict(data)
 
-def get_task_result():
-    taskId: str = request.args['taskId']
-    dual_pool.starmap
-    if taskId in taskResults:
-        gt = tasks.pop(taskId)
-        res = taskResults.pop(gt)
-        response = wrap_CORS_response(
-            make_response(jsonify(res)))
-        return response
-    elif taskId in tasks:
-        return wrap_CORS_response(make_response(jsonify('Task still running'),HTTPStatus.PROCESSING))
+#     simId = gpApp.initSimulationScenarioRunEnvironment(
+#         simConfig=simConfig,
+#     )
+
+#     taskId = str(uuid.uuid4())
+#     # This needs to be updated to return a simulation environment immediately that can be
+#     if flaskHttpApp.config["ALLOW_THREADING"]:
+#         # http://eventlet.net/doc/patching.html
+#         green_thread = dual_pool.spawn(
+#             lambda: gpApp.run_scenario(simulationId=simId))
+#         green_thread.link(green_thread.getGreenThreadResult(
+#             lambda res: res[0].to_json() if res is not None else None))
+#         if green_thread in taskResults:
+#             taskResults.pop(green_thread)
+#         tasks[taskId] = green_thread
+
+#         statusId = HTTPStatus.ACCEPTED
+#         return wrap_CORS_response(make_response({'status': statusId, 'message': 'scenario_running', 'task_id': taskId}, statusId))
+#     else:
+#         abort(wrap_CORS_response(Response(
+#             'Cant run scenarios in synchronous mode as will block the rest of the app and therefore wont be able to adjust parameters to continuously parameterise the scenario', status=HTTPStatus.METHOD_NOT_ALLOWED)))
+    raise NotImplementedError('must implement gpApp.run_scenario(simulationId=simId) first')
+        
+
+@require_appkey
+@flaskHttpApp.route('/run-single-iteration', methods=['POST'])
+def run_single_iteration():
+    '''Initialise a new single iteration simulation environment and start it.
+        --
+        Required query params: 
+            - simulation configuration params
+        '''
+    if not gpApp.initialised():
+        status=HTTPStatus.BAD_REQUEST
+        abort(wrap_CORS_response(Response(
+            'app must first be initialised to create a simulation environment', status=status)))
+        
+    data = _loadRequestData()
+    simConfig = SimulationIterationConfig.createFromDict(data)
+    
+    simId,simType = gpApp.initSimulationSingleIterationEnvironment(
+        simConfig=simConfig,
+    )
+    
+    taskId = str(uuid.uuid4())
+    # This needs to be updated to return a simulation environment immediately that can be 
+    if flaskHttpApp.config["ALLOW_THREADING"]:
+        # http://eventlet.net/doc/patching.html
+        green_thread = dual_pool.spawn(
+            lambda : gpApp.run_isolated_iteration(simulationId=simId))
+        green_thread.link(green_thread.getGreenThreadResult(lambda res: res[0].to_json() if res is not None else None))
+        if green_thread in taskResults:
+            taskResults.pop(green_thread)
+        tasks[taskId] = green_thread
+        
+        statusId = HTTPStatus.ACCEPTED
+        return wrap_CORS_response(make_response({'status': statusId, 'message': 'single_iteration_running', 'task_id': taskId}, statusId))
     else:
-        abort(404, 'Bad Request: taskId not found!')
+        df = gpApp.run_isolated_iteration(simulationId=simId)
+        statusId = HTTPStatus.OK
+        return wrap_CORS_response(make_response({'status': statusId, 'message': 'single_iteration_ran', 'task_id': taskId}, statusId))
 
+
+
+@require_appkey
+@flaskHttpApp.route('/app-config', methods=['POST'])
+def get_sim_config():
+    statusId = HTTPStatus.OK
+    simId = _loadSimulationId()
+    simConfig = gpApp.getSimConfig(simulationId=simId)
+    if simConfig is None:
+        abort(wrap_CORS_response(Response(
+            'No simulation env found', status=HTTPStatus.NOT_FOUND)))
+    else:
+        return wrap_CORS_response(make_response(jsonify(simConfig.toJson()), statusId))
+    
 
 @flaskHttpApp.route('/item-sales', methods=['GET'])
 def item_sales():
@@ -411,8 +494,27 @@ def adjust_purchases_delay_seconds(delay: float = 1.0):
         response = wrap_CORS_response(
             Response({'message': 'success'}, status=HTTPStatus.ACCEPTED))
     except Exception as e:
-        print(e)
+        logging.debug(e)
         raise e
+
+
+@require_appkey
+@flaskHttpApp.route('/adjust-retailer', methods=['POST'])
+def adjust_retailer_in_sim():
+    simId = _loadSimulationId()
+    data = _loadRequestData()
+    validateRetailer, controlRetailer = _validateRetailerInRequestData(data)
+    if validateRetailer != InvalidRetailerReason.validRetailer:
+        _abortBadRetailerRequest(validateRetailer=validateRetailer)
+    elif controlRetailer is not None:
+        taskId = gpApp.adjustSimParameters(simId, controlRetailer)
+        return wrap_CORS_response(make_response({'status': HTTPStatus.ACCEPTED, 'message': 'retailer_asjustment_accepted', 'task_id': taskId}, HTTPStatus.ACCEPTED))
+    else:
+        abort(wrap_CORS_response(Response(
+            '', status=HTTPStatus.INTERNAL_SERVER_ERROR)))
+
+    return wrap_CORS_response(make_response(gpApp.initialEntitiesSnapshot))
+
 
 
 @flaskHttpApp.route('/ws/event-names-cat', methods=['GET'])
@@ -425,14 +527,14 @@ def get_all_accepted_ws_event_names():
 @flaskHttpApp.route('/ws/event-response-names-cat', methods=['GET'])
 def get_all_accepted_ws_response_event_names():
     eventNames = dict({name: value for (name, value)
-                      in GPStrategyMultiplier.__members__.items()})
+                      in RetailerStrategyGPMultiplier.__members__.items()})
     return wrap_CORS_response(Response({'data': eventNames}, status=HTTPStatus.OK))
 
 
 @flaskHttpApp.route('/strategy-names-cat', methods=['GET'])
 def getStrategyValueMap():
     eventNames = dict({name: value for (name, value)
-                      in GPStrategyMultiplier.__members__.items()})
+                      in RetailerStrategyGPMultiplier.__members__.items()})
     return wrap_CORS_response(Response({'data': eventNames}, status=HTTPStatus.OK))
 
 
@@ -480,17 +582,15 @@ def connect():
     return wrap_CORS_response(response)
 
 
+@require_appkey
 @flaskHttpApp.route('/start', methods=['GET'])
 def startApp():
     if not gpApp.initialised():
-        (_, entities) = gpApp.initNewSim()
-        # TODO v1.0: This should then get app to push an event called initial state to the websocket whcih tells us we can load views,
-        #    show a loading spinner until then.
-        # TODO v1.2: Subscribe to stream
-        response = wrap_CORS_response(make_response(render_template(
-            'connect.html', json=entities)))
-        response.headers['X-Parachutes'] = 'parachutes are cool'
-        return response
+        gpApp.initNewSim()
+    
+    run_single_iteration() # if needs api key, can copy the logic from this function here...
+        
+    
 
 
 @flaskHttpApp.route('/starting-state', methods=['GET'])

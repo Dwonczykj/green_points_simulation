@@ -1,11 +1,15 @@
 // import 'package:chopper/chopper.dart'; // flutter pub run build_runner build --delete-conflicting-outputs
 
+import 'package:logging/logging.dart';
+
 abstract class TSerializable {
   TSerializable.fromJson(Map<String, dynamic> json);
 
   TSerializable();
 
   Map<String, dynamic> toJson();
+
+  static final log = Logger('TSerializable');
 
   static Map<String, T> getJsonMapValue<T extends TSerializable>(
       Map<String, dynamic> json,
@@ -24,7 +28,7 @@ abstract class TSerializable {
           fieldName: '${err.fieldName}.$fieldName');
     } catch (err) {
       throw JsonParseException('Unable to pass json of fieldName: $fieldName',
-          fieldName: '$fieldName');
+          fieldName: fieldName);
     }
   }
 
@@ -50,7 +54,7 @@ abstract class TSerializable {
           fieldName: '${err.fieldName}.$fieldName');
     } catch (err) {
       throw JsonParseException('Unable to pass json of fieldName: $fieldName',
-          fieldName: '$fieldName');
+          fieldName: fieldName);
     }
   }
 
@@ -76,7 +80,7 @@ abstract class TSerializable {
           fieldName: '${err.fieldName}.$fieldName');
     } catch (err) {
       throw JsonParseException('Unable to pass json of fieldName: $fieldName',
-          fieldName: '$fieldName');
+          fieldName: fieldName);
     }
   }
 
@@ -94,7 +98,7 @@ abstract class TSerializable {
           fieldName: '${err.fieldName}.$fieldName');
     } catch (err) {
       throw JsonParseException('Unable to pass json of fieldName: $fieldName',
-          fieldName: '$fieldName');
+          fieldName: fieldName);
     }
   }
 
@@ -104,9 +108,9 @@ abstract class TSerializable {
       json = _defaultJson(json, fieldName, defaultVal: defaultVal);
       assert(json.containsKey(fieldName));
       json[fieldName] ??= defaultVal;
-      // assert(json[fieldName] is T); // BUG: Dont ccheck type as type is _JsonMap
+      // assert(json[fieldName] is T); // BUG: Dont check type as type is _JsonMap
       if (json[fieldName] != null && json[fieldName] is! T) {
-        json[fieldName] = Map<String, int>.from(json[fieldName]);
+        json[fieldName] = Map<String, dynamic>.from(json[fieldName]);
       }
       return (json[fieldName] ?? defaultVal);
     } on JsonParseException catch (err) {
@@ -114,7 +118,30 @@ abstract class TSerializable {
           fieldName: '${err.fieldName}.$fieldName');
     } catch (err) {
       throw JsonParseException('Unable to pass json of fieldName: $fieldName',
-          fieldName: '$fieldName');
+          fieldName: fieldName);
+    }
+  }
+
+  static T getJsonValTypeTryParseValue<T>(
+      Map<String, dynamic> json, String fieldName,
+      {required T? Function(String jsonVal) parser, T? defaultVal}) {
+    try {
+      json = _defaultJson(json, fieldName, defaultVal: defaultVal);
+      assert(json.containsKey(fieldName));
+      json[fieldName] ??= defaultVal;
+      // assert(json[fieldName] is T); // BUG: Dont check type as type is _JsonMap
+      if (json[fieldName] != null && json[fieldName] is! String) {
+        json[fieldName] = Map<String, dynamic>.from(json[fieldName]);
+      } else {
+        json[fieldName] = parser(json[fieldName]) ?? defaultVal;
+      }
+      return (json[fieldName] ?? defaultVal);
+    } on JsonParseException catch (err) {
+      throw JsonParseException('Unable to pass json of fieldName: $fieldName',
+          fieldName: '${err.fieldName}.$fieldName');
+    } catch (err) {
+      throw JsonParseException('Unable to pass json of fieldName: $fieldName',
+          fieldName: fieldName);
     }
   }
 
@@ -141,7 +168,7 @@ abstract class TSerializable {
       var fieldNameJ = fieldNames.join('.');
       throw JsonParseException(
           'Unable to pass json of fieldName: $fieldNameJ with value: $out',
-          fieldName: '$fieldNameJ');
+          fieldName: fieldNameJ);
     }
   }
 
@@ -171,7 +198,7 @@ abstract class TSerializable {
     } catch (err) {
       var fieldNameJ = fieldNames.join('.');
       throw JsonParseException('Unable to pass json of fieldName: $fieldNameJ',
-          fieldName: '$fieldNameJ');
+          fieldName: fieldNameJ);
     }
   }
 
@@ -194,7 +221,7 @@ abstract class TSerializable {
     } catch (err) {
       var fieldNameJ = fieldNames.join('.');
       throw JsonParseException('Unable to pass json of fieldName: $fieldNameJ',
-          fieldName: '$fieldNameJ');
+          fieldName: fieldNameJ);
     }
   }
 
@@ -215,7 +242,7 @@ abstract class TSerializable {
           fieldName: '${err.fieldName}.$fieldName');
     } catch (err) {
       throw JsonParseException('Unable to pass json of fieldName: $fieldName',
-          fieldName: '$fieldName');
+          fieldName: fieldName);
     }
   }
 }
@@ -225,8 +252,9 @@ abstract class ServiceInterface<T extends TSerializable> {
 }
 
 class JsonParseException implements Exception {
+  static final log = Logger('JsonParseException');
   JsonParseException(this.message, {required this.fieldName}) : super() {
-    print(this.errMsg);
+    log.fine(errMsg);
   }
 
   final String message;

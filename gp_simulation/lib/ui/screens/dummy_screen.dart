@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:webtemplate/ui/network/network.dart';
 
-import '../model/models.dart';
+import '../model/all_models.dart';
 
 /// Sample ordinal data type.
 class OrdinalSales {

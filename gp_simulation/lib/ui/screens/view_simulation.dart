@@ -9,8 +9,7 @@ import 'package:webtemplate/ui/network/market_state_viewer.dart';
 import 'package:webtemplate/ui/screens/i_page_wrapper.dart';
 import 'package:webtemplate/utils/string_extensions.dart';
 
-enum ViewAggregationType { runningSum, runningAverage, runningVariance }
-enum ViewMeasureType { salesCount, greenPointsIssued }
+import '../model/models.dart';
 
 class ViewSimulationPage extends StatelessWidget {
   const ViewSimulationPage({Key? key}) : super(key: key);
@@ -20,16 +19,23 @@ class ViewSimulationPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return IPageWrapper(
         title: title,
-        childGetter: (marketStateViewer, snapshot) =>
-            ViewSimulation(marketStateViewer: marketStateViewer));
+        childGetter: (marketStateViewer, appStateManager, snapshot) =>
+            ViewSimulation(
+              marketStateViewer: marketStateViewer,
+              appStateManager: appStateManager,
+            ));
   }
 }
 
 class ViewSimulation extends StatefulWidget {
-  const ViewSimulation({Key? key, required this.marketStateViewer})
+  const ViewSimulation(
+      {Key? key,
+      required this.marketStateViewer,
+      required this.appStateManager})
       : super(key: key);
 
   final IMarketStateViewer marketStateViewer;
+  final AppStateManager appStateManager;
 
   @override
   _ViewSimulationState createState() => _ViewSimulationState();
@@ -37,19 +43,22 @@ class ViewSimulation extends StatefulWidget {
 
 //TODO: Design Spec: Add ability to filter a particular retailer line on the graph and then view historical sims to see the effects of tweaking the retailer's parameters.
 class _ViewSimulationState extends State<ViewSimulation> {
-  StreamSubscription<dynamic>? _subscription;
-
-  var chartData = <charts.Series<IterationDataPoint, int>>[];
   final log = Logger('_ViewSimulationState');
   List<String> runningSimulationsWithIds = <String>[];
-  late List<String>? retailerNames = null;
-  late Map<String, Color>? retailerColorMap = null;
-  late SimulationDataCache? data = null;
-  var viewAggType = ViewAggregationType.runningAverage;
-  ViewMeasureType viewMeasType = ViewMeasureType.salesCount;
-  var backingData = <String,
-      Map<String, Map<String, charts.Series<IterationDataPoint, int>>>>{};
-  String connectionStatus = 'N/A';
+
+  List<String>? get retailerNames => widget.appStateManager.retailerNames;
+  Map<String, Color>? get retailerColorMap =>
+      widget.appStateManager.retailerColorMap;
+  SimulationDataCache? get data => widget.appStateManager.simulationDataCache;
+
+  ViewAggregationType get viewAggType => widget.appStateManager.viewAggType;
+  ViewMeasureType get viewMeasType => widget.appStateManager.viewMeasType;
+
+  String get connectionStatus => widget.appStateManager.connectionStatus;
+
+  Map<String, Map<String, Map<String, charts.Series<IterationDataPoint, int>>>>
+      get backingData =>
+          widget.appStateManager.simulationRunningMetricsChartBackingData;
 
   List<charts.Series<IterationDataPoint, int>> get chartDataGetter =>
       backingData.entries
@@ -63,68 +72,14 @@ class _ViewSimulationState extends State<ViewSimulation> {
   String get title =>
       ('Retailer ${viewMeasType.name.toSentenceCaseFromCamelCase()}');
 
-  void registerWSSNotifactions() {
-    _subscription = widget.marketStateViewer.onSimulationProgress.listen(
-      (SimulationProgressData? wsMessage) {
-        if (wsMessage != null) {
-          if (retailerNames == null) {
-            retailerNames = wsMessage.runningAverage.salesCount.keys.toList();
-            retailerColorMap = Map<String, Color>.fromEntries(retailerNames!
-                .map((rname) => MapEntry<String, Color>(
-                    rname,
-                    Color((math.Random().nextDouble() * 0xFFFFFF).toInt())
-                        .withOpacity(1.0))));
-            data = SimulationDataCache(wsMessage);
-          } else {
-            data!.append(wsMessage);
-          }
-
-          setState(() {
-            backingData = data!.mapAggType((aggType, seriesColn) =>
-                seriesColn.map((seriesName, seriesByRetailer) =>
-                    seriesByRetailer.map((rname, datapoints) => MapEntry(
-                        rname,
-                        charts.Series<IterationDataPoint, int>(
-                          id: '$rname $seriesName ($aggType)',
-                          seriesCategory: aggType,
-                          labelAccessorFn: (datapoint, _) =>
-                              '$rname $seriesName ($aggType)',
-                          colorFn: (_, __) => charts.ColorUtil.fromDartColor(
-                              retailerColorMap?[rname] ??
-                                  const Color.fromRGBO(100, 100, 100, 1)),
-                          domainFn: (datapoint, _) => datapoint.iterationNumber,
-                          measureFn: (datapoint, _) => datapoint.datapoint,
-                          data: datapoints,
-                        )))));
-
-            chartData = backingData.entries
-                .where((element) => element.key == viewAggType.name)
-                .expand((element) => element.value.entries
-                    .where((subMeas) => subMeas.key == viewMeasType.name)
-                    .expand((subMeas) => subMeas.value.entries
-                        .map((retailerName) => retailerName.value)
-                        .toList()))
-                .toList();
-          });
-        }
-      },
-      onDone: () {
-        log.info('Transaction stream closed!');
-      },
-    );
-  }
-
   @override
   void initState() {
-    registerWSSNotifactions();
-    widget.marketStateViewer.addListener(_listenSocket);
+    super.initState();
   }
 
   @override
   void dispose() {
     super.dispose();
-    widget.marketStateViewer.removeListener(_listenSocket);
-    _subscription!.cancel();
   }
 
   static List<charts.Series<IterationDataPoint, int>> _createSampleData() {
@@ -146,38 +101,9 @@ class _ViewSimulationState extends State<ViewSimulation> {
     ];
   }
 
-  _listenSocket() {
-    setState(() {
-      connectionStatus = widget.marketStateViewer.connectionStatus;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    final marketStateService = widget.marketStateViewer;
-    // return Scaffold(
-    //       appBar: AppBar(
-    //       backgroundColor: Theme.of(context).bottomAppBarColor,
-    //       title: Text(title),
-    //       actions: <Widget>[
-    //         Padding(
-    //           padding: const EdgeInsets.only(right: 8.0),
-    //           child: Column(
-    //               mainAxisAlignment: MainAxisAlignment.center,
-    //               children: marketStateService.webSocketConnected
-    //                   ? [
-    //                       Icon(Icons.wifi, size: 25),
-    //                       Text(marketStateService.connectionStatus),
-    //                     ]
-    //                   : [
-    //                       Icon(Icons.wifi_off, size: 25),
-    //                       Text(marketStateService.connectionStatus),
-    //                     ]),
-    //         )
-    //       ],
-    //       ),
-    //       body: SafeArea(
-    //         child:
+    
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -210,20 +136,8 @@ class _ViewSimulationState extends State<ViewSimulation> {
                             max: (ViewMeasureType.values.length - 1).toDouble(),
                             onChangeEnd: (value) {
                               var i = value.round();
-                              setState(() {
-                                viewMeasType = ViewMeasureType.values[i];
-                                chartData = backingData.entries
-                                    .where((element) =>
-                                        element.key == viewAggType.name)
-                                    .expand((element) => element.value.entries
-                                        .where((subMeas) =>
-                                            subMeas.key == viewMeasType.name)
-                                        .expand((subEl) => subEl.value.entries
-                                            .map((retailerName) =>
-                                                retailerName.value)
-                                            .toList()))
-                                    .toList();
-                              });
+                              widget.appStateManager
+                                  .updateMeasureType(ViewMeasureType.values[i]);
                             },
                             onChanged: (double value) {
                               // setState({});
@@ -254,21 +168,8 @@ class _ViewSimulationState extends State<ViewSimulation> {
                                 .toDouble(),
                             onChangeEnd: (value) {
                               var i = value.round();
-                              setState(() {
-                                viewAggType = ViewAggregationType.values[i];
-                                chartData = backingData.entries
-                                    .where((element) =>
-                                        element.key == viewAggType.name)
-                                    .expand((element) => element.value.entries
-                                        .expand((subEl) => subEl.value.entries
-                                            .where((subMeas) =>
-                                                subMeas.key ==
-                                                viewMeasType.name)
-                                            .map((retailerName) =>
-                                                retailerName.value)
-                                            .toList()))
-                                    .toList();
-                              });
+                              widget.appStateManager.updateAggregationType(
+                                  ViewAggregationType.values[i]);
                             },
                             onChanged: (double value) {
                               // setState({});
@@ -281,7 +182,7 @@ class _ViewSimulationState extends State<ViewSimulation> {
                 ],
               ),
               // SimpleLineChart.withSampleData(),
-              chartData.isNotEmpty
+              chartDataGetter.isNotEmpty
                   ? charts.LineChart(
                       chartDataGetter, //TODO P1: See if still works with the getter -> [this.chartDataGetter]
                       // customSeriesRenderers: [],
@@ -356,13 +257,13 @@ class _ViewSimulationState extends State<ViewSimulation> {
                       child: RaisedButton(
                         child: const Text('Run Simulation'),
                         onPressed: () {
-                          marketStateService
-                              .startFullSimulation(0.1, 500)
-                              .then((value) {
-                            if (value != null) {
+                          widget.appStateManager
+                              .runFullSimulation()
+                              .then((simId) {
+                            if (simId != null) {
                               setState(() {
                                 runningSimulationsWithIds
-                                    .add(value.simulationId);
+                                    .add(simId);
                               });
                             }
                           });
@@ -379,86 +280,12 @@ class _ViewSimulationState extends State<ViewSimulation> {
         ))
       ],
     );
-    // ));
   }
 }
 
-class IterationDataPoint {
-  final String retailer;
-  final num? datapoint;
-  final int iterationNumber;
-  final String seriesName;
-  const IterationDataPoint(
-      this.iterationNumber, this.retailer, this.datapoint, this.seriesName);
-}
 
-class SimulationDataCache {
-  final Map<String, SimulationDataCache_SeriesCollection> data;
 
-  void append(SimulationProgressData message) {
-    data['runningSum']?.append(message.runningSum, message.iterationNumber);
-    data['runningAverage']
-        ?.append(message.runningAverage, message.iterationNumber);
-    data['runningVariance']
-        ?.append(message.runningVariance, message.iterationNumber);
-  }
 
-  Map<String, T> mapAggType<T>(
-      T Function(
-              String aggType, SimulationDataCache_SeriesCollection seriesColn)
-          func) {
-    return data.map((aggType, seriesColn) =>
-        MapEntry<String, T>(aggType, func(aggType, seriesColn)));
-  }
-
-  SimulationDataCache(SimulationProgressData initialMessage)
-      : data = {
-          'runningSum': SimulationDataCache_SeriesCollection(
-              initialMessage.runningSum, initialMessage.iterationNumber),
-          'runningAverage': SimulationDataCache_SeriesCollection(
-              initialMessage.runningAverage, initialMessage.iterationNumber),
-          'runningVariance': SimulationDataCache_SeriesCollection(
-              initialMessage.runningVariance, initialMessage.iterationNumber),
-        };
-}
-
-class SimulationDataCache_SeriesCollection {
-  Map<String, T> map<T>(
-      T Function(
-              String aggType, Map<String, List<IterationDataPoint>> seriesColn)
-          func) {
-    return data.map((aggType, seriesColn) =>
-        MapEntry<String, T>(aggType, func(aggType, seriesColn)));
-  }
-
-  final Map<String, Map<String, List<IterationDataPoint>>> data;
-
-  SimulationDataCache_SeriesCollection(
-      SimulationProgressDataSeries series, int firstIterationNumber)
-      : data = {
-          'salesCount': series.salesCount.map((rname, value) => MapEntry(
-                  rname, <IterationDataPoint>[
-                IterationDataPoint(
-                    firstIterationNumber, rname, value, 'salesCount')
-              ])),
-          'greenPointsIssued': series.greenPointsIssued.map((rname, value) =>
-              MapEntry(rname, <IterationDataPoint>[
-                IterationDataPoint(
-                    firstIterationNumber, rname, value, 'greenPointsIssued')
-              ])),
-        };
-
-  void append(SimulationProgressDataSeries series, int iterationNumber) {
-    data['salesCount']?.forEach((rname, s) {
-      s.add(IterationDataPoint(
-          iterationNumber, rname, series.salesCount[rname], 'salesCount'));
-    });
-    data['greenPointsIssued']?.forEach((rname, s) {
-      s.add(IterationDataPoint(iterationNumber, rname,
-          series.greenPointsIssued[rname], 'greenPointsIssued'));
-    });
-  }
-}
 
 // AggregationType -> WhatCalculated -> RetailerName -> LatestPoint
 // AggregationType -> WhatCalculated -> RetailerName -> charts.Series(pointsHistory)

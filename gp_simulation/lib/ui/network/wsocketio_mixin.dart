@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 
 import '../../utils/ansi_print_colors.dart';
 import '../../utils/pipe.dart';
-import '../model/models.dart';
+import '../model/all_models.dart';
 import 'market_state_viewer.dart';
 import 'socket_service.dart';
 import 'web_socket/web_socket_message_handler.dart';

@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart' show rootBundle;
 
-import '../model/models.dart';
+import '../model/all_models.dart';
 import 'service_interface.dart';
 
 class MockService implements ServiceInterface<CustomerModel> {

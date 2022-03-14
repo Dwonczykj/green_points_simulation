@@ -13,7 +13,7 @@ import logging
 from colorama import Fore, Style
 import json
 from app_globals import gpApp
-from Bank import GPStrategyMultiplier, RetailerSustainabilityIntercept
+from Bank import RetailerStrategyGPMultiplier, RetailerSustainabilityIntercept
 from http_validators import validate_retailer_name, validate_retailer_sustainability, validate_retailer_strategy
 from logic import *
 from socketio_init import socketio
@@ -107,18 +107,18 @@ def handle_json_global_nsp(jsonBlob):
     elif eventName == WebSocketClientEvent.message and hasattr(message, 'data'):
         handle_message(gpApp, message.data)
         emit(WebSocketServerResponseEvent.message_received, 'hi from the green points server')
-    elif eventName == WebSocketClientEvent.start_isolated_simulation:
-        entities = init_new_simulation(gpApp)
-        if entities is not None:
-            emit(WebSocketServerResponseEvent.gpApp_initialised,
-                 {
-                    'entities': entities
-                 })
-        outputJson = start_isolated_simulation(gpApp)
-        if outputJson is not None:
-            emit(WebSocketServerResponseEvent.simulation_ran, json.loads(outputJson))
-        else:
-            emit(WebSocketServerResponseEvent.simulation_already_running, 'simulation already running')
+    # elif eventName == WebSocketClientEvent.start_isolated_simulation:
+    #     entities = init_new_simulation(gpApp)
+    #     if entities is not None:
+    #         emit(WebSocketServerResponseEvent.gpApp_initialised,
+    #              {
+    #                 'entities': entities
+    #              })
+    #     outputJson = start_isolated_simulation(gpApp)
+    #     if outputJson is not None:
+    #         emit(WebSocketServerResponseEvent.simulation_ran, json.loads(outputJson))
+    #     else:
+    #         emit(WebSocketServerResponseEvent.simulation_already_running, 'simulation already running')
     elif eventName == WebSocketClientEvent.get_purchase_delay:
         emit(WebSocketServerResponseEvent.purchase_delay, gpApp.secondsBetweenPurchases)
     elif eventName == WebSocketClientEvent.change_purchase_delay:
@@ -143,7 +143,7 @@ def handle_json_global_nsp(jsonBlob):
             simEnv = gpApp\
                 .getSimulationEnvironment(simulationId)
             if simEnv is not None:
-                simEnv.retailers[retailerName].strategy = GPStrategyMultiplier[newStrategy]
+                simEnv.retailers[retailerName].strategy = RetailerStrategyGPMultiplier[newStrategy]
                 emit(WebSocketServerResponseEvent.retailer_strategy_changed,
                      simEnv.retailers[retailerName].strategy)
     elif eventName == WebSocketClientEvent.change_retailer_sustainability_multiplier:

@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:ansicolor/ansicolor.dart';
 
-import '../../model/models.dart';
+import '../../model/all_models.dart';
 import '../service_interface.dart';
 
 class SocketioMessageHandler extends WebSocketMessageHandler {

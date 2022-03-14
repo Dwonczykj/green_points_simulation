@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:webtemplate/ui/model/models.dart';
 import 'package:webtemplate/ui/style/app_theme.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:logging/logging.dart';
 
 import 'navigation/app_router.gr.dart';
-import 'ui/model/models.dart';
+import 'ui/model/all_models.dart';
 import 'ui/network/network.dart';
 import 'ui/screens/screens.dart';
 
@@ -41,6 +42,11 @@ class MyApp extends StatelessWidget {
         // State Managers
         ChangeNotifierProvider<IMarketStateViewer>(
           create: (context) => _marketStateViewer,
+          lazy: false,
+        ),
+        ChangeNotifierProvider<AppStateManager>(
+          create: (context) =>
+              AppStateManager.getInstance(context, _marketStateViewer),
           lazy: false,
         ),
 

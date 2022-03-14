@@ -8,8 +8,10 @@ from flask_socketio import SocketIO, send, emit, \
     Namespace, disconnect
     
 import pandas as pd
+from Bank import ControlRetailer, RetailerStrategyGPMultiplier, RetailerSustainabilityIntercept
 
 from GreenPointsSimulation import GreenPointsLoyaltyApp
+from app_config import SimulationConfig
 
 
 
@@ -336,7 +338,11 @@ class TestSocketIO(unittest.TestCase):
         client.get_received()
         
         gpApp.initNewSim()
-        tkn = gpApp.simulationEnvironmentToken()
+        simConfig = SimulationConfig()
+        simConfig.maxN=10
+        simConfig.convergenceTH=0.1
+        simId, simType = gpApp.initSimulationFullEnvironment(
+            simConfig=simConfig)
         
         def _f():
             client.get_received()
@@ -351,9 +357,12 @@ class TestSocketIO(unittest.TestCase):
             self.assertEqual(pongs[0]['args'][0], 'PONGING')
             print('Success Ping -> Pong received')
             
+        def _doNothing():
+            pass
+            
         def _g():
             print('run full sim')
-            gpApp.run_full_simulation(tkn,maxN=10,convergence_threshold=0.1)
+            gpApp.run_full_simulation(simId,betweenIterationCallback=_doNothing)
             received = client.get_received()
             print('completed full sim')
             self.assertGreater(len(received), 50)

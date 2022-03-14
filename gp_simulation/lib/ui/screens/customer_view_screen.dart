@@ -9,9 +9,10 @@ import 'package:provider/provider.dart';
 import 'package:quiver/iterables.dart';
 import 'package:tuple/tuple.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
+import 'package:webtemplate/ui/model/models.dart';
 
 import '../components/components.dart';
-import '../model/models.dart';
+import '../model/all_models.dart';
 import 'package:webtemplate/ui/network/network.dart';
 import 'package:webtemplate/utils/indexed_iterable.dart';
 
@@ -25,16 +26,17 @@ class CustomerViewScreenPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return IPageWrapper(
         title: title,
-        childGetter: (marketStateViewer, snapshot) => snapshot.hasData &&
-                snapshot.data!.customers.isNotEmpty &&
-                snapshot.data!.retailers.isNotEmpty
-            ? CustomersView(
-                marketStateViewer: marketStateViewer,
-                customers: snapshot.data!.customers,
-                retailers: snapshot.data!.retailers,
-                retailersCluster: snapshot.data!.retailersCluster,
-              )
-            : const Placeholder());
+        childGetter: (marketStateViewer, appStateManager, snapshot) =>
+            snapshot.hasData &&
+                    snapshot.data!.customers.isNotEmpty &&
+                    snapshot.data!.retailers.isNotEmpty
+                ? CustomersView(
+                    marketStateViewer: marketStateViewer,
+                    customers: snapshot.data!.customers,
+                    retailers: snapshot.data!.retailers,
+                    retailersCluster: snapshot.data!.retailersCluster,
+                    appStateManager: appStateManager)
+                : const Placeholder());
   }
 }
 
@@ -45,12 +47,14 @@ class CustomersView extends StatefulWidget {
     required this.retailers,
     required this.retailersCluster,
     required this.marketStateViewer,
+      required this.appStateManager
   }) : super(key: key);
 
   final List<CustomerModel> customers;
   final List<RetailerModel> retailers;
   final AggregatedRetailers retailersCluster;
   final IMarketStateViewer marketStateViewer;
+  final AppStateManager appStateManager;
 
   int get numCustomers => customers.length;
   int get numRetailers => retailers.length;
@@ -251,10 +255,10 @@ class _CustomersViewState extends State<CustomersView>
         ]),
         Center(
           child: RaisedButton(
-            child: Text('Run Simulation'),
+            child: const Text('Run Single Iteration'),
             onPressed: () {
               // marketStateService.testWsConnMemory();
-              marketStateService.startIsolatedSimIteration();
+              widget.appStateManager.runSingleIteration();
             },
           ),
         ),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../model/models.dart';
+import '../model/all_models.dart';
 
 class CustomerDetailCard extends StatelessWidget {
   const CustomerDetailCard({Key? key, required this.customer})

@@ -9,3 +9,5 @@ export 'animated_money_widget.dart';
 export 'money_send_animation_widget.dart';
 export 'balances_chart.dart';
 export 'stacked_balances_chart.dart';
+export 'number_input.dart';
+export 'config_dialog.dart';

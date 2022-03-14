@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tuple/tuple.dart';
 
-import '../model/models.dart';
+import '../model/all_models.dart';
 import 'spider_mixin_layout.dart';
 
 class MoneySendAnimationWidget extends StatelessWidget with SpiderLayoutMixin {

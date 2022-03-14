@@ -5,7 +5,7 @@ import 'package:webtemplate/ui/screens/dummy_screen.dart';
 import 'package:webtemplate/ui/screens/i_page_wrapper.dart';
 import 'package:webtemplate/ui/screens/view_simulation.dart';
 import '../../navigation/app_router.gr.dart';
-import '../model/models.dart';
+import '../model/all_models.dart';
 import '../network/network.dart';
 import 'customer_view_screen.dart';
 // import 'package:webtemplate/ui/components/retailer_consumer_spider.dart';

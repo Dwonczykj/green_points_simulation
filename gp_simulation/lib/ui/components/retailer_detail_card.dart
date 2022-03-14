@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:webtemplate/ui/model/models.dart';
+import 'package:webtemplate/ui/model/all_models.dart';
 
 import '../../utils/number_formatting.dart';
 

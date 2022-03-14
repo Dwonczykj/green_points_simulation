@@ -1,5 +1,8 @@
 from __future__ import annotations
-from typing import Any, Callable, Tuple
+from enum import Enum
+from typing import Any, Callable, Literal, Tuple, TypeGuard
+import cachetools.func # for ttl_cacheing of sim_envs
+import cachetools
 import eventlet
 import time
 from eventlet import queue
@@ -10,17 +13,19 @@ import logging
 import pandas as pd
 import numpy as np
 from flask_socketio import SocketIO
+import abc
 
 # from Singleton import classproperty
 from data_fetcher import get_dataset, pd_dataframe_explain_update
 from Observer import Observable, Observer
-from Bank import Bank, BankAccountView, Customer, Entity, GPStrategyMultiplier, Retailer, RetailerSustainabilityIntercept, SalesAggregation
+from Bank import Bank, BankAccountView, ControlRetailer, Customer, Entity, RetailerStrategyGPMultiplier, Retailer, RetailerSustainabilityIntercept, SalesAggregation
 from Bank import debug as APP_DEBUG
 from Coin import Money
 # import random
 from ISerializable import TSTRUC_ALIAS, SerializableList
 from event_names import WebSocketServerResponseEvent
 from gpApp_entity_initializer import *
+from app_config import SimulationConfig, SimulationIterationConfig
 
 
 from web_socket_stack import WebSocketsStack
@@ -28,6 +33,10 @@ from web_socket_stack import WebSocketsStack
 # sys.path += ['./Observable/utils']
 
 
+class SimulationEnvType(Enum):
+    Full = 1
+    Scenario = 2
+    SingleIteration = 3
 
 class GreenPointsLoyaltyApp():
     '''Singleton: Call getInstance() to get'''
@@ -64,7 +73,9 @@ class GreenPointsLoyaltyApp():
             self._entityInitialiser = EntityInitialiser(df=df)
             self._envInitializer = GreenPointsLoyaltyApp.Initializer(
                 gpApp=self)
-            self._simulationEnvironments:dict[str,Tuple[float,GreenPointsLoyaltyApp.SimulationEnvironment]] = {}
+            # self._simulationEnvironments:dict[str,Tuple[float,GreenPointsLoyaltyApp.SimulationEnvironment]] = {}
+            self._simulationEnvironments: cachetools.TTLCache[str, Tuple[float, GreenPointsLoyaltyApp.SimulationEnvironment]] = \
+                cachetools.TTLCache(maxsize=128, ttl=30 * 60)
             self._active_simulation_environment = None
             self._running = False
             self._retailers = self._entityInitialiser.retailers
@@ -222,9 +233,9 @@ class GreenPointsLoyaltyApp():
         def retailerNames(self):
             return [name for name in self.retailers.keys()]
         
-        @property
-        def customers(self):
-            return self.gpApp._entityInitialiser.customers
+        # @property
+        # def customers(self):
+        #     return self.gpApp._entityInitialiser.customers
         
         
         @property
@@ -239,7 +250,7 @@ class GreenPointsLoyaltyApp():
                     'salesHistory': [s.toDictUI() for r in self._retailers.values() for s in r.salesHistory],
                     'totalSales': sum((r.totalSales for r in self._retailers.values()), start=SalesAggregation.zero()).toDictUI()
                 },
-                'customers': {c.name: c.toDictUI() for c in self.customers}
+                # 'customers': {c.name: c.toDictUI() for c in self.customers}
             }
         
         @property
@@ -303,37 +314,37 @@ class GreenPointsLoyaltyApp():
         #         logging.debug(pd_dataframe_explain_update(_old, self._df_strategized))
         #     return self
         
-        def equalizeGreenPointIssuingVolumeForRetailers(self, setExpectedGPIssuedTo:int, debugShowDiff:bool=False):
-            if self._gpRewardsScaledByRetailerStrategy:
-                raise Warning('Green Point rewards have already been scaled for strategy in the initializer. This method will undo this work by equalising the GPs issued by each retailer...')
-            _old = None
-            if debugShowDiff:
-                _old = self._df_strategized.copy()
-            # Get Expected Number Points per Retailer
-            nItems = self._df_strategized.shape[0]
-            self.expectedPoints = {r: (self._df_strategized[f'{r} GP'].astype(float).to_numpy()
-                                    * self._df_strategized['Prob Customer Select']
-                                    * (BASKET_IS_FULL_SIZE/float(nItems))
-                                    * NUM_SHOP_TRIPS_PER_ITERATION
-                                    ).sum() for r in self.retailerNames}
+        # def equalizeGreenPointIssuingVolumeForRetailers(self, setExpectedGPIssuedTo:int, debugShowDiff:bool=False):
+        #     if self._gpRewardsScaledByRetailerStrategy:
+        #         raise Warning('Green Point rewards have already been scaled for strategy in the initializer. This method will undo this work by equalising the GPs issued by each retailer...')
+        #     _old = None
+        #     if debugShowDiff:
+        #         _old = self._df_strategized.copy()
+        #     # Get Expected Number Points per Retailer
+        #     nItems = self._df_strategized.shape[0]
+        #     self.expectedPoints = {r: (self._df_strategized[f'{r} GP'].astype(float).to_numpy()
+        #                             * self._df_strategized['Prob Customer Select']
+        #                             * (AppConfig.BASKET_FULL_SIZE/float(nItems))
+        #                             * AppConfig.NUM_SHOP_TRIPS_PER_ITERATION
+        #                             ).sum() for r in self.retailerNames}
 
-            # Equalise Expected Number Points to 500
-            _EXPECTED_POINTS = setExpectedGPIssuedTo # 500.0
-            for r in self.retailerNames:
-                if self.expectedPoints[r] > 0:
-                    self._df_strategized[f'{r} GP'] = self._df_strategized[f'{r} GP'] * \
-                        (_EXPECTED_POINTS/self.expectedPoints[r])
-            self._gpIssueingVolumeIsEqualisedBetweenRetailers = True
+        #     # Equalise Expected Number Points to 500
+        #     _EXPECTED_POINTS = setExpectedGPIssuedTo # 500.0
+        #     for r in self.retailerNames:
+        #         if self.expectedPoints[r] > 0:
+        #             self._df_strategized[f'{r} GP'] = self._df_strategized[f'{r} GP'] * \
+        #                 (_EXPECTED_POINTS/self.expectedPoints[r])
+        #     self._gpIssueingVolumeIsEqualisedBetweenRetailers = True
             
-            # Record the effects of the normalisation transformation.
-            self.expectedPointsUniformed = {r: (self._df_strategized[f'{r} GP'].astype(float).to_numpy()
-                                                * self._df_strategized['Prob Customer Select']
-                                                * (BASKET_IS_FULL_SIZE/float(nItems))
-                                                * NUM_SHOP_TRIPS_PER_ITERATION).sum() for r in self.retailerNames}
-            if debugShowDiff:
-                assert isinstance(_old,pd.DataFrame)
-                logging.debug(pd_dataframe_explain_update(_old, self._df_strategized))
-            return self
+        #     # Record the effects of the normalisation transformation.
+        #     self.expectedPointsUniformed = {r: (self._df_strategized[f'{r} GP'].astype(float).to_numpy()
+        #                                         * self._df_strategized['Prob Customer Select']
+        #                                         * (AppConfig.BASKET_FULL_SIZE/float(nItems))
+        #                                         * AppConfig.NUM_SHOP_TRIPS_PER_ITERATION).sum() for r in self.retailerNames}
+        #     if debugShowDiff:
+        #         assert isinstance(_old,pd.DataFrame)
+        #         logging.debug(pd_dataframe_explain_update(_old, self._df_strategized))
+        #     return self
         
         # def adjustGPRewardsByRetailerSustainabilityBaseline(self, debugShowDiff: bool = False):
         #     '''Add a positive bump to the number of GPs that a retailer with a good ESG rating (level of responsible actions towards society) is allowed to issue and the converse for poorly ESG rated retailers'''
@@ -360,8 +371,8 @@ class GreenPointsLoyaltyApp():
             
         #     self.expectedPoints = {r: (self._df_strategized[f'{r} GP'].astype(float).to_numpy()
         #                                * self._df_strategized['Prob Customer Select']
-        #                                * (BASKET_IS_FULL_SIZE/float(nItems))
-        #                                * NUM_SHOP_TRIPS_PER_ITERATION
+        #                                * (AppConfig.BASKET_FULL_SIZE/float(nItems))
+        #                                * AppConfig.NUM_SHOP_TRIPS_PER_ITERATION
         #                                ).sum() 
         #                            for r in self.retailerNames}
         #     if debugShowDiff:
@@ -369,15 +380,38 @@ class GreenPointsLoyaltyApp():
         #         logging.debug(pd_dataframe_explain_update(_old, self._df_strategized))
         #     return self
         
-        def createSimulationEnvironment(self):
-            return GreenPointsLoyaltyApp.SimulationEnvironment(initializer=self)
+        def createSimulationFullEnvironment(self, simConfigParams:SimulationConfig, equalizeGPIssueingVol:bool=False):
+            '''Initialises and calibrates the initial dataset of retailers, items etc adjusted for the parameters specified in retailerStrategy and retailerSustainability'''
+            
+            EXPECTED_POINTS = 500
+            simEnv = GreenPointsLoyaltyApp.SimulationFullEnvironment(initializer=self, simConfig=simConfigParams)
+            if equalizeGPIssueingVol:
+                simEnv.equalizeGreenPointIssuingVolumeForRetailers(setExpectedGPIssuedTo=EXPECTED_POINTS)
+            return simEnv
+        
+        def createSimulationSingleIterationEnvironment(self, simConfigParams:SimulationIterationConfig, equalizeGPIssueingVol:bool=False):
+            '''Initialises and calibrates the initial dataset of retailers, items etc adjusted for the parameters specified in retailerStrategy and retailerSustainability'''
+            
+            EXPECTED_POINTS = 500
+            simEnv = GreenPointsLoyaltyApp.SimulationSingleIterationEnvironment(initializer=self, simConfig=simConfigParams)
+            if equalizeGPIssueingVol:
+                simEnv.equalizeGreenPointIssuingVolumeForRetailers(setExpectedGPIssuedTo=EXPECTED_POINTS)
+            return simEnv
+        
+        def createSimulationScenarioRunEnvironment(self, simConfigParams:SimulationIterationConfig, equalizeGPIssueingVol:bool=False):
+            '''Initialises and calibrates the initial dataset of retailers, items etc adjusted for the parameters specified in retailerStrategy and retailerSustainability'''
+            
+            EXPECTED_POINTS = 500
+            simEnv = GreenPointsLoyaltyApp.SimulationScenarioEnvironment(initializer=self, simConfig=simConfigParams)
+            if equalizeGPIssueingVol:
+                simEnv.equalizeGreenPointIssuingVolumeForRetailers(setExpectedGPIssuedTo=EXPECTED_POINTS)
+            return simEnv
 
 
-    def setSimulationParametersOnEnvInitializer(self):
-        '''Initialises and calibrates the initial dataset of retailers, items etc adjusted for the parameters specified in retailerStrategy and retailerSustainability'''
-        EXPECTED_POINTS = 500
-        self._envInitializer\
-            .equalizeGreenPointIssuingVolumeForRetailers(setExpectedGPIssuedTo=EXPECTED_POINTS)
+    # def setSimulationParametersOnEnvInitializer(self, simulationId:str):
+        
+    #     self._envInitializer\
+    #         .equalizeGreenPointIssuingVolumeForRetailers(setExpectedGPIssuedTo=EXPECTED_POINTS)
             # .adjustStrategyForOneRetailer(retailerName=retailerName,
             #                               retailerStrategy=retailerStrategy,
             #                               retailerSustainability=retailerSustainability)\
@@ -385,12 +419,13 @@ class GreenPointsLoyaltyApp():
             # .mutliplyGPRewardsByRetailerStrategy(retailerName=retailerName)\
             # .adjustGPRewardsByRetailerSustainabilityBaseline()
             
-        self._initialised = True
-        return self._envInitializer
+        # return self._envInitializer
         
     def initNewSim(self):
-        self.setSimulationParametersOnEnvInitializer()
-        return self, self._envInitializer.entities
+        # self.setSimulationParametersOnEnvInitializer()
+        # return self, {**self._envInitializer.entities, **AppConfig.toJson()}
+        self._initialised = True
+        return self
     
     
     
@@ -518,18 +553,31 @@ class GreenPointsLoyaltyApp():
                 sale.greenPointsIssuedForItem.greenPoints.amount for sale in r._salesHistory) for r in retailers.values()}
             
             return GreenPointsLoyaltyApp.IterationResult(salesCount=pd.Series(salesCount), greenPointsIssued=pd.Series(gpIssued))
-            
     
+    
+          
+            
     class SimulationEnvironment:
-        def __init__(self, initializer:GreenPointsLoyaltyApp.Initializer):
+        def __init__(self, simType:SimulationEnvType, initializer:GreenPointsLoyaltyApp.Initializer, simConfig:SimulationConfig|SimulationIterationConfig):
             self._initializer = initializer
             self.gpApp = initializer.gpApp
+            self._simulationType = simType
+            self._simConfig = simConfig
             
             self._out_df_template = pd.DataFrame(
                 columns=self._initializer.retailerNames)
 
             self._retailers = self._retailersCreateCopy()
             self._customers = self._customersCreateCopy()
+            
+            # if controlRetailer is not None:
+            #     if controlRetailer.name in self._retailers:
+            #         self._controlRetailer = self._retailers[controlRetailer.name]
+            #     else:
+            #         logging.warning(f'Bad Control Retailer: attempted to apply control retailer to simulation environment with name: {controlRetailer}. We default to control retailer with name: {self._controlRetailer.name}')
+            #         self._controlRetailer = list(self._retailers.values())[0]
+            # else:
+            #     self._controlRetailer = list(self._retailers.values())[0]
             
             self._bankEventNotifiers:list[Bank.BankEventNotifier]= []
             self.bankEventObserver = GreenPointsLoyaltyApp.BankEventObserver(gpApp=self.gpApp,simEnv=self)
@@ -545,6 +593,29 @@ class GreenPointsLoyaltyApp():
             self.numIterationsCalculated = 0
             
             self._retailerAdjustmentsQueue: queue.Queue = queue.Queue()
+            
+        @abc.abstractproperty
+        def simulationType(self):
+            return self._simulationType  
+            
+        @property
+        def BASKET_FULL_SIZE(self):
+            return self._simConfig.BASKET_FULL_SIZE
+        @property
+        def NUM_SHOP_TRIPS_PER_ITERATION(self):
+            return self._simConfig.NUM_SHOP_TRIPS_PER_ITERATION
+        @property
+        def NUM_CUSTOMERS(self):
+            return self._simConfig.NUM_CUSTOMERS
+        @property
+        def maxN(self):
+            return self._simConfig.maxN if isinstance(self._simConfig,SimulationConfig) else 1
+        @property
+        def convergenceTH(self):
+            return self._simConfig.convergenceTH if isinstance(self._simConfig,SimulationConfig) else 1.0
+        @property
+        def simulationConfig(self):
+            return self._simConfig
             
         @property
         def banks_registered(self):
@@ -574,6 +645,10 @@ class GreenPointsLoyaltyApp():
         @property
         def retailers(self):
             return self._retailers
+        
+        @property
+        def retailerNames(self):
+            return list(self._retailers.keys())
 
         @property
         def customers(self):
@@ -588,7 +663,10 @@ class GreenPointsLoyaltyApp():
             return {rname: rn.copyInstance(deepCopy=True) for rname, rn in self._initializer.retailers.items()}
         
         def _customersCreateCopy(self):
-            return [rn.copyInstance(copyId=True) for rn in self._initializer.customers]
+        #     return [rn.copyInstance(copyId=True) for rn in self._initializer.customers]
+            # Declare Customers
+            return [Customer(f'Customer[{i}]') for i in range(self.NUM_CUSTOMERS)]
+        
             
         def _refreshBankEventNotifiers(self):
             for bank in self.banks_registered:
@@ -637,30 +715,39 @@ class GreenPointsLoyaltyApp():
                                     if sale.item.name.lower() == itemName.lower()
                                     ])
         
-        def adjustStrategyForOneRetailerNonBlock(self, retailerName: str, retailerStrategy: GPStrategyMultiplier, retailerSustainability: RetailerSustainabilityIntercept):
-            retailers = self._retailers
-            retailer = retailers[retailerName]
-            # retailer.strategy = GPStrategyMultiplier.COMPETITIVE
-            # retailer.sustainability = RetailerSustainabilityIntercept.LOW
+        def equalizeGreenPointIssuingVolumeForRetailers(self, setExpectedGPIssuedTo: int, debugShowDiff: bool = False):
+            _old = None
+            if debugShowDiff:
+                _old = self._df_strategized.copy()
+            # Get Expected Number Points per Retailer
+            nItems = self._df_strategized.shape[0]
+            self.expectedPoints = {r: (self._df_strategized[f'{r} GP'].astype(float).to_numpy()
+                                       * self._df_strategized['Prob Customer Select']
+                                       * (self.BASKET_FULL_SIZE/float(nItems))
+                                       * self.NUM_SHOP_TRIPS_PER_ITERATION
+                                       ).sum() for r in self.retailerNames}
 
-            # Assign Strategy to Retailer
-            retailer.strategy = retailerStrategy
-            retailer.sustainability = retailerSustainability
-            
-            logging.debug(Fore.RED + Back.LIGHTMAGENTA_EX + 'Emit the retailer asjustment DONE to clients' + Style.RESET_ALL)
-            self.gpApp._emit_event(WebSocketServerResponseEvent.retailer_strategy_changed, {'data': {'name': retailerName,'stategy': retailerStrategy.value}})
-            self.gpApp._emit_event(WebSocketServerResponseEvent.retailer_sustainbility_changed, {'data': {'name': retailerName, 'sustainability': retailerSustainability.value}})
-            
-            #TODO: Check that client updates correctly.
-            return retailers
-        
-        def queueStrategyUpdateForOneRetailer(self, retailerName: str, retailerStrategy: GPStrategyMultiplier, retailerSustainability: RetailerSustainabilityIntercept):
-            self._retailerAdjustmentsQueue.put(lambda: self.adjustStrategyForOneRetailerNonBlock(
-                retailerName=retailerName, retailerStrategy=retailerStrategy, retailerSustainability=retailerSustainability))
+            # Equalise Expected Number Points to 500
+            _EXPECTED_POINTS = setExpectedGPIssuedTo  # 500.0
+            for r in self.retailerNames:
+                if self.expectedPoints[r] > 0:
+                    self._df_strategized[f'{r} GP'] = self._df_strategized[f'{r} GP'] * \
+                        (_EXPECTED_POINTS/self.expectedPoints[r])
+            self._gpIssueingVolumeIsEqualisedBetweenRetailers = True
+
+            # Record the effects of the normalisation transformation.
+            self.expectedPointsUniformed = {r: (self._df_strategized[f'{r} GP'].astype(float).to_numpy()
+                                                * self._df_strategized['Prob Customer Select']
+                                                * (self.BASKET_FULL_SIZE/float(nItems))
+                                                * self.NUM_SHOP_TRIPS_PER_ITERATION).sum() for r in self.retailerNames}
+            if debugShowDiff:
+                assert isinstance(_old, pd.DataFrame)
+                logging.debug(pd_dataframe_explain_update(
+                    _old, self._df_strategized))
             return self
             
         def _run_iteration(self, run_isolated_iteration: bool = False, iterationCounter: int | None = None, debug: bool = False):
-            '''Run 1 iteration that simulates all customers doing NUM_SHOP_TRIPS_PER_ITERATION rounds of trips to the shops and selecting at most BASKET_FULL_SIZE items to purchase.
+            '''Run 1 iteration that simulates all customers doing AppConfig.NUM_SHOP_TRIPS_PER_ITERATION rounds of trips to the shops and selecting at most BASKET_FULL_SIZE items to purchase.
             
                 Each iteration then returns an output of the current state of the customers and retailers post iteration.'''
             if run_isolated_iteration == True:
@@ -670,13 +757,13 @@ class GreenPointsLoyaltyApp():
             retailerNames = list(retailersFixedForSimIteration.keys())
             
             # Run iteration of entire simulation
-            for i in range(NUM_CUSTOMERS):
+            for i in range(self.NUM_CUSTOMERS):
                 customer = self._customers[i]
                 df_shuffled = self._df_strategized.sample(frac=1).reset_index(drop=True)
                 _ithRoundOfShopping = 0
                 ithCustomerBasketSize = len(customer.basket)
-                while ithCustomerBasketSize < BASKET_IS_FULL_SIZE and \
-                    _ithRoundOfShopping < NUM_SHOP_TRIPS_PER_ITERATION:
+                while ithCustomerBasketSize < self.BASKET_FULL_SIZE and \
+                    _ithRoundOfShopping < self.NUM_SHOP_TRIPS_PER_ITERATION:
                     _ithRoundOfShopping += 1
                     if run_isolated_iteration:
                         #NOTE: Only allow update to retailer parameters in isolated iteration where we are simulating real life shoppping as opposed to trying to investigate convergence of a single set of parameters in a MC simulation.
@@ -703,7 +790,7 @@ class GreenPointsLoyaltyApp():
                                     .usingAccount(bankAccount=customer.accountForPayment(Money(0.0, str(row['Currency']))))\
                                     .addToBasket()
                                 self.gpApp._emit_customer_added_item_to_basket()
-                                if len(customer.basket) >= BASKET_IS_FULL_SIZE:
+                                if len(customer.basket) >= self.BASKET_FULL_SIZE:
                                     customer\
                                         .checkout()
                                     self.gpApp._emit_customer_checked_out()
@@ -774,21 +861,17 @@ class GreenPointsLoyaltyApp():
             #     raise KeyError(e)
             return iterationRunningAverage
             
-                
-        
-            
-            
         def run_isolated_iteration(self, debug:bool=False):
             retailersFixedForSimIteration = self._run_iteration(run_isolated_iteration=True)
             return self._getSummaryDf(result=self.summarise_isolated_iteration(retailersSnapshot=retailersFixedForSimIteration, debug=debug), debug=debug)
             
-        def run_simulation(self, maxN: int, convergence_threshold: float, betweenIterationCallback: Callable[[], None]):
+        def run_simulation(self, betweenIterationCallback: Callable[[], None]):
             '''
             Run a Monte Carlo simulation with a maximum of N iterations & minimum of 2.
             @param: convergence_threshold:float stop the MC simulation once running variance of results drops below convergence_threshold.
             '''
-            maxN = max(2,maxN)
-            convergence_threshold = max(0.0, convergence_threshold)
+            maxN = max(2,self.maxN)
+            convergence_threshold = max(0.0, self.convergenceTH)
             self.numIterationsCalculated = 0
             
             #NOTE: Here we check if there has been a reques to update the retailer strategies and apply the update if there has so that it is fixed for the iteration.
@@ -846,7 +929,67 @@ class GreenPointsLoyaltyApp():
                 logging.debug(out_df)
             
             return out_df
+        
+        def isFullEnv(self) -> TypeGuard[GreenPointsLoyaltyApp.SimulationFullEnvironment]:
+            return isinstance(self,GreenPointsLoyaltyApp.SimulationFullEnvironment)
+        
+        def isScenarioRunEnv(self) -> TypeGuard[GreenPointsLoyaltyApp.SimulationScenarioEnvironment]:
+            return isinstance(self,GreenPointsLoyaltyApp.SimulationFullEnvironment)
+        
+        def isSingleIterationEnv(self) -> TypeGuard[GreenPointsLoyaltyApp.SimulationSingleIterationEnvironment]:
+            return isinstance(self,GreenPointsLoyaltyApp.SimulationFullEnvironment)
 
+    class SimulationFullEnvironment(SimulationEnvironment):
+        def __init__(self, initializer: GreenPointsLoyaltyApp.Initializer, simConfig: SimulationConfig):
+            super().__init__(simType=self.simulationType,
+                             initializer=initializer, simConfig=simConfig)
+            
+        @property
+        def simulationType(self):
+            return SimulationEnvType.Full
+    
+    class SimulationScenarioEnvironment(SimulationEnvironment):
+        def __init__(self, initializer:GreenPointsLoyaltyApp.Initializer, simConfig:SimulationConfig|SimulationIterationConfig):
+            super().__init__(simType=self.simulationType,
+                             initializer=initializer, simConfig=simConfig)
+
+        @property
+        def simulationType(self):
+            return SimulationEnvType.Scenario
+        
+        def queueStrategyUpdateForOneRetailer(self, controlRetailer: ControlRetailer):
+            '''Queue the update and depending on the type of simulation being run, this update will be applied at the next iteration of the simulation.'''
+            self._retailerAdjustmentsQueue.put(lambda: self.adjustStrategyForOneRetailerNonBlock(
+                controlRetailer=controlRetailer))
+            return self
+            
+        def adjustStrategyForOneRetailerNonBlock(self, controlRetailer:ControlRetailer):
+            retailers = self._retailers
+            
+            retailer = retailers[controlRetailer.name]
+            # retailer.strategy = GPStrategyMultiplier.COMPETITIVE
+            # retailer.sustainability = RetailerSustainabilityIntercept.LOW
+
+            # Assign Strategy to Retailer
+            retailer.strategy = controlRetailer.strategy
+            retailer.sustainability = controlRetailer.sustainability
+            
+            logging.debug(Fore.RED + Back.LIGHTMAGENTA_EX + 'Emit the retailer asjustment DONE to clients' + Style.RESET_ALL)
+            self.gpApp._emit_event(WebSocketServerResponseEvent.retailer_strategy_changed, {'data': {'name': controlRetailer.name,'stategy': controlRetailer.strategy.value}})
+            self.gpApp._emit_event(WebSocketServerResponseEvent.retailer_sustainbility_changed, {
+                                   'data': {'name': controlRetailer.name, 'sustainability': controlRetailer.sustainability.value}})
+            
+            #TODO: Check that client updates correctly.
+            return retailers
+    
+    class SimulationSingleIterationEnvironment(SimulationEnvironment):
+        def __init__(self, initializer:GreenPointsLoyaltyApp.Initializer, simConfig:SimulationConfig|SimulationIterationConfig):
+            super().__init__(simType=self.simulationType, initializer=initializer,simConfig=simConfig)
+
+        @property
+        def simulationType(self):
+            return SimulationEnvType.SingleIteration
+    
     def initialised(self):
         return self._initialised
 
@@ -854,22 +997,45 @@ class GreenPointsLoyaltyApp():
     def running(self):
         return self._running == True
     
-    def simulationEnvironmentToken(self):
+    def initSimulationFullEnvironment(self, simConfig:SimulationConfig):
         simulationId = SimStamp(str(uuid.uuid4()), time.time())
         self._simulationEnvironments[simulationId.id] = \
             (simulationId.timestamp, 
-             self._envInitializer.createSimulationEnvironment())
-        return simulationId.id
+             self._envInitializer.createSimulationFullEnvironment(simConfigParams=simConfig))
+        return simulationId.id, self._simulationEnvironments[simulationId.id][1].simulationType
     
-    def adjustSimParameters(self, 
-                            simulationId: str, 
-                            retailerName: str, 
-                            newStrategy: GPStrategyMultiplier, 
-                            newSustainabilityAssumption: RetailerSustainabilityIntercept):
+    def initSimulationSingleIterationEnvironment(self, simConfig:SimulationIterationConfig):
+        simulationId = SimStamp(str(uuid.uuid4()), time.time())
+        self._simulationEnvironments[simulationId.id] = \
+            (simulationId.timestamp, 
+             self._envInitializer.createSimulationSingleIterationEnvironment(simConfigParams=simConfig))
+        return simulationId.id, self._simulationEnvironments[simulationId.id][1].simulationType
+    
+    def initSimulationScenarioRunEnvironment(self, simConfig: SimulationIterationConfig):
+        simulationId = SimStamp(str(uuid.uuid4()), time.time())
+        self._simulationEnvironments[simulationId.id] = \
+            (simulationId.timestamp, 
+             self._envInitializer.createSimulationScenarioRunEnvironment(simConfigParams=simConfig))
+        return simulationId.id, self._simulationEnvironments[simulationId.id][1].simulationType
+    
+    def getSimConfig(self, simulationId:str):
         simEnv = self.getSimulationEnvironment(simulationId=simulationId)
+        
         if simEnv is not None:
-            simEnv.queueStrategyUpdateForOneRetailer(retailerName=retailerName, retailerStrategy=newStrategy, retailerSustainability=newSustainabilityAssumption)
-            simEnv.adjustStrategyForOneRetailerNonBlock(retailerName=retailerName, retailerStrategy=newStrategy, retailerSustainability=newSustainabilityAssumption)
+            return simEnv.simulationConfig
+        else:
+            return None
+    
+    def adjustSimParameters(self,
+                            simulationId:str,
+                            controlRetailer: ControlRetailer):
+        simEnv = self.getSimulationEnvironment(simulationId=simulationId)
+        
+        if simEnv is not None and isinstance(simEnv,GreenPointsLoyaltyApp.SimulationScenarioEnvironment):
+            simEnv.queueStrategyUpdateForOneRetailer(controlRetailer=controlRetailer)
+            return True
+        else:
+            return False
             
     
     def getSimulationEnvironment(self, simulationId:str, throw:bool=False):
@@ -881,7 +1047,7 @@ class GreenPointsLoyaltyApp():
                     f'Bad SimulationID passed. No Active Simulation Environment is registered to {simulationId}')
             return None
     
-    def run_full_simulation(self, simulationId: str, betweenIterationCallback: Callable[[],None], maxN: int = 100, convergence_threshold: float = 0.1):
+    def run_full_simulation(self, simulationId: str, betweenIterationCallback: Callable[[],None]):
         
         if simulationId not in self._simulationEnvironments.keys():
             raise KeyError(f'Bad SimulationID passed. No Active Simulation Environment is registered to {simulationId}')
@@ -892,7 +1058,7 @@ class GreenPointsLoyaltyApp():
             self._running = True
             active_simulation_environment = self._simulationEnvironments[simulationId][1]
             resultDf = active_simulation_environment.run_simulation(
-                maxN=maxN, convergence_threshold=convergence_threshold, betweenIterationCallback=betweenIterationCallback)
+                betweenIterationCallback=betweenIterationCallback)
             self._simsRun += 1
             self._running = False
             self._simulationEnvironments.pop(simulationId)
@@ -901,16 +1067,17 @@ class GreenPointsLoyaltyApp():
             logging.debug(e)
             raise e
     
-    def run_isolated_iteration(self, tweakRetailerStrategy:TweakRetailerStrategy|None=None):
+    def run_isolated_iteration(self, simulationId:str):
+    
+        if simulationId not in self._simulationEnvironments.keys():
+            raise KeyError(f'Bad SimulationID passed. No Active Simulation Environment is registered to {simulationId}')
         try:
-            # assert active_simulation_environment is not None, 'Must init a new simulation before starting the app'
+            if not self.initialised:
+                self.initNewSim()
+            # assert self.active_simulation_environment is not None, 'Must init a new simulation before starting the app'
             self._running = True
-            active_simulation_environment = self._envInitializer.createSimulationEnvironment()
-            if tweakRetailerStrategy is not None and tweakRetailerStrategy.validate(validRetailers=active_simulation_environment.retailers):
-                active_simulation_environment\
-                    .adjustStrategyForOneRetailerNonBlock(retailerName=tweakRetailerStrategy.retailerName,
-                                                  retailerStrategy=tweakRetailerStrategy.strategy,
-                                                  retailerSustainability=tweakRetailerStrategy.sustainability)
+            active_simulation_environment = self._simulationEnvironments[simulationId][1]
+            
             resultDf = active_simulation_environment\
                 .run_isolated_iteration()
             self._simsRun += 1
@@ -922,12 +1089,12 @@ class GreenPointsLoyaltyApp():
             raise e
         
     def initTestSimulation(self):
-        (_,entities) = self.initNewSim()
-        return self, entities
+        self.initNewSim()
+        return None
     
-    def start_isolated_iteration(self):
+    def start_isolated_iteration(self, simulationId:str):
         if self.initialised:
-            (resultDf, simEnv) = self.run_isolated_iteration()
+            (resultDf, simEnv) = self.run_isolated_iteration(simulationId=simulationId)
             return (resultDf.to_json(), simEnv)
         return (None,None)
         

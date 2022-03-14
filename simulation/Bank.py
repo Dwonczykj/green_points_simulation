@@ -930,7 +930,7 @@ class Customer(Entity):
             self._basket.remove(basketItem)
   
 class Retailer(Entity):
-    def __init__(self, name:str, strategy:GPStrategyMultiplier, sustainability: RetailerSustainabilityIntercept, greenPointFiatValue:float=0.01, bank:Bank|None=None) -> None:
+    def __init__(self, name:str, strategy:RetailerStrategyGPMultiplier, sustainability: RetailerSustainabilityIntercept, greenPointFiatValue:float=0.01, bank:Bank|None=None) -> None:
         if bank is None:
             bank = AMEX_BANK
         self._name = name
@@ -1007,7 +1007,7 @@ class Retailer(Entity):
         return self._strategy
     
     @strategy.setter
-    def strategy(self, value:GPStrategyMultiplier):
+    def strategy(self, value:RetailerStrategyGPMultiplier):
         self._strategy = value
     
     @property
@@ -2525,7 +2525,7 @@ class CustomerBuyingItem():
 
 
 # Add custom alpha multipliers to reflect setting Green Point Strategy
-class GPStrategyMultiplier(float, enum.Enum):
+class RetailerStrategyGPMultiplier(float, enum.Enum):
     ZERO=0.0
     MIN=0.1
     COMPETITIVE=1.0
@@ -2536,6 +2536,18 @@ class RetailerSustainabilityIntercept(float, enum.Enum):
     LOW=-0.25
     AVERAGE=0.0
     HIGH=0.25
+    
+class InvalidRetailerReason(enum.Enum):
+    validRetailer=-1,
+    invalidName=0,
+    invalidStrategy=1,
+    invalidSustainability=2
+    
+class ControlRetailer:
+    def __init__(self, name: str, strategy: RetailerStrategyGPMultiplier, sustainability: RetailerSustainabilityIntercept):
+        self.name=name
+        self.strategy=strategy
+        self.sustainability = sustainability
     
     
     

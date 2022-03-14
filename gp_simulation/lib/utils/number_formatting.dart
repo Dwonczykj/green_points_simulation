@@ -1,5 +1,5 @@
 import 'package:intl/intl.dart';
-import 'package:webtemplate/ui/model/models.dart';
+import 'package:webtemplate/ui/model/all_models.dart';
 
 final oCcy = NumberFormat("#,##0.00", "en_US");
 

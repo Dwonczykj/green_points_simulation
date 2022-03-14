@@ -1,6 +1,6 @@
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:flutter/material.dart';
-import '../model/models.dart';
+import '../model/all_models.dart';
 import '../../utils/number_formatting.dart';
 
 class StackedBalancesChart extends StatelessWidget {

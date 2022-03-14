@@ -14,12 +14,12 @@ def handle_message(gpApp:GreenPointsLoyaltyApp, message:str):
     
 def init_new_simulation(gpApp:GreenPointsLoyaltyApp):
     if gpApp.initialised == False:
-        (_, entities) = gpApp.initTestSimulation()
-        return entities
+        gpApp.initTestSimulation()
+        return None
         
-def start_isolated_simulation(gpApp:GreenPointsLoyaltyApp):
+def start_isolated_simulation(gpApp:GreenPointsLoyaltyApp, simulationId:str):
     if gpApp.running == False:
-        outputJson, simEnv = gpApp.start_isolated_iteration()
+        outputJson, simEnv = gpApp.run_isolated_iteration(simulationId=simulationId)
         return outputJson
     else:
         return None

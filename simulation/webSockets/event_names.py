@@ -16,6 +16,9 @@ class WebSocketClientEvent(Enum):
     change_retailer_strategy = 'change retailer strategy'
     change_retailer_sustainability_multiplier = 'change retailer sustainability multiplier'
     change_customer_stickyness_factor = 'change customer stickyness factor'
+    num_customers_requested = 'num customers requested'
+    basket_full_size_requested = 'basket full size requested'
+    num_shop_trips_requested = 'num shop trips requested'
     
     def __eq__(self, o:Any):
         if isinstance(o,type(self)):
@@ -52,6 +55,10 @@ class WebSocketServerResponseEvent(Enum):
     
     retailer_strategy_changed = 'retailer strategy changed'
     retailer_sustainbility_changed = 'retailer sustainbility changed'
+    
+    num_customers_requested = 'num customers requested'
+    basket_full_size_requested = 'basket full size requested'
+    num_shop_trips_requested = 'num shop trips requested'
     
     def __eq__(self, o: Any):
         if isinstance(o, type(self)):
