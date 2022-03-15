@@ -26,7 +26,7 @@ from app_init import flaskHttpApp
 from app_config import SimulationConfig, SimulationIterationConfig
 from app_globals import gpApp, flaskHttpAppConfig
 for k in flaskHttpAppConfig:
-    flaskHttpApp.config[k] = flaskHttpAppConfig[k]
+    flaskHttpApp.config[k] = flaskHttpAppConfig[k]    
     
 
 def wrap_CORS_response(response: Response):
@@ -59,6 +59,17 @@ def require_appkey(view_function:Callable):
         else:
             logging.debug('Unauthenticated client refused access.')
             abort(401)
+    return decorated_function
+
+def check_app_initialised(view_function:Callable):
+    @wraps(view_function)
+    def decorated_function(*args:Any, **kwargs:Any):
+        if not gpApp.initialised():
+            logging.debug('Uninitialised client -> refused access.')
+            status=HTTPStatus.BAD_REQUEST
+            abort(wrap_CORS_response(Response(
+                'app must first be initialised to create a simulation environment', status=status)))
+        return view_function(*args, **kwargs)
     return decorated_function
 
 
@@ -123,6 +134,103 @@ tasks = cachetools.TTLCache[str, TypedGreenThread](maxsize=10000,ttl=10*60)
 taskResults = cachetools.TTLCache[TypedGreenThread, Any](maxsize=10000,ttl=10*60)
 # taskPresenters: dict[str, Callable[[Any], Any]] = {} 
 dual_pool = TypedGreenPool(size=100) # Dont use python lib ThreadPool that will break eventlet threads https://bleepcoder.com/flask-socketio/201694856/emit-in-loop-not-sending-until-loop-completion-when-using
+
+## ─── APP ROUTE HELPER FUNCTIONS ─────────────────────────────────────────────────
+
+
+def _abortBadRetailerRequest(validateRetailer: InvalidRetailerReason):
+    if validateRetailer == InvalidRetailerReason.invalidName:
+        abort(wrap_CORS_response(Response(
+            'retailer_name passed to simulation init request not found', status=HTTPStatus.NOT_FOUND)))
+    elif validateRetailer == InvalidRetailerReason.invalidStrategy:
+        abort(wrap_CORS_response(Response(
+            'Strategy enum name passed to simulation init request not found', status=HTTPStatus.NOT_FOUND)))
+    elif validateRetailer == InvalidRetailerReason.invalidSustainability:
+        abort(wrap_CORS_response(Response(
+            'Sustainability enum name passed to simulation init request not found', status=HTTPStatus.NOT_FOUND)))
+    else:
+        abort(wrap_CORS_response(Response(
+            'Invalid data supplied to init-sim request', status=HTTPStatus.NOT_FOUND)))
+
+# @require_appkey
+# @flaskHttpApp.route('/init-new-sim', methods=['POST'])
+
+
+def _loadSimulationId() -> str:
+    data = _loadRequestData()
+    if 'simulationId' not in data:
+        abort(wrap_CORS_response(Response(
+            'No Simulation ID supplied to run-full-sim request', status=HTTPStatus.NOT_FOUND)))
+    simId = data['simulationId']
+    return simId
+
+# def require_queryparam(view_function:Callable[[str,str],Any], queryparam_name:str):
+#     pass
+
+# def require_simulationid(view_function:Callable):
+#     @wraps(view_function)
+#     # the new, post-decoration function. Note *args and **kwargs here.
+#     # def foo(*args: str, **kwds: int): ...
+#     def decorated_function(*args:Any, **kwargs:Any):
+#         simId = _loadSimulationId()
+#         setattr(request,'gember_args', object())
+#         request.gember_args.__doc__ = 'custom args from the request for gember only'
+#         setattr(request.gember_args,'simId', simId)
+#     return decorated_function
+
+# def require_simulation_config(view_function:Callable):
+#     @wraps(view_function)
+#     # the new, post-decoration function. Note *args and **kwargs here.
+#     # def foo(*args: str, **kwds: int): ...
+#     def decorated_function(*args:Any, **kwargs:Any):
+#         simId = _loadSimulationId()
+#         setattr(request,'gember_args', object())
+#         request.gember_args.__doc__ = 'custom args from the request for gember only'
+#         setattr(request.gember_args,'simId', simId)
+#         data = _loadRequestData()
+#         simConfig = SimulationIterationConfig.createFromDict(data)
+#         setattr(request.gember_args, 'simConfig', simConfig)
+#     return decorated_function
+
+
+def eventlet_sleep_thread():
+    eventlet.sleep(1)
+
+
+def _loadRequestData():
+    '''get the data from the request body combining and form fields in the request'''
+    data = {}
+    if request.data:
+        data = {**data, **json.loads(request.data)}
+    elif len(request.form) > 0:
+        data = {**data, **request.form}
+    return data
+
+
+def _validateRetailerInRequestData(data: dict):
+
+    valid_retailer_name = validate_retailer_name(
+        data['retailer_name'])
+
+    if not valid_retailer_name:
+        return (InvalidRetailerReason.invalidName, None)
+
+    valid_retailer_strategy = validate_retailer_strategy(
+        data['retailer_name'], data['retailer_strategy'])
+    if not valid_retailer_strategy:
+        return (InvalidRetailerReason.invalidStrategy, None)
+
+    valid_retailer_sustainability = validate_retailer_sustainability(
+        data['retailer_name'], data['retailer_sustainability'])
+    if not valid_retailer_sustainability:
+        return (InvalidRetailerReason.invalidSustainability, None)
+
+    return (InvalidRetailerReason.validRetailer,
+            ControlRetailer(name=data['retailer_name'],
+                            strategy=RetailerStrategyGPMultiplier[data['retailer_strategy']],
+                            sustainability=RetailerSustainabilityIntercept[data['retailer_sustainability']]))
+
+# ─── APP ROUTES ─────────────────────────────────────────────────────────────────
 
 @require_appkey
 @flaskHttpApp.route('/task-result', methods=['POST'])
@@ -201,48 +309,15 @@ def testWsEventMemory():
         statusId = HTTPStatus.OK
         return wrap_CORS_response(make_response({'status': statusId, 'message': 'test-ws-event-memory_ran', 'task_id': taskId}, statusId))
 
-def _loadRequestData():
-    '''get the data from the request body'''
-    data = {}
-    if request.data:
-        data = {**data, **json.loads(request.data)}
-    elif len(request.form) > 0:
-        data = {**data, **request.form}
-    return data
 
-
-    
-
-def _validateRetailerInRequestData(data:dict):
-    
-    valid_retailer_name = validate_retailer_name(
-        data['retailer_name'])
-    
-    if not valid_retailer_name:
-        return (InvalidRetailerReason.invalidName, None)
-
-    valid_retailer_strategy = validate_retailer_strategy(
-        data['retailer_name'], data['retailer_strategy'])
-    if not valid_retailer_strategy:
-        return (InvalidRetailerReason.invalidStrategy, None)
-    
-    valid_retailer_sustainability = validate_retailer_sustainability(
-        data['retailer_name'], data['retailer_sustainability'])
-    if not valid_retailer_sustainability:
-        return (InvalidRetailerReason.invalidSustainability, None)
-    
-    return (InvalidRetailerReason.validRetailer, 
-            ControlRetailer(name=data['retailer_name'], 
-                            strategy=RetailerStrategyGPMultiplier[data['retailer_strategy']], 
-                            sustainability=RetailerSustainabilityIntercept[data['retailer_sustainability']]))
     
 
 @require_appkey
-@flaskHttpApp.route('/init', methods=['POST'])
+@flaskHttpApp.route('/init-lazy', methods=['POST'])
 def init_gpApp():
     '''Initialise the entire app, reading data sources etc'''
     if not gpApp.initialised():
-        res = gpApp.initNewSim()
+        res = gpApp.initAppEnv()
         if res.initialised:
             return_status_code = HTTPStatus.OK
             return wrap_CORS_response(
@@ -253,66 +328,28 @@ def init_gpApp():
         else:
             abort(wrap_CORS_response(Response(
                 'app failed to initialise', status=HTTPStatus.INTERNAL_SERVER_ERROR)))
-    return wrap_CORS_response(make_response(gpApp.initialEntitiesSnapshot))
-
-def _abortBadRetailerRequest(validateRetailer:InvalidRetailerReason):
-    if validateRetailer == InvalidRetailerReason.invalidName:
-        abort(wrap_CORS_response(Response(
-            'retailer_name passed to simulation init request not found', status=HTTPStatus.NOT_FOUND)))
-    elif validateRetailer == InvalidRetailerReason.invalidStrategy:
-        abort(wrap_CORS_response(Response(
-            'Strategy enum name passed to simulation init request not found', status=HTTPStatus.NOT_FOUND)))
-    elif validateRetailer == InvalidRetailerReason.invalidSustainability:
-        abort(wrap_CORS_response(Response(
-            'Sustainability enum name passed to simulation init request not found', status=HTTPStatus.NOT_FOUND)))
-    else:
-        abort(wrap_CORS_response(Response(
-            'Invalid data supplied to init-sim request', status=HTTPStatus.NOT_FOUND)))
-
-# @require_appkey
-# @flaskHttpApp.route('/init-new-sim', methods=['POST'])
-
+    return_status_code = HTTPStatus.OK
+    return wrap_CORS_response(make_response({
+                    'status': return_status_code,
+                    'message': 'application initialised',
+                }, return_status_code))
     
-    
-def _loadSimulationId() -> str:
+@require_appkey
+@flaskHttpApp.route('/load-entities', methods=['POST'])
+def load_entities():
+    '''Load the retailers and N (_from config_) customers with simulation level configuration also settable'''
     data = _loadRequestData()
-    if 'simulationId' not in data:
-        abort(wrap_CORS_response(Response(
-            'No Simulation ID supplied to run-full-sim request', status=HTTPStatus.NOT_FOUND)))
-    simId = data['simulationId']
-    return simId
+    simConfig = SimulationIterationConfig.createFromDict(data) #INFO: NUM_CUSTOMERS N specified here
+    simId, simType = gpApp.initSimulationSingleIterationEnvironment(
+        simConfig=simConfig,
+    )
+    simEnv = gpApp.getSimulationEnvironmentUnsafe(
+        simulationId=simId)
+    entities = simEnv.entities
+    return wrap_CORS_response(make_response(entities,HTTPStatus.OK))
 
-# def require_queryparam(view_function:Callable[[str,str],Any], queryparam_name:str):
-#     pass
-
-# def require_simulationid(view_function:Callable):
-#     @wraps(view_function)
-#     # the new, post-decoration function. Note *args and **kwargs here.
-#     # def foo(*args: str, **kwds: int): ...
-#     def decorated_function(*args:Any, **kwargs:Any):
-#         simId = _loadSimulationId()
-#         setattr(request,'gember_args', object())
-#         request.gember_args.__doc__ = 'custom args from the request for gember only'
-#         setattr(request.gember_args,'simId', simId)
-#     return decorated_function
-
-# def require_simulation_config(view_function:Callable):
-#     @wraps(view_function)
-#     # the new, post-decoration function. Note *args and **kwargs here.
-#     # def foo(*args: str, **kwds: int): ...
-#     def decorated_function(*args:Any, **kwargs:Any):
-#         simId = _loadSimulationId()
-#         setattr(request,'gember_args', object())
-#         request.gember_args.__doc__ = 'custom args from the request for gember only'
-#         setattr(request.gember_args,'simId', simId)
-#         data = _loadRequestData()
-#         simConfig = SimulationIterationConfig.createFromDict(data)
-#         setattr(request.gember_args, 'simConfig', simConfig)
-#     return decorated_function
-
-def eventlet_sleep_thread():
-    eventlet.sleep(1)
     
+@check_app_initialised
 @require_appkey
 @flaskHttpApp.route('/run-full-sim', methods=['POST'])
 def run_simulation():
@@ -370,6 +407,7 @@ def run_simulation():
                                                  }, return_status_code))
     
 
+@check_app_initialised
 @require_appkey
 @flaskHttpApp.route('/run-scenario', methods=['POST'])
 def run_realtime_scenario():
@@ -410,6 +448,7 @@ def run_realtime_scenario():
     raise NotImplementedError('must implement gpApp.run_scenario(simulationId=simId) first')
         
 
+@check_app_initialised
 @require_appkey
 @flaskHttpApp.route('/run-single-iteration', methods=['POST'])
 def run_single_iteration():
@@ -418,10 +457,7 @@ def run_single_iteration():
         Required query params: 
             - simulation configuration params
         '''
-    if not gpApp.initialised():
-        status=HTTPStatus.BAD_REQUEST
-        abort(wrap_CORS_response(Response(
-            'app must first be initialised to create a simulation environment', status=status)))
+    
         
     data = _loadRequestData()
     simConfig = SimulationIterationConfig.createFromDict(data)
@@ -449,7 +485,7 @@ def run_single_iteration():
         return wrap_CORS_response(make_response({'status': statusId, 'message': 'single_iteration_ran', 'task_id': taskId}, statusId))
 
 
-
+@check_app_initialised
 @require_appkey
 @flaskHttpApp.route('/app-config', methods=['POST'])
 def get_sim_config():
@@ -463,6 +499,8 @@ def get_sim_config():
         return wrap_CORS_response(make_response(jsonify(simConfig.toJson()), statusId))
     
 
+@check_app_initialised
+@require_appkey
 @flaskHttpApp.route('/item-sales', methods=['GET'])
 def item_sales():
     query_params = request.args.to_dict()
@@ -477,6 +515,8 @@ def item_sales():
     return wrap_CORS_response(make_response(gpApp.salesForItem(simulationEnvId=simId, itemName=itemName).toJson()))
 
 
+@check_app_initialised
+@require_appkey
 @flaskHttpApp.route('/app/purchase-delay/<delay>', methods=['POST'])
 def adjust_purchases_delay_seconds(delay: float = 1.0):
     try:
@@ -498,6 +538,7 @@ def adjust_purchases_delay_seconds(delay: float = 1.0):
         raise e
 
 
+@check_app_initialised
 @require_appkey
 @flaskHttpApp.route('/adjust-retailer', methods=['POST'])
 def adjust_retailer_in_sim():
@@ -513,24 +554,22 @@ def adjust_retailer_in_sim():
         abort(wrap_CORS_response(Response(
             '', status=HTTPStatus.INTERNAL_SERVER_ERROR)))
 
-    return wrap_CORS_response(make_response(gpApp.initialEntitiesSnapshot))
 
-
-
+@require_appkey
 @flaskHttpApp.route('/ws/event-names-cat', methods=['GET'])
 def get_all_accepted_ws_event_names():
     eventNames = list(
         [w.value for w in WebSocketClientEvent.__members__.values()])
     return wrap_CORS_response(Response({'data': eventNames}, status=HTTPStatus.OK))
 
-
+@require_appkey
 @flaskHttpApp.route('/ws/event-response-names-cat', methods=['GET'])
 def get_all_accepted_ws_response_event_names():
     eventNames = dict({name: value for (name, value)
                       in RetailerStrategyGPMultiplier.__members__.items()})
     return wrap_CORS_response(Response({'data': eventNames}, status=HTTPStatus.OK))
 
-
+@require_appkey
 @flaskHttpApp.route('/strategy-names-cat', methods=['GET'])
 def getStrategyValueMap():
     eventNames = dict({name: value for (name, value)
@@ -538,6 +577,7 @@ def getStrategyValueMap():
     return wrap_CORS_response(Response({'data': eventNames}, status=HTTPStatus.OK))
 
 
+@require_appkey
 @flaskHttpApp.route('/sustainability-names-cat', methods=['GET'])
 def getSustainabilityValueMap():
     eventNames = list(
@@ -545,6 +585,8 @@ def getSustainabilityValueMap():
     return wrap_CORS_response(Response({'data': eventNames}, status=HTTPStatus.OK))
 
 
+@check_app_initialised
+@require_appkey
 @flaskHttpApp.route('/transactions', methods=['GET'])
 def entity_transactions():
     query_params = request.args.to_dict()
@@ -586,8 +628,7 @@ def connect():
 @flaskHttpApp.route('/start', methods=['GET'])
 def startApp():
     if not gpApp.initialised():
-        gpApp.initNewSim()
-    
+        gpApp.initAppEnv()
     run_single_iteration() # if needs api key, can copy the logic from this function here...
         
     

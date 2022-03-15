@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
+import 'dart:html';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -246,8 +247,8 @@ abstract class IMarketStateViewer extends ChangeNotifier {
     retailers: <RetailerModel>[],
     retailersCluster: AggregatedRetailers.zero(),
     customers: <CustomerModel>[],
-    basketFullSize: 1,
-    numShopTrips: 1,
+    // basketFullSize: 1,
+    // numShopTrips: 1,
   );
 
   AppTransactionsStateModel _allTransactions = AppTransactionsStateModel(
@@ -288,6 +289,16 @@ abstract class IMarketStateViewer extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool _checkInitAppResponseOK(String? initAppResponse) {
+    if (initAppResponse != null) {
+      var jsonMap = jsonDecode(initAppResponse);
+      if (jsonMap['status'] == HttpStatus.ok) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   //TODO: Create an AppStateManager that has the transactionCounter, transactionsToProcess:
   //  Use a counter to confirm if I've already processed a transaction from the web socket
   //  stream or add new message to appstatemanager.transtoprocess and then process in UI,
@@ -307,8 +318,9 @@ abstract class IMarketStateViewer extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<LoadEntitiesResult> loadEntitiesAndInitApp(
-      {GemberAppConfig? configOptions});
+  Future<bool> initialiseGemberPointsApp();
+
+  Future<LoadEntitiesResult> loadEntities({GemberAppConfig? configOptions});
 
   void _loadEntities(String? data) {
     try {
@@ -339,18 +351,18 @@ abstract class IMarketStateViewer extends ChangeNotifier {
             dataMap, 'retailers', RetailerModel.fromJson,
             defaultVal: <String, RetailerModel>{}).values.toList();
 
-        final basketFullSize = TSerializable.getJsonValTypeValueFromChain<int>(
-            dataMap, ['config', 'BASKET_FULL_SIZE']);
-        final numShopTrips = TSerializable.getJsonValTypeValueFromChain<int>(
-            dataMap, ['config', 'NUM_SHOP_TRIPS_PER_ITERATION']);
+        // final basketFullSize = TSerializable.getJsonValTypeValueFromChain<int>(
+        //     dataMap, ['config', 'BASKET_FULL_SIZE']);
+        // final numShopTrips = TSerializable.getJsonValTypeValueFromChain<int>(
+        //     dataMap, ['config', 'NUM_SHOP_TRIPS_PER_ITERATION']);
         final numCustomers = customers.length;
 
         _EntityCatalog = LoadEntitiesResult(
           retailers: retailers,
           retailersCluster: retailerCluster,
           customers: customers,
-          basketFullSize: basketFullSize,
-          numShopTrips: numShopTrips,
+          // basketFullSize: basketFullSize,
+          // numShopTrips: numShopTrips,
         );
         notifyListeners();
       }
@@ -653,7 +665,7 @@ class MarketStateViewer extends SocketIoMixin with HttpRequestMixin {
         _simulationProgressEmitterController.stream.asBroadcastStream();
 
     onInit(onReconnect: () {
-      loadEntitiesAndInitApp();
+      initialiseGemberPointsApp();
     });
 
     // if (webSocketConnected) {
@@ -786,12 +798,18 @@ class MarketStateViewer extends SocketIoMixin with HttpRequestMixin {
   }
 
   @override
-  Future<LoadEntitiesResult> loadEntitiesAndInitApp(
+  Future<bool> initialiseGemberPointsApp() async {
+    final data = await postData('$apiUrl/init-lazy', {});
+    return _checkInitAppResponseOK(data);
+  }
+
+  @override
+  Future<LoadEntitiesResult> loadEntities(
       {GemberAppConfig? configOptions}) async {
     if (_EntityCatalog.isEmpty && !loadingEntities) {
       loadingEntities = true;
       try {
-        final data = await postData('$apiUrl/init', {});
+        final data = await postData('$apiUrl/load-entities', {});
         _loadEntities(data);
       } finally {
         loadingEntities = false;
@@ -1174,15 +1192,37 @@ class MarketStateViewerMock extends IMarketStateViewer {
   }
 
   @override
-  Future<LoadEntitiesResult> loadEntitiesAndInitApp(
+  Future<bool> initialiseGemberPointsApp() async {
+    return true;
+  }
+
+  @override
+  Future<LoadEntitiesResult> loadEntities(
       {GemberAppConfig? configOptions}) async {
     if (_EntityCatalog.isEmpty) {
       _flagStartHttpCall;
       var data = await rootBundle.loadString('mock_data/entities.json');
       _flagStopHttpCall;
       _loadEntities(data);
-      //TODO Later: Filter the number of customers down or replicate them up to the numCustomersCount.
-      //TODO Later: Add basketSize and numTripsToShops params to data returned
+      if (configOptions != null) {
+        if (_EntityCatalog.customers.length < configOptions.NUM_CUSTOMERS &&
+            _EntityCatalog.customers.isNotEmpty) {
+          CustomerModel copyCust(int i) {
+            var custCopy = _EntityCatalog.customers.first.toJson();
+            custCopy['name'] = 'Copied Customer [$i]';
+            return CustomerModel.fromJson(custCopy['name']);
+          }
+
+          var additionalCustomers =
+              List<int>.generate(10, (i) => i + 1).map(copyCust);
+
+          _EntityCatalog.customers.addAll(additionalCustomers);
+        } else if (_EntityCatalog.customers.length >
+            configOptions.NUM_CUSTOMERS) {
+          _EntityCatalog.customers.removeRange(
+              configOptions.NUM_CUSTOMERS, _EntityCatalog.customers.length);
+        }
+      }
     }
     return _EntityCatalog;
   }

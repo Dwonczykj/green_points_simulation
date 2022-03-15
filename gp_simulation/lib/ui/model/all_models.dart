@@ -823,7 +823,7 @@ class SalesAggregationModel extends TSerializable {
       numItemsIssued: TSerializable.getJsonValTypeValue<int>(
           json, 'numItemsIssued',
           defaultVal: 0),
-      itemCountMap: TSerializable.getJsonValTypeValue<Map<String, int>>(
+      itemCountMap: TSerializable.getJsonMapValTypeValue<int>(
           json, 'itemCountMap',
           defaultVal: <String, int>{}),
     );
@@ -1010,16 +1010,26 @@ class LoadEntitiesResult {
   final List<RetailerModel> retailers;
   final List<CustomerModel> customers;
   final AggregatedRetailers retailersCluster;
-  final int basketFullSize;
-  final int numShopTrips;
+  // final int basketFullSize;
+  // final int numShopTrips;
 
   LoadEntitiesResult({
     required this.retailers,
     required this.customers,
     required this.retailersCluster,
-    required this.basketFullSize,
-    required this.numShopTrips,
+    // required this.basketFullSize,
+    // required this.numShopTrips,
   });
+
+  factory LoadEntitiesResult.emptyInit() {
+    return LoadEntitiesResult(
+      customers: <CustomerModel>[],
+      retailers: <RetailerModel>[],
+      retailersCluster: AggregatedRetailers.zero(),
+      // basketFullSize: 1,
+      // numShopTrips: 1,
+    );
+  }
 
   bool get isEmpty => retailers.isEmpty && customers.isEmpty;
 

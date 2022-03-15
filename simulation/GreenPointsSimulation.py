@@ -78,8 +78,8 @@ class GreenPointsLoyaltyApp():
                 cachetools.TTLCache(maxsize=128, ttl=30 * 60)
             self._active_simulation_environment = None
             self._running = False
-            self._retailers = self._entityInitialiser.retailers
-            self._customers = []
+            # self._retailers = self._entityInitialiser.retailers
+            # self._customers = []
             self._initialised = False
             self._simsRun: int = 0
             self._secondsBetweenPurchases = 2.0
@@ -98,9 +98,9 @@ class GreenPointsLoyaltyApp():
     #         callback()
     #         eventlet.sleep(secs=2)
       
-    @property          
-    def initialEntitiesSnapshot(self):
-        return self._envInitializer.entities
+    # @property          
+    # def initialEntitiesSnapshot(self):
+    #     return self._envInitializer.entities
             
     @property
     def websocket(self):
@@ -421,7 +421,7 @@ class GreenPointsLoyaltyApp():
             
         # return self._envInitializer
         
-    def initNewSim(self):
+    def initAppEnv(self):
         # self.setSimulationParametersOnEnvInitializer()
         # return self, {**self._envInitializer.entities, **AppConfig.toJson()}
         self._initialised = True
@@ -1041,11 +1041,18 @@ class GreenPointsLoyaltyApp():
     def getSimulationEnvironment(self, simulationId:str, throw:bool=False):
         if simulationId in self._simulationEnvironments.keys():
             return self._simulationEnvironments[simulationId][1]
-        else:
-            if throw:
-                raise KeyError(
-                    f'Bad SimulationID passed. No Active Simulation Environment is registered to {simulationId}')
-            return None
+        
+        if throw:
+            raise KeyError(
+                f'Bad SimulationID passed. No Active Simulation Environment is registered to {simulationId}')
+        return None
+    
+    def getSimulationEnvironmentUnsafe(self, simulationId:str):
+        res = self.getSimulationEnvironment(simulationId=simulationId,throw=True)
+        assert res is not None, 'Simulation Envirnment can\'t be None when fetched with throw=True'
+        return res
+        
+        
     
     def run_full_simulation(self, simulationId: str, betweenIterationCallback: Callable[[],None]):
         
@@ -1053,7 +1060,7 @@ class GreenPointsLoyaltyApp():
             raise KeyError(f'Bad SimulationID passed. No Active Simulation Environment is registered to {simulationId}')
         try:
             if not self.initialised:
-                self.initNewSim()
+                self.initAppEnv()
             # assert self.active_simulation_environment is not None, 'Must init a new simulation before starting the app'
             self._running = True
             active_simulation_environment = self._simulationEnvironments[simulationId][1]
@@ -1073,7 +1080,7 @@ class GreenPointsLoyaltyApp():
             raise KeyError(f'Bad SimulationID passed. No Active Simulation Environment is registered to {simulationId}')
         try:
             if not self.initialised:
-                self.initNewSim()
+                self.initAppEnv()
             # assert self.active_simulation_environment is not None, 'Must init a new simulation before starting the app'
             self._running = True
             active_simulation_environment = self._simulationEnvironments[simulationId][1]
@@ -1089,7 +1096,7 @@ class GreenPointsLoyaltyApp():
             raise e
         
     def initTestSimulation(self):
-        self.initNewSim()
+        self.initAppEnv()
         return None
     
     def start_isolated_iteration(self, simulationId:str):

@@ -32,7 +32,10 @@ abstract class ConfigOptions {
 class ConfigDialog extends StatelessWidget {
   ConfigDialog({
     Key? key,
+    required this.fullScreen,
   }) : super(key: key);
+
+  bool fullScreen;
 
   Map<String, num> configOptions = <String, num>{
     ConfigOptions.getLabel(ConfigOptions.fullBasketSize): 2,
@@ -63,8 +66,14 @@ class ConfigDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final appStateMgr = Provider.of<AppStateManager>(context);
     final marketStateViewer = Provider.of<IMarketStateViewer>(context);
-    final autoRouter = AutoRouter.of(context);
+    // final autoRouter = AutoRouter.of(context);
 
+    return fullScreen
+        ? getFullScreen(context, appStateMgr)
+        : getPopover(context, appStateMgr);
+  }
+
+  Widget getPopover(BuildContext context, AppStateManager appStateMgr) {
     return SimpleDialog(
       title: Stack(
         children: [
@@ -102,109 +111,142 @@ class ConfigDialog extends StatelessWidget {
           )
         ],
       ),
-      children: <Widget>[
-        SizedBox(
-          height: 24,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              const Text('Aggregation'),
-              DropdownButton(
-                items: const [
-                  DropdownMenuItem(
-                    child: Text(
-                      'Average',
-                    ),
-                    value: ViewAggregationType.runningAverage,
-                  ),
-                  DropdownMenuItem(
-                    child: Text(
-                      'Variance',
-                    ),
-                    value: ViewAggregationType.runningVariance,
-                  ),
-                  DropdownMenuItem(
-                    child: Text(
-                      'Cum. Sum',
-                    ),
-                    value: ViewAggregationType.runningSum,
-                  ),
-                ],
-                onChanged: (ViewAggregationType? value) {
-                  appStateMgr.updateAggregationType(
-                      value ?? ViewAggregationType.runningAverage);
-                },
-              )
-            ],
-          ),
-        ),
-        const SizedBox(
-          height: 8.0,
-        ),
-        SizedBox(
-          height: 24,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              const Text('Performance measure'),
-              DropdownButton(
-                items: const [
-                  DropdownMenuItem(
-                    child: Text(
-                      'Sales Vol.',
-                    ),
-                    value: ViewMeasureType.salesCount,
-                  ),
-                  DropdownMenuItem(
-                    child: Text(
-                      'Gember Points issued',
-                    ),
-                    value: ViewMeasureType.greenPointsIssued,
-                  ),
-                ],
-                onChanged: (ViewMeasureType? value) {
-                  appStateMgr
-                      .updateMeasureType(value ?? ViewMeasureType.salesCount);
-                },
-              )
-            ],
-          ),
-        ),
-        Container(
-          alignment: Alignment.center,
-          child: ListView.builder(
-            itemBuilder: (context, index) {
-              var configOpt = configOptions.entries.toList()[index];
-              return SizedBox(
-                  height: 24,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      NumberInput(
-                        label: configOpt.key,
-                        value: configOpt.value.toString(),
-                        allowDecimal: false,
-                        disabled: appStateMgr.runningSimulation,
-                        onChanged: (num val) {
-                          // marketStateViewer.loadEntitiesAndInitApp(
-                          //     configOptions: configOptionsDTO);
-                          appStateMgr.updateNextSimConfig(
-                              configOptions: configOptionsDTO);
-                        },
-                      )
-                    ],
-                  ));
-            },
-            itemCount: ConfigOptions.count,
-          ),
-        )
-      ],
+      children: getDialogChildren(context, appStateMgr),
     );
   }
+
+  List<Widget> getDialogChildren(
+      BuildContext context, AppStateManager appStateMgr) {
+    return <Widget>[
+      Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              'Aggregation',
+              style: Theme.of(context).textTheme.labelSmall,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: DropdownButton(
+              items: const [
+                DropdownMenuItem(
+                  child: Text(
+                    'Average',
+                  ),
+                  value: ViewAggregationType.runningAverage,
+                ),
+                DropdownMenuItem(
+                  child: Text(
+                    'Variance',
+                  ),
+                  value: ViewAggregationType.runningVariance,
+                ),
+                DropdownMenuItem(
+                  child: Text(
+                    'Cum. Sum',
+                  ),
+                  value: ViewAggregationType.runningSum,
+                ),
+              ],
+              // onTap: (){
+              //   showItems()
+              // } ,
+              onChanged: (ViewAggregationType? value) {
+                appStateMgr.updateAggregationType(
+                    value ?? ViewAggregationType.runningAverage);
+              },
+            ),
+          )
+        ],
+      ),
+      Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          Text(
+            'Performance measure',
+            style: Theme.of(context).textTheme.labelSmall,
+          ),
+          DropdownButton(
+            items: const [
+              DropdownMenuItem(
+                child: Text(
+                  'Sales Vol.',
+                ),
+                value: ViewMeasureType.salesCount,
+              ),
+              DropdownMenuItem(
+                child: Text(
+                  'Gember Points issued',
+                ),
+                value: ViewMeasureType.greenPointsIssued,
+              ),
+            ],
+            onChanged: (ViewMeasureType? value) {
+              appStateMgr
+                  .updateMeasureType(value ?? ViewMeasureType.salesCount);
+            },
+          )
+        ],
+      ),
+      ...(configOptions.entries.map((configOpt) {
+        return ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: 200),
+          child: NumberInput(
+            label: configOpt.key,
+            value: '${configOpt.value}',
+            allowDecimal: false,
+            disabled: appStateMgr.runningSimulation,
+            onChanged: (num val) {
+              configOptions[configOpt.key] = val;
+              appStateMgr.updateNextSimConfig(configOptions: configOptionsDTO);
+            },
+          ),
+        );
+      })),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ElevatedButton(
+              child:
+                  Text('Done', style: Theme.of(context).textTheme.labelMedium),
+              onPressed: () {
+                appStateMgr
+                    .loadEntitiesWithParams(configOptions: configOptionsDTO)
+                    .then((ents) {
+                  // Navigator.of(context).pop(); // fix this with autorouter using a route if thats how it is showing?...
+                  // WE are meant to push another route to the stack to show a dialog: https://api.flutter.dev/flutter/material/AlertDialog-class.html
+                });
+              },
+            ),
+          )
+        ],
+      )
+    ];
+  }
+
+  Widget getFullScreen(BuildContext context, AppStateManager appStateMgr) {
+    return Center(
+        // alignment: Alignment.center,
+        // // height: MediaQuery.of(context).size.height,
+        // height: 400,
+        // // width: MediaQuery.of(context).size.width,
+        // width: 400,
+        // padding: EdgeInsets.all(8.0),
+        child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: getDialogChildren(context, appStateMgr),
+      // children: getDialogChildren(context, appStateMgr),
+    ));
+  }
 }
+  
 
 // SingleChildScrollView(
 //           child: ListBody(

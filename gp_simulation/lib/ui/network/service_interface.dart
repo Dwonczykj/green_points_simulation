@@ -3,13 +3,16 @@
 import 'package:logging/logging.dart';
 
 abstract class TSerializable {
+  TSerializable();
+
   TSerializable.fromJson(Map<String, dynamic> json);
 
-  TSerializable();
+  static final log = Logger('TSerializable');
 
   Map<String, dynamic> toJson();
 
-  static final log = Logger('TSerializable');
+  // static T deepCopy<T extends TSerializable>(T tSerializableInst) =>
+  //     T.fromJson(toJson());
 
   static Map<String, T> getJsonMapValue<T extends TSerializable>(
       Map<String, dynamic> json,
@@ -111,6 +114,27 @@ abstract class TSerializable {
       // assert(json[fieldName] is T); // BUG: Dont check type as type is _JsonMap
       if (json[fieldName] != null && json[fieldName] is! T) {
         json[fieldName] = Map<String, dynamic>.from(json[fieldName]);
+      }
+      return (json[fieldName] ?? defaultVal);
+    } on JsonParseException catch (err) {
+      throw JsonParseException('Unable to pass json of fieldName: $fieldName',
+          fieldName: '${err.fieldName}.$fieldName');
+    } catch (err) {
+      throw JsonParseException('Unable to pass json of fieldName: $fieldName',
+          fieldName: fieldName);
+    }
+  }
+
+  static Map<String, TVal> getJsonMapValTypeValue<TVal>(
+      Map<String, dynamic> json, String fieldName,
+      {Map<String, TVal>? defaultVal}) {
+    try {
+      json = _defaultJson(json, fieldName, defaultVal: defaultVal);
+      assert(json.containsKey(fieldName));
+      json[fieldName] ??= defaultVal;
+      // assert(json[fieldName] is T); // BUG: Dont check type as type is _JsonMap
+      if (json[fieldName] != null && json[fieldName] is! Map<String, TVal>) {
+        json[fieldName] = Map<String, TVal>.from(json[fieldName]);
       }
       return (json[fieldName] ?? defaultVal);
     } on JsonParseException catch (err) {
@@ -252,13 +276,14 @@ abstract class ServiceInterface<T extends TSerializable> {
 }
 
 class JsonParseException implements Exception {
-  static final log = Logger('JsonParseException');
   JsonParseException(this.message, {required this.fieldName}) : super() {
     log.fine(errMsg);
   }
 
-  final String message;
+  static final log = Logger('JsonParseException');
+
   final String fieldName;
+  final String message;
 
   String get errMsg => 'JsonParseException: $message';
 }

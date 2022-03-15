@@ -69,7 +69,11 @@ class NumberInput extends StatelessWidget {
         label: Text(label),
         errorText: error,
         icon: icon,
+        floatingLabelAlignment: FloatingLabelAlignment.start,
+        labelStyle: Theme.of(context).textTheme.labelMedium,
+
       ),
+
     );
   }
 

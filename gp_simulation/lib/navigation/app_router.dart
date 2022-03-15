@@ -35,8 +35,10 @@ import '../ui/screens/screens.dart';
           name: "ViewSimulationRouter",
           page: EmptyRouterPage,
           children: [
+            // DOCS: See https://autoroute.vercel.app/basics/passing_arguments for passing SimId arg to view a previous simulation
             AutoRoute(path: '', page: ViewSimulationPage),
             // AutoRoute(path: 'details', page: AccountDetailsPage),
+            // AutoRoute(path: ':simId', page: ViewSimulationPage),
             RedirectRoute(path: '*', redirectTo: ''),
           ],
         ),

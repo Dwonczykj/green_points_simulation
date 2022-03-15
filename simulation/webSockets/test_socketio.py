@@ -337,7 +337,7 @@ class TestSocketIO(unittest.TestCase):
         client = socketio.test_client(app, auth={'foo': 'bar'})
         client.get_received()
         
-        gpApp.initNewSim()
+        gpApp.initAppEnv()
         simConfig = SimulationConfig()
         simConfig.maxN=10
         simConfig.convergenceTH=0.1

@@ -16,7 +16,7 @@
 
 import logging
 from socketio_init import socketio
-from httpRoutes2 import flaskHttpApp
+from http_routes import flaskHttpApp
 # from httpRoutes2 import flaskHttpAppWithRoutes
 from colorama import Fore, Style
 import socketioRoutes  # type:ignore

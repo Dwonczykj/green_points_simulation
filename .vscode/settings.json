@@ -25,4 +25,5 @@
     },
     "dart.openDevTools": "never",
     "dart.devToolsReuseWindows": true,
+    "workbench.editor.showTabs": true,
 }

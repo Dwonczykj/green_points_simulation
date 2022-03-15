@@ -18,3 +18,7 @@ gpApp = GreenPointsLoyaltyApp.getInstance(
     data=df,
     socketio=socketio,
     debug=flaskHttpAppConfig['DEBUG_APP'])
+
+if flaskHttpAppConfig.get('APP_LAZY_LOAD',True) == False:
+    '''Dont wait for someone to call /init route, load GPAppEnvironment on server start:'''
+    gpApp.initAppEnv()

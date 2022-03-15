@@ -2,6 +2,7 @@ import os
 
 flaskHttpAppConfig = {}
 flaskHttpAppConfig['USE_HTTPS'] = False
+flaskHttpAppConfig['APP_LAZY_LOAD'] = False
 flaskHttpAppConfig['GEMBER_HTTPS_KEYFILE'] = '/private/etc/ssl/localhost/localhost.key'
 flaskHttpAppConfig['GEMBER_HTTPS_CERTFILE'] = '/private/etc/ssl/localhost/localhost.crt'
 flaskHttpAppConfig['GEMBER_BIND_HOST'] = '127.0.0.1'
@@ -20,7 +21,12 @@ class SimulationIterationConfig:
     @classmethod
     def createFromDict(cls,data:dict[str,str|int|None]):
         '''create SimulationConfig params from the passed dict
-            if any updates occur, return True else False'''
+            if any updates occur, return True else False
+            Expects keys:
+            - BASKET_FULL_SIZE
+            - NUM_SHOP_TRIPS_PER_ITERATION
+            - NUM_CUSTOMERS
+            '''
         instance = cls()
         
         instance.BASKET_FULL_SIZE = data['BASKET_FULL_SIZE'] if 'BASKET_FULL_SIZE' in data else instance.BASKET_FULL_SIZE
@@ -106,7 +112,14 @@ class SimulationConfig(SimulationIterationConfig):
     @classmethod
     def createFromDict(cls,data:dict[str,str|int|None]):
         '''create SimulationConfig params from the passed dict
-            if any updates occur, return True else False'''
+            if any updates occur, return True else False
+            Expects keys:
+            - BASKET_FULL_SIZE
+            - NUM_SHOP_TRIPS_PER_ITERATION
+            - NUM_CUSTOMERS
+            - maxN
+            - convergenceTH
+            '''
         instance = cls()
         
         instance.BASKET_FULL_SIZE = data['BASKET_FULL_SIZE'] if 'BASKET_FULL_SIZE' in data else instance.BASKET_FULL_SIZE

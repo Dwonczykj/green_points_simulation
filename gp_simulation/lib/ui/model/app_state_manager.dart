@@ -27,15 +27,21 @@ enum ScenarioTest {
 
 abstract class AppStateManagerProperties {
   List<String> runningSimulationsWithIds = <String>[];
-  late List<String>? retailerNames;
-  late Map<String, Color>? retailerColorMap;
-  late SimulationDataCache? simulationDataCache;
+  List<String>? retailerNames;
+  Map<String, Color>? retailerColorMap;
+  SimulationDataCache? simulationDataCache;
 
   String _connectionStatus = 'N/A';
   String get connectionStatus => _connectionStatus;
 
-  LoadEntitiesResult?
-      entities; //with all info for retailerCluster, retailers and customers.
+  bool _initialised = false;
+  bool get initialised => _initialised;
+
+  // set initialised(bool initialised) {
+  //   _initialised = initialised;
+  // }
+
+  LoadEntitiesResult? entities;
 
   List<ScenarioTest> tests = <ScenarioTest>[
     ScenarioTest.realLifeSimulation,
@@ -72,9 +78,11 @@ abstract class AppStateManagerProperties {
 
   GemberAppConfig? get simulationConfig => _simConfigValid
       ? GemberAppConfig(
-          BASKET_FULL_SIZE: basketSizeForNextSim ?? 0,
-          NUM_SHOP_TRIPS_PER_ITERATION: numTripsToShopsForNextSim ?? 0,
-          NUM_CUSTOMERS: numCustomersForNextSim ?? 0)
+          BASKET_FULL_SIZE: basketSizeForNextSim,
+          NUM_SHOP_TRIPS_PER_ITERATION: numTripsToShopsForNextSim,
+          NUM_CUSTOMERS: numCustomersForNextSim,
+          maxN: maxN,
+          convergenceTH: convergenceThreshold)
       : null;
 
   ViewAggregationType _viewAggType = ViewAggregationType.runningAverage;
@@ -90,9 +98,11 @@ class AppStateManager extends ChangeNotifier with AppStateManagerProperties {
   AppStateManager._privateConstructor(BuildContext context,
       {required IMarketStateViewer marketStateViewer}) {
     _instance = this;
+    _initialised = false;
     // marketStateViewer = Provider.of<IMarketStateViewer>(context, listen: true);
     marketStateViewerInst = marketStateViewer;
     marketStateViewerInst.addListener(_listenSocket);
+    marketStateViewerInst.initialiseGemberPointsApp();
   }
 
   static AppStateManager? _instance;
@@ -106,6 +116,18 @@ class AppStateManager extends ChangeNotifier with AppStateManagerProperties {
   _listenSocket() {
     _connectionStatus = marketStateViewerInst.connectionStatus;
     notifyListeners();
+  }
+
+  Future<LoadEntitiesResult> loadEntitiesWithParams(
+      {required GemberAppConfig configOptions}) {
+    return marketStateViewerInst
+        .loadEntities(configOptions: configOptions)
+        .then((e) {
+      entities = e;
+      _initialised = true;
+      notifyListeners();
+      return e;
+    });
   }
 
   /**
