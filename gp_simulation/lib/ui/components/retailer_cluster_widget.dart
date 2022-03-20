@@ -51,8 +51,20 @@ class _RetailerClusterWidgetState extends State<RetailerClusterWidget> {
 
   bool expanded = false;
 
+  void _performDataSanityCheck(BuildContext context) {
+    var checkRetailerIdsInAlignmentMap = widget.underlyingRetailers
+        .map((underlyingRetailer) =>
+            widget.alignmentMap.keys.contains(underlyingRetailer.id))
+        .any((element) => element);
+    if (!checkRetailerIdsInAlignmentMap) {
+      throw Exception(
+          'Alignment map doesnt contain Ids to all underlying retailers.');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    _performDataSanityCheck(context);
     return LayoutBuilder(builder: (context, constraints) {
       return Align(
           alignment: widget.alignmentCluster,
@@ -81,6 +93,7 @@ class _RetailerClusterWidgetState extends State<RetailerClusterWidget> {
                         curve: Curves.decelerate,
                         child: RetailerTileWidget(
                           retailer: retailer,
+                          displayLabel: expanded,
                           boxConstraints: constraints,
                           retailerRadiusPcnt: widget.retailerRadiusPcnt,
                           onLongTap: () {

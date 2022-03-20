@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:logging/logging.dart';
 import 'package:tuple/tuple.dart';
 
 import '../model/all_models.dart';
@@ -27,6 +28,8 @@ class MoneySendAnimationWidget extends StatelessWidget with SpiderLayoutMixin {
   void Function(Tuple2<TransactionModel, TransitionJourney> a)?
       onAnimationCompleted;
   final double durationSecs;
+
+  final log = Logger('MoneySendAnimationWidget');
 
   @override
   Widget build(BuildContext context) {
@@ -81,6 +84,10 @@ class MoneySendAnimationWidget extends StatelessWidget with SpiderLayoutMixin {
       return AnimatedAlignJD(
         startingAlignment: startingAlignmentForAnimation,
         endingAlignment: endingAlignmentForAnimation,
+        onEnd: (status, complete) {
+          log.finer(
+              'Money sent from alignment: $startingAlignmentForAnimation to $endingAlignmentForAnimation');
+        },
         duration: Duration(milliseconds: (durationSecs * 1000.0).round()),
         curve: Curves.fastOutSlowIn,
         allowReverse: false,

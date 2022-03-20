@@ -1,5 +1,7 @@
 import os
 
+from enums import RetailerStrategyGPMultiplier, RetailerSustainabilityIntercept
+
 flaskHttpAppConfig = {}
 flaskHttpAppConfig['USE_HTTPS'] = False
 flaskHttpAppConfig['APP_LAZY_LOAD'] = False
@@ -17,29 +19,64 @@ class SimulationIterationConfig:
         self.BASKET_FULL_SIZE = 3
         self.NUM_SHOP_TRIPS_PER_ITERATION = 2
         self.NUM_CUSTOMERS = 4
+        self.strategy = RetailerStrategyGPMultiplier.COMPETITIVE
+        self.sustainabilityBaseline = RetailerSustainabilityIntercept.AVERAGE
+        self.controlRetailerName:str|None = None
         
-    @classmethod
-    def createFromDict(cls,data:dict[str,str|int|None]):
+    @staticmethod
+    def createFromDict(data:dict[str,str|int|float|None]):
         '''create SimulationConfig params from the passed dict
             if any updates occur, return True else False
             Expects keys:
             - BASKET_FULL_SIZE
             - NUM_SHOP_TRIPS_PER_ITERATION
             - NUM_CUSTOMERS
+            - strategy
+            - sustainabilityBaseline
+            - controlRetailerName
             '''
-        instance = cls()
-        
-        instance.BASKET_FULL_SIZE = data['BASKET_FULL_SIZE'] if 'BASKET_FULL_SIZE' in data else instance.BASKET_FULL_SIZE
-        instance.NUM_SHOP_TRIPS_PER_ITERATION = data['NUM_SHOP_TRIPS_PER_ITERATION'] if 'NUM_SHOP_TRIPS_PER_ITERATION' in data else instance.NUM_SHOP_TRIPS_PER_ITERATION
-        instance.NUM_CUSTOMERS = data['NUM_CUSTOMERS'] if 'NUM_CUSTOMERS' in data else instance.NUM_CUSTOMERS
-        
+        instance = SimulationIterationConfig()
+        instance.loadFromDict(data)
         return instance
+    
+    def parseIntValueFromDict(self, key:str, data:dict[str,str|int|float|None]):
+        if key in data and data[key] is not None:
+            x = data[key]
+            assert x is not None
+            return int(x)
+        else:
+            return getattr(self,key)
+    
+    def parsefloatValueFromDict(self, key:str, data:dict[str,str|int|float|None]):
+        if key in data and data[key] is not None:
+            x = data[key]
+            assert x is not None
+            return float(x)
+        else:
+            return getattr(self,key)
+        
+    def loadFromDict(self,data:dict[str,str|int|float|None]):
+        instance = self
+        
+        instance.BASKET_FULL_SIZE = self.parseIntValueFromDict('BASKET_FULL_SIZE',data)
+        instance.NUM_SHOP_TRIPS_PER_ITERATION = self.parseIntValueFromDict('NUM_SHOP_TRIPS_PER_ITERATION',data)
+        instance.NUM_CUSTOMERS = self.parseIntValueFromDict(
+            'NUM_CUSTOMERS', data)
+        instance.strategy = RetailerStrategyGPMultiplier(self.parsefloatValueFromDict(
+            'strategy', data))
+        instance.sustainabilityBaseline = RetailerSustainabilityIntercept(self.parsefloatValueFromDict(
+            'sustainability', data))
+        instance.controlRetailerName = getattr(data,'controlRetailerName',None)
+        return None
     
     def toJson(self):
         return {
             'BASKET_FULL_SIZE': self.BASKET_FULL_SIZE,
             'NUM_SHOP_TRIPS_PER_ITERATION': self.NUM_SHOP_TRIPS_PER_ITERATION,
             'NUM_CUSTOMERS': self.NUM_CUSTOMERS,
+            'strategy': self.strategy.value,
+            'sustainability': self.sustainabilityBaseline.value,
+            'controlRetailerName': self.controlRetailerName,
         }
     
 class SimulationConfig(SimulationIterationConfig):
@@ -50,17 +87,15 @@ class SimulationConfig(SimulationIterationConfig):
         self.convergenceTH = 1.0
     
     
-    def toJson(self):
+    def toJson(self) -> dict[str,float|int]:
         return {
-            'BASKET_FULL_SIZE': self.BASKET_FULL_SIZE,
-            'NUM_SHOP_TRIPS_PER_ITERATION': self.NUM_SHOP_TRIPS_PER_ITERATION,
-            'NUM_CUSTOMERS': self.NUM_CUSTOMERS,
+            ** super().toJson(),
             'maxN': self.maxN,
             'convergenceTH': self.convergenceTH,
         }
         
     def _updateParam(self,staticFieldName:str,data:dict[str,str|int|None]):
-        existingData:dict[str,int] = self.toJson()
+        existingData = self.toJson()
         assert staticFieldName in existingData.keys(), 'Can not update global param for variable name that is not a global parameter.'
         if staticFieldName in data.keys():
             paramVal = data[staticFieldName]
@@ -81,17 +116,25 @@ class SimulationConfig(SimulationIterationConfig):
             return False
                     
     
-    def _setParamValue(self,staticFieldName:str,val:int):
-        if staticFieldName == 'BASKET_FULL_SIZE':
-            self.BASKET_FULL_SIZE = val
-        elif staticFieldName == 'NUM_SHOP_TRIPS_PER_ITERATION':
-            self.NUM_SHOP_TRIPS_PER_ITERATION = val
-        elif staticFieldName == 'NUM_CUSTOMERS':
-            self.NUM_CUSTOMERS = val
-        elif staticFieldName == 'maxN':
-            self.maxN = val
-        elif staticFieldName == 'convergenceTH':
-            self.convergenceTH = val
+    def _setParamValue(self,staticFieldName:str,val:int|float|str):
+        if staticFieldName == 'controlRetailerName':
+            assert val is None or isinstance(val,str)
+            self.controlRetailerName = val
+        elif isinstance(val,int) or isinstance(val,float):
+            if staticFieldName == 'BASKET_FULL_SIZE':
+                self.BASKET_FULL_SIZE = int(val)
+            elif staticFieldName == 'NUM_SHOP_TRIPS_PER_ITERATION':
+                self.NUM_SHOP_TRIPS_PER_ITERATION = int(val)
+            elif staticFieldName == 'NUM_CUSTOMERS':
+                self.NUM_CUSTOMERS = int(val)
+            elif staticFieldName == 'maxN':
+                self.maxN = int(val)        
+            elif staticFieldName == 'convergenceTH':
+                self.convergenceTH = float(val)
+            elif staticFieldName == 'strategy':
+                self.strategy = float(val)
+            elif staticFieldName == 'sustainability':
+                self.sustainability = float(val)
         else:
             raise TypeError('Can not update global param for variable name that is not a global parameter.')
         
@@ -101,6 +144,9 @@ class SimulationConfig(SimulationIterationConfig):
             if any updates occur, return True else False'''
         updatesOccured = False
         updatesOccured = bool(updatesOccured or self._updateParam('BASKET_FULL_SIZE', data))
+        updatesOccured = bool(updatesOccured or self._updateParam('strategy', data))
+        updatesOccured = bool(updatesOccured or self._updateParam('sustainability', data))
+        updatesOccured = bool(updatesOccured or self._updateParam('controlRetailerName', data))
         updatesOccured = bool(updatesOccured or self._updateParam('NUM_SHOP_TRIPS_PER_ITERATION', data))
         updatesOccured = bool(
             updatesOccured or self._updateParam('NUM_CUSTOMERS', data))
@@ -109,8 +155,8 @@ class SimulationConfig(SimulationIterationConfig):
             updatesOccured or self._updateParam('convergenceTH', data))
         return updatesOccured
     
-    @classmethod
-    def createFromDict(cls,data:dict[str,str|int|None]):
+    @staticmethod
+    def createFromDict(data:dict[str,str|int|float|None]):
         '''create SimulationConfig params from the passed dict
             if any updates occur, return True else False
             Expects keys:
@@ -119,16 +165,25 @@ class SimulationConfig(SimulationIterationConfig):
             - NUM_CUSTOMERS
             - maxN
             - convergenceTH
+            - strategy
+            - sustainabilityBaseline
+            - controlRetailerName
             '''
-        instance = cls()
-        
-        instance.BASKET_FULL_SIZE = data['BASKET_FULL_SIZE'] if 'BASKET_FULL_SIZE' in data else instance.BASKET_FULL_SIZE
-        instance.NUM_SHOP_TRIPS_PER_ITERATION = data['NUM_SHOP_TRIPS_PER_ITERATION'] if 'NUM_SHOP_TRIPS_PER_ITERATION' in data else instance.NUM_SHOP_TRIPS_PER_ITERATION
-        instance.NUM_CUSTOMERS = data['NUM_CUSTOMERS'] if 'NUM_CUSTOMERS' in data else instance.NUM_CUSTOMERS
-        instance.maxN = data['maxN'] if 'maxN' in data else instance.maxN
-        instance.convergenceTH = data['convergenceTH'] if 'convergenceTH' in data else instance.convergenceTH
-        
+        instance = SimulationConfig()
+        SimulationIterationConfig.loadFromDict(instance, data)
+        instance.loadFromDict(data)
         return instance
+    
+    def loadFromDict(self,data:dict[str,str|int|float|None]):
+        instance = self
+        super().loadFromDict(data)
+        # instance.BASKET_FULL_SIZE = data['BASKET_FULL_SIZE'] if 'BASKET_FULL_SIZE' in data else instance.BASKET_FULL_SIZE
+        # instance.NUM_SHOP_TRIPS_PER_ITERATION = data['NUM_SHOP_TRIPS_PER_ITERATION'] if 'NUM_SHOP_TRIPS_PER_ITERATION' in data else instance.NUM_SHOP_TRIPS_PER_ITERATION
+        # instance.NUM_CUSTOMERS = data['NUM_CUSTOMERS'] if 'NUM_CUSTOMERS' in data else instance.NUM_CUSTOMERS
+        instance.maxN = self.parseIntValueFromDict('maxN',data)
+        instance.convergenceTH = self.parseIntValueFromDict('convergenceTH',data)
+         
+        return None
 
 
 

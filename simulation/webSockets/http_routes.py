@@ -2,6 +2,8 @@
 
 # http://eventlet.net/doc/patching.html
 from enum import Enum
+import http
+from http.client import INTERNAL_SERVER_ERROR
 import logging
 from eventlet.greenpool import GreenPool
 from eventlet.greenthread import GreenThread
@@ -348,11 +350,18 @@ def load_entities():
     entities = simEnv.entities
     return wrap_CORS_response(make_response(entities,HTTPStatus.OK))
 
+@require_appkey
+@flaskHttpApp.route('/retailer_names', methods=['GET'])
+def get_retailer_names():
+    simEnv = gpApp.getSimulationDummyEnvironment()
+    retailerNames = simEnv.retailerNames
+    return wrap_CORS_response(make_response(retailerNames,HTTPStatus.OK))
+
     
 @check_app_initialised
 @require_appkey
 @flaskHttpApp.route('/run-full-sim', methods=['POST'])
-def run_simulation():
+def run_simulation(**kwds:Any):
     '''Initialise a new single iteration simulation environment and start it.
         --
         Required query params: 
@@ -369,6 +378,9 @@ def run_simulation():
     simId, simType = gpApp.initSimulationFullEnvironment(
         simConfig=simConfig,
     )
+    
+    simEnv = gpApp.getSimulationEnvironmentUnsafe(simulationId=simId)
+    simData = simEnv.data
 
     taskId = str(uuid.uuid4())
     
@@ -384,7 +396,7 @@ def run_simulation():
         green_thread = dual_pool.spawn(
             gpApp.run_full_simulation, **kwds)
         green_thread.link(green_thread.getGreenThreadResult(
-            lambda res: res.to_json() if res is not None else None))
+            lambda res: res if res is not None else None))
         if green_thread in taskResults:
             taskResults.pop(green_thread)
         tasks[taskId] = green_thread
@@ -395,6 +407,7 @@ def run_simulation():
                                                  'task_id': taskId,
                                                  'simulation_id': simId,
                                                  'simulation_type': simType,
+                                                 'simulation_data': simData,
                                                  }, return_status_code))
     else:
         df = gpApp.run_full_simulation(
@@ -403,8 +416,82 @@ def run_simulation():
         return wrap_CORS_response(make_response({'status': return_status_code,
                                                  'message': 'simulation_ran',
                                                  'task_id': taskId,
-                                                 'simulation_id': simId
+                                                 'simulation_id': simId,                                                 
+                                                 'simulation_type': simType,
+                                                 'simulation_data': simData,
                                                  }, return_status_code))
+        
+@check_app_initialised
+@require_appkey
+@flaskHttpApp.route('/sim-result/<string:simId>', methods=['GET'])
+def get_simulation_result(simId:str):
+    simEnv = gpApp.getSimulationEnvironment(simulationId=simId,throw=False)
+    if simEnv is not None:
+        return wrap_CORS_response(make_response(simEnv.summarise_simulation_to_dict()))
+        # return wrap_CORS_response(make_response(simEnv.summarise_simulation_to_df().to_dict()))
+    else:
+        abort(wrap_CORS_response(Response(
+                'Simulation Environment not found', status=HTTPStatus.NOT_FOUND)))
+
+@check_app_initialised
+@require_appkey
+@flaskHttpApp.route('/sim-compare', methods=['GET'])
+def get_simulation_history():
+    '''allowed measureType:
+    - sales_volume
+    - gp_issued
+    - market_share
+    - total_sales_price
+    - total_sales_price_less_gp
+    - * Not currently -> total_sales_price_by_item *
+    '''
+    data = _loadRequestData()
+    simulationIds = str(data['simulationIds']).split(',')
+    retailerName = data['retailerName']
+    measureType = data['measureType']
+    return _get_simulation_history(
+        simulationIds=simulationIds,
+        retailerName=retailerName,
+        measureType=measureType,
+        )
+
+def _get_simulation_history(
+    simulationIds:list[str], 
+    retailerName:str, # 📒 Cant use retailer.id as this will change accross simulations...
+    measureType:str,
+    ):
+    '''allowed measureType:
+    - sales_volume
+    - gp_issued
+    - market_share
+    - total_sales_price
+    - total_sales_price_less_gp
+    - * Not currently -> total_sales_price_by_item *
+    '''
+    
+    simEnvs:dict[str,Any] = {}
+    for simId in simulationIds:
+        simEnv = gpApp.getSimulationEnvironment(simulationId=simId,throw=False)
+        if simEnv is not None:
+            simEnvs[simId] = [simEnv.simulationConfig.toJson(), simEnv.summarise_simulation_to_dict(forRetailer=retailerName)]
+    if simEnvs:
+        return wrap_CORS_response(make_response(simEnvs, HTTPStatus.OK))
+    else:
+        return wrap_CORS_response(make_response('No simulations found with simulationIds requested', HTTPStatus.NOT_FOUND))
+    
+    
+    # TODO: 1. Get the params for this from the request data , body, form
+        # 2. comprehension map the ids -> dict[id,simEnv] lookup of simEnvs (GemberAppConfig, finalRunningAv. result) 
+        #   where they exist.
+        # 3. in the above comprehension, only get the retailer and the measureTyep which will 
+        #   be one number for each simulation -> this can be shown in a barchart where 
+        #   each xlabel is the params that led to that result, 
+        #   so for that we need the simEnv GemberAppConfig information in each of the filters above
+        # 4. return in this in an object that contains: data as a dict of simId to simInfo, 
+        #   then aggregation information that 
+        # 5. 
+        
+    pass
     
 
 @check_app_initialised
@@ -466,23 +553,40 @@ def run_single_iteration():
         simConfig=simConfig,
     )
     
+    adjDone = _setRetailerParamasForSimulationEnv(simulationId=simId,blocking=True)
+    if not adjDone:
+        abort(wrap_CORS_response(Response('Failed to parameterize retailer',HTTPStatus.INTERNAL_SERVER_ERROR)))
+    simEnv = gpApp.getSimulationEnvironmentUnsafe(simulationId=simId)
+    simData = simEnv.data
     taskId = str(uuid.uuid4())
     # This needs to be updated to return a simulation environment immediately that can be 
     if flaskHttpApp.config["ALLOW_THREADING"]:
         # http://eventlet.net/doc/patching.html
         green_thread = dual_pool.spawn(
             lambda : gpApp.run_isolated_iteration(simulationId=simId))
-        green_thread.link(green_thread.getGreenThreadResult(lambda res: res[0].to_json() if res is not None else None))
+        green_thread.link(green_thread.getGreenThreadResult(lambda res: res[0] if res is not None else None))
         if green_thread in taskResults:
             taskResults.pop(green_thread)
         tasks[taskId] = green_thread
         
         statusId = HTTPStatus.ACCEPTED
-        return wrap_CORS_response(make_response({'status': statusId, 'message': 'single_iteration_running', 'task_id': taskId}, statusId))
+        return wrap_CORS_response(make_response({
+            'status': statusId, 
+            'message': 'single_iteration_running', 
+            'task_id': taskId,
+            'simulation_data': simData,
+            'simulation_type': simType,
+            }, statusId))
     else:
         df = gpApp.run_isolated_iteration(simulationId=simId)
         statusId = HTTPStatus.OK
-        return wrap_CORS_response(make_response({'status': statusId, 'message': 'single_iteration_ran', 'task_id': taskId}, statusId))
+        return wrap_CORS_response(make_response({
+            'status': statusId, 
+            'message': 'single_iteration_ran', 
+            'task_id': taskId,
+            'simulation_type': simType,
+            'simulation_data': simData,
+            }, statusId))
 
 
 @check_app_initialised
@@ -541,18 +645,28 @@ def adjust_purchases_delay_seconds(delay: float = 1.0):
 @check_app_initialised
 @require_appkey
 @flaskHttpApp.route('/adjust-retailer', methods=['POST'])
-def adjust_retailer_in_sim():
+def adjust_retailer_in_sim(*args, **kwargs):
     simId = _loadSimulationId()
+    adjQueued = _setRetailerParamasForSimulationEnv(simulationId=simId, *args, **kwargs)
+    if adjQueued:
+        return wrap_CORS_response(make_response({
+            'status': HTTPStatus.ACCEPTED, 
+            'message': 'retailer_asjustment_accepted',
+            }, HTTPStatus.ACCEPTED))
+    else:
+        abort(wrap_CORS_response(Response(
+            '', status=HTTPStatus.INTERNAL_SERVER_ERROR)))
+
+def _setRetailerParamasForSimulationEnv(simulationId:str,blocking:bool=False,*args,**kwargs):
     data = _loadRequestData()
     validateRetailer, controlRetailer = _validateRetailerInRequestData(data)
     if validateRetailer != InvalidRetailerReason.validRetailer:
         _abortBadRetailerRequest(validateRetailer=validateRetailer)
     elif controlRetailer is not None:
-        taskId = gpApp.adjustSimParameters(simId, controlRetailer)
-        return wrap_CORS_response(make_response({'status': HTTPStatus.ACCEPTED, 'message': 'retailer_asjustment_accepted', 'task_id': taskId}, HTTPStatus.ACCEPTED))
+        adjQueued = gpApp.adjustSimParameters(simulationId=simulationId, controlRetailer=controlRetailer, blocking=blocking)
+        return adjQueued
     else:
-        abort(wrap_CORS_response(Response(
-            '', status=HTTPStatus.INTERNAL_SERVER_ERROR)))
+        return None
 
 
 @require_appkey

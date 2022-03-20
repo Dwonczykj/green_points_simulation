@@ -14,12 +14,14 @@ class RetailerTileWidget extends StatefulWidget {
     this.onLongTap,
     this.onDoubleTap,
     required this.retailerRadiusPcnt,
+    this.displayLabel = false,
   }) : super(key: key);
   final RetailerModel retailer;
   final BoxConstraints boxConstraints;
   final void Function()? onLongTap;
   final void Function()? onDoubleTap;
   final double retailerRadiusPcnt;
+  final bool displayLabel;
   @override
   _RetailerTileWidgetState createState() => _RetailerTileWidgetState();
 }
@@ -32,12 +34,21 @@ class _RetailerTileWidgetState extends State<RetailerTileWidget> {
   Widget build(BuildContext context) {
     return InkWell(
       key: Key(widget.retailer.id),
-      child: SvgPicture.asset('images/noun-buildings-4201535.svg',
-          key: retailerGlobalKeyOfStflWidget,
-          height: widget.retailerRadiusPcnt * widget.boxConstraints.maxHeight,
-          width: widget.retailerRadiusPcnt * widget.boxConstraints.maxWidth,
-          color: Theme.of(context).iconTheme.color,
-          semanticsLabel: 'Retailer: ${widget.retailer.name}'),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SvgPicture.asset('images/noun-buildings-4201535.svg',
+              key: retailerGlobalKeyOfStflWidget,
+              height:
+                  widget.retailerRadiusPcnt * widget.boxConstraints.maxHeight,
+              width: widget.retailerRadiusPcnt * widget.boxConstraints.maxWidth,
+              color: Theme.of(context).iconTheme.color,
+              semanticsLabel: 'Retailer: ${widget.retailer.name}'),
+          if (widget.displayLabel)
+            Text(widget.retailer.name,
+                style: Theme.of(context).textTheme.displaySmall),
+        ],
+      ),
       onTap: () {
         showUnderlyingEntityDetails(
           retailer: widget.retailer,
@@ -83,7 +94,7 @@ class _RetailerTileWidgetState extends State<RetailerTileWidget> {
         text: retailer.name,
         child: RetailerDetailCard(
           retailer: retailer,
-        ), //TODO P2 Replace this with a card that allows us to show Retailer info and tweak the params.
+        ),
         textStyle: Theme.of(context).textTheme.labelMedium,
         height: 100,
         width: 300,

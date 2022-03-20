@@ -8,9 +8,13 @@ class StackedBalancesChart extends StatelessWidget {
     Key? key,
     required this.chartTitle,
     required this.series,
+    this.height,
+    this.width,
   }) : super(key: key);
 
   final String chartTitle;
+  final double? height;
+  final double? width;
   List<charts.Series<dynamic, String>> series;
 
   _getChart() {
@@ -46,7 +50,8 @@ class StackedBalancesChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 400,
+      height: height,
+      width: width,
       padding: EdgeInsets.all(20),
       child: Card(
         child: Padding(

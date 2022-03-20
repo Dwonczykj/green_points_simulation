@@ -8,8 +8,10 @@ import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:quiver/iterables.dart';
 import 'package:tuple/tuple.dart';
+import 'package:logging/logging.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:webtemplate/ui/model/models.dart';
+
 
 import '../components/components.dart';
 import '../model/all_models.dart';
@@ -72,6 +74,8 @@ class _CustomersViewState extends State<CustomersView>
 
   double customerRadiusPcnt = 0.15;
   double retailerRadiusPcnt = 0.15;
+
+  final log = Logger('CustomerViewState');
 
   int numCustomers = 1;
 
@@ -151,13 +155,12 @@ class _CustomersViewState extends State<CustomersView>
             setState(() {
               _transactionLatest = transaction;
               _totalTransactions = _totalTransactions++;
-              //TODO P1: Store a list of all the entities and there corresponding locations (Alignments in the Consumer screen) ->
-              //  Use these locations to draw rather than having them locate themselves
               _transactionJourney = tj;
             });
           } else {
-            print(
-                'Transaction occured between entities that we did not pull from the backend.');
+            
+            log.warning(
+                'Transaction occured between entities (${transaction.accountFrom.owner.name} -> ${transaction.accountTo.owner.name}) that we did not pull from the backend.');
           }
         }
         if (_transactionLatest != null) {
@@ -173,13 +176,39 @@ class _CustomersViewState extends State<CustomersView>
   @override
   Widget build(BuildContext context) {
     final marketStateService = widget.marketStateViewer;
-    return Column(
+    return MinHeightColumn(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.max,
-      children: <Widget>[
+      childrenWithHeightSetForMinHeight: <Widget>[
+        StackedBalancesChart(
+          height: 200.0,
+          chartTitle: 'Retailer Sales',
+          series: widget.retailersCluster.totalSales.totalCostByCcy.keys
+              .map((ccy) => charts.Series(
+                    id: 'Retailer Sales [$ccy component]',
+                    data: sortedRetailers
+                        .sortCopy((a, b) => a.name.compareTo(b.name)),
+                    domainFn: (RetailerModel seriesItem, int? i) =>
+                        seriesItem.name,
+                    measureFn: (RetailerModel seriesItem, int? i) =>
+                        seriesItem.totalSales.totalCostByCcy[ccy]?.amount,
+                    // colorFn: (RetailerModel seriesItem, int? i) =>
+                    //   charts
+                    //     .MaterialPalette
+                    //     .blue
+                    //     .shadeDefault, //TODO: Use theme to colour charts -> Theme.of(context).
+                    colorFn: (RetailerModel seriesItem, int? i) =>
+                        charts.ColorUtil.fromDartColor(
+                            seriesItem.retailerColor),
+                  ))
+              .toList(), //TODO show strategy dict from entities
+        ),
         Expanded(
-          child: Center(
-            child: Stack(fit: StackFit.expand, children: <Widget>[
+          child: Container(
+            constraints: BoxConstraints(minHeight: 400),
+            alignment: Alignment.center,
+            padding: EdgeInsets.all(8.0),
+            child: Stack(children: <Widget>[
               ...widget.customers
                   .mapIndexed((customer, i) => CustomerWidget(
                         customer: customer,
@@ -254,7 +283,7 @@ class _CustomersViewState extends State<CustomersView>
           ),
         ]),
         Center(
-          child: RaisedButton(
+          child: ElevatedButton(
             child: const Text('Run Single Iteration'),
             onPressed: () {
               // marketStateService.testWsConnMemory();
@@ -262,28 +291,7 @@ class _CustomersViewState extends State<CustomersView>
             },
           ),
         ),
-        StackedBalancesChart(
-          chartTitle: 'Retailer Sales',
-          series: widget.retailersCluster.totalSales.totalCostByCcy.keys
-              .map((ccy) => charts.Series(
-                    id: 'Retailer Sales [$ccy component]',
-                    data: sortedRetailers
-                        .sortCopy((a, b) => a.name.compareTo(b.name)),
-                    domainFn: (RetailerModel seriesItem, int? i) =>
-                        seriesItem.name,
-                    measureFn: (RetailerModel seriesItem, int? i) =>
-                        seriesItem.totalSales.totalCostByCcy[ccy]?.amount,
-                    // colorFn: (RetailerModel seriesItem, int? i) =>
-                    //   charts
-                    //     .MaterialPalette
-                    //     .blue
-                    //     .shadeDefault, //TODO: Use theme to colour charts -> Theme.of(context).
-                    colorFn: (RetailerModel seriesItem, int? i) =>
-                        charts.ColorUtil.fromDartColor(
-                            seriesItem.retailerColor),
-                  ))
-              .toList(), //TODO show strategy dict from entities
-        )
+        
       ],
     );
   }

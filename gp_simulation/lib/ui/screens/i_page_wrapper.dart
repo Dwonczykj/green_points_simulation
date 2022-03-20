@@ -37,6 +37,31 @@ class _IPageWrapperState extends State<IPageWrapper> {
                     : Color.fromARGB(160, 248, 64, 51),
             title: Text(widget.title),
             actions: <Widget>[
+              // ProgressBarWidget...
+              Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: Text(
+                    'Demonstrative retailer: ${appStateManager.controlRetailer ?? 'None'}'),
+              ),
+              Container(
+                  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: appStateManager.runningSimulation
+                          ? [
+                              Container(
+                                  width: 25,
+                                  height: 25,
+                                  child: const CircularProgressIndicator()),
+                              Text(appStateManager.simulationProgressBar
+                                  .toString()),
+                            ]
+                          : [
+                              Text(appStateManager.simulationProgressBar
+                                  .toString()),
+                            ]),
+                  padding: const EdgeInsets.only(right: 8.0),
+                  width: 40,
+                  height: 25),
               Padding(
                 padding: const EdgeInsets.only(right: 8.0),
                 child: Column(

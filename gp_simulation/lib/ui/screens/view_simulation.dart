@@ -56,19 +56,20 @@ class _ViewSimulationState extends State<ViewSimulation> {
 
   String get connectionStatus => widget.appStateManager.connectionStatus;
 
-  Map<String, Map<String, Map<String, charts.Series<IterationDataPoint, int>>>>
+  Map<String, Map<String, Map<String, charts.Series<IterationDataPoint, int>>>>?
       get backingData =>
           widget.appStateManager.simulationRunningMetricsChartBackingData;
 
   List<charts.Series<IterationDataPoint, int>> get chartDataGetter =>
-      backingData.entries
+      backingData?.entries
           .where((element) => element.key == viewAggType.name)
           .expand((element) => element.value.entries
               .where((subMeas) => subMeas.key == viewMeasType.name)
               .expand((measType) => measType.value.entries
                   .map((retailerName) => retailerName.value)
                   .toList()))
-          .toList();
+          .toList() ??
+      <charts.Series<IterationDataPoint, int>>[];
   String get title =>
       ('Retailer ${viewMeasType.name.toSentenceCaseFromCamelCase()}');
 

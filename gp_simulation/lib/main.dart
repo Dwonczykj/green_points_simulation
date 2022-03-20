@@ -46,7 +46,7 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider<AppStateManager>(
           create: (context) =>
-              AppStateManager.getInstance(context, _marketStateViewer),
+              AppStateManager.getInstance(_marketStateViewer),
           lazy: false,
         ),
 

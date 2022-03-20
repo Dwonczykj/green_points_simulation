@@ -8,7 +8,7 @@ import abc
 from typing import Tuple, Any, Callable, Literal, Iterable, DefaultDict, TypeVar
 from typing_extensions import Self
 from collections import defaultdict
-import xdrlib
+from enums import *
 import numpy as np
 import logging
 
@@ -734,6 +734,9 @@ class Entity(Identifiable,ISerializable,metaclass=abc.ABCMeta):
         if x is None:
             raise InsufficientMoneyError('Insufficient money & points on account for payment')
         return x
+    
+    def intersectingCurrencies(self:Self,other:Self):
+        return list(set((acc.fiatCurrency for acc in self._accounts)).intersection(set((acc.fiatCurrency for acc in other._accounts))))
         
     def accountForPayment(self, payment:Money):
         return self._getAccountForPayment(currency=payment.currency, amount=payment.amount)
@@ -947,8 +950,6 @@ class Retailer(Entity):
         self.salesCount = 0
         self._salesHistory:list[Sale] = []
         self._waitingPurchasesToSettle:list[PurchaseDTO] = []
-        
-    # TODO need a factory initialiser that allows us to create a new retailer without initialising new accounts, gpIssueingAccount
         
     def _withAccounts(self:Self, oldSelf:Self) -> Self:
         for account in self._accounts:
@@ -2187,8 +2188,8 @@ class Bank(Institution):
             return {
                 "id": self.id
             }
-        
-        def __repr__(self) -> str:
+            
+        def __str__(self) -> str:
             eth = ''
             gp = ''
             money = ''
@@ -2199,7 +2200,10 @@ class Bank(Institution):
             if self._money.amount != 0:
                 money = f'{self._money}'
             tStr = ' ; '.join((x for x in (money, eth, gp) if x != ''))
-            return f'{super().__repr__()} [{tStr}] : ({self._accountFrom.owner.name} -> {self._accountTo.owner.name})'
+            return f'[{tStr}] : ({self._accountFrom.owner.name} -> {self._accountTo.owner.name})'
+        
+        def __repr__(self) -> str:
+            return f'{super().__repr__()} {self.__str__()}'
         
         class Ether(ISerializable):
             def __init__(self, gas:EtherCoin=EtherCoin(0), ether:EtherCoin=EtherCoin(0), money:Money=Money(0)) -> None:
@@ -2292,6 +2296,8 @@ class Item(Identifiable, ISerializable):
         self._name = name
         self._retailer = retailer
         self.cost = cost
+        # self.costToFirmBaseAccount = self.retailer.bank.FXPeek(fxFrom=cost,
+        #                                                        fxToCurrency=self._retailer.accountForPayment(cost).fiatCurrency)
         self.GP:float = greenPointRewards
         self.KGCo2:float = KGCo2
         for (key,val) in kwargs.items(): 
@@ -2525,23 +2531,7 @@ class CustomerBuyingItem():
 
 
 # Add custom alpha multipliers to reflect setting Green Point Strategy
-class RetailerStrategyGPMultiplier(float, enum.Enum):
-    ZERO=0.0
-    MIN=0.1
-    COMPETITIVE=1.0
-    MAX=10.0
-    
 
-class RetailerSustainabilityIntercept(float, enum.Enum):
-    LOW=-0.25
-    AVERAGE=0.0
-    HIGH=0.25
-    
-class InvalidRetailerReason(enum.Enum):
-    validRetailer=-1,
-    invalidName=0,
-    invalidStrategy=1,
-    invalidSustainability=2
     
 class ControlRetailer:
     def __init__(self, name: str, strategy: RetailerStrategyGPMultiplier, sustainability: RetailerSustainabilityIntercept):

@@ -11,3 +11,4 @@ export 'balances_chart.dart';
 export 'stacked_balances_chart.dart';
 export 'number_input.dart';
 export 'config_dialog.dart';
+export 'min_height_column.dart';

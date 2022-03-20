@@ -1,6 +1,8 @@
 from __future__ import annotations
 from ISerializable import TSERIALIZABLE_ALIAS, TSTRUC_ALIAS, ISerializable
-# from Bank import Bank, BankAccount
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from Bank import Bank
 
 from Multipliable import Divideable, Multipliable
 
@@ -28,6 +30,9 @@ class Money(Divideable, ISerializable):
     
     def toDictUI(self) -> dict[str,TSTRUC_ALIAS]:
         return super().toDictUI()
+    
+    def inCcy(self, viewInCurrency:str, throughBank:Bank):
+        return throughBank.FXPeek(fxFrom=self, fxToCurrency=viewInCurrency)
     
     
     # def exchange(self, fromAccount:BankAccount, throughBank:Bank, toCurrency:str):

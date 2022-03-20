@@ -58,6 +58,7 @@ class NavigationRailSelectedViewPage extends StatefulWidget {
 class _NavigationRailSelectedViewPageState
     extends State<NavigationRailSelectedViewPage> {
   int _selectedIndex = 1;
+  final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
   final routes = const <PageRouteInfo<void>>[
     CustomerViewRouter(),
     ViewSimulationRouter(),

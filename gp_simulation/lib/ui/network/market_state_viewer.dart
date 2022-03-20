@@ -12,6 +12,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/status.dart' as status;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ansicolor/ansicolor.dart';
+import 'package:webtemplate/ui/model/app_state_manager.dart';
 // import 'dart:html' as html;
 
 import '../../utils/ansi_print_colors.dart';
@@ -90,8 +91,9 @@ class HttpClientGember extends http.BaseClient {
 mixin WSBaseMixin on IMarketStateViewer {
   SimulationProgressData? _parseSimulationProgressData(dynamic event) {
     try {
-      return SimulationProgressData(
-          data: event, iterationNumber: event["iteration_number"]);
+      var i = event["iteration_number"];
+      log.fine(PrintPens.greenPen('ran_iteration_$i'));
+      return SimulationProgressData(data: event);
     } on Exception catch (e) {
       log.fine('market_state_viewer._parseSimulationProgressData threw $e');
       return null;
@@ -119,13 +121,25 @@ abstract class WebSocketHandlers extends IMarketStateViewer with WSBaseMixin {
   late final simulationHandlers = <String, void Function(dynamic data)>{
     WebSocketServerResponseEvent.simulation_iteration_completed:
         (dynamic data) {
-      _flagStopRunSim();
       if (_simulationProgressEmitterController.hasListener) {
         WebSocketMessageHandler parser = SocketioMessageHandler(
             type: WebSocketServerResponseEvent.simulation_iteration_completed,
             data: data);
-        pipe_if_exists(_parseSimulationProgressData(parser.data),
-            _simulationProgressEmitterController.add);
+        final simulationData = _parseSimulationProgressData(parser.data);
+        pipe_if_exists(
+            simulationData, _simulationProgressEmitterController.add);
+      }
+    },
+    WebSocketServerResponseEvent.simulation_ran: (dynamic data) {
+      if (_simulationProgressEmitterController.hasListener) {
+        WebSocketMessageHandler parser = SocketioMessageHandler(
+            type: WebSocketServerResponseEvent.simulation_ran, data: data);
+        final simulationData = _parseSimulationResult(parser.data);
+        if (appStateMgr.isRunningSim(simulationData.simulationId)) {
+          _flagStopRunSim();
+          appStateMgr.addCompletedSimulation(simulationData);
+          appStateMgr.refreshSimulationComparisonHistory();
+        }
       }
     },
   };
@@ -181,6 +195,10 @@ abstract class IMarketStateViewer extends ChangeNotifier {
   // }
 
   // IMarketStateViewer._privateConstruct();
+
+  // IMarketStateViewer() : super();
+
+  AppStateManager get appStateMgr => AppStateManager.getInstance(this);
 
   // static IMarketStateViewer? _instance;
 
@@ -243,6 +261,8 @@ abstract class IMarketStateViewer extends ChangeNotifier {
 
   bool backendServerDead = false;
 
+  GemberAppConfig? _simConfig;
+
   LoadEntitiesResult _EntityCatalog = LoadEntitiesResult(
     retailers: <RetailerModel>[],
     retailersCluster: AggregatedRetailers.zero(),
@@ -250,6 +270,24 @@ abstract class IMarketStateViewer extends ChangeNotifier {
     // basketFullSize: 1,
     // numShopTrips: 1,
   );
+
+  List<String> _retailerNames = <String>[];
+
+  List<String> get retailerNames => _retailerNames;
+
+  set retailerNames(List<String> val) {
+    if (_EntityCatalog.isEmpty) {
+      _retailerNames = val;
+    } else {
+      if (val.every((element) =>
+          _EntityCatalog.retailersCluster.retailerNames.contains(element))) {
+        _retailerNames = _EntityCatalog.retailersCluster.retailerNames;
+      } else {
+        throw Exception(
+            'Retailer names in setter do not match the retailer names already in the EntityCatalog');
+      }
+    }
+  }
 
   AppTransactionsStateModel _allTransactions = AppTransactionsStateModel(
     transactionsByEntityId: <String, List<TransactionModel>>{},
@@ -299,12 +337,6 @@ abstract class IMarketStateViewer extends ChangeNotifier {
     return false;
   }
 
-  //TODO: Create an AppStateManager that has the transactionCounter, transactionsToProcess:
-  //  Use a counter to confirm if I've already processed a transaction from the web socket
-  //  stream or add new message to appstatemanager.transtoprocess and then process in UI,
-  //  immediately set the transaction to "being processed" In the appstatemanager
-  //  and then once widget finishes visuals, remove from transtoprocess
-
   final Map<String, LoadSalesForItem> _salesByitem =
       Map<String, LoadSalesForItem>();
 
@@ -318,56 +350,25 @@ abstract class IMarketStateViewer extends ChangeNotifier {
     notifyListeners();
   }
 
+  SimulationResult _parseSimulationResult(Map<String, dynamic> data) {
+    return SimulationResult(simulationId: 'simulationId');
+  }
+
   Future<bool> initialiseGemberPointsApp();
 
   Future<LoadEntitiesResult> loadEntities({GemberAppConfig? configOptions});
+
+  Future<List<String>> loadRetailerNames();
 
   void _loadEntities(String? data) {
     try {
       if (data != null) {
         final dataMap = jsonDecode(data);
-        final customers = TSerializable.getJsonMapValue(
-            dataMap, 'customers', CustomerModel.fromJson,
-            defaultVal: <String, CustomerModel>{}).values.toList();
-
-        final retailerCluster = AggregatedRetailers(
-          balance: TSerializable.getJsonValueFromChain(dataMap,
-              ['retailersCluster', 'balance'], BankAccountViewModel.fromJson),
-          balanceMoney: TSerializable.getJsonValueFromChain(dataMap,
-              ['retailersCluster', 'balanceMoney'], CostModel.fromJson),
-          salesHistory: TSerializable.getJsonListValueFromChain(dataMap,
-              ['retailersCluster', 'salesHistory'], SaleModel.fromJson),
-          totalSales: TSerializable.getJsonValueFromChain(
-              dataMap,
-              ['retailersCluster', 'totalSales'],
-              SalesAggregationModel.fromJson),
-          retailerNames: ((dataMap['retailers'] ?? <String, dynamic>{})
-                  as Map<String, dynamic>)
-              .keys
-              .toList(),
-        );
-
-        final retailers = TSerializable.getJsonMapValue(
-            dataMap, 'retailers', RetailerModel.fromJson,
-            defaultVal: <String, RetailerModel>{}).values.toList();
-
-        // final basketFullSize = TSerializable.getJsonValTypeValueFromChain<int>(
-        //     dataMap, ['config', 'BASKET_FULL_SIZE']);
-        // final numShopTrips = TSerializable.getJsonValTypeValueFromChain<int>(
-        //     dataMap, ['config', 'NUM_SHOP_TRIPS_PER_ITERATION']);
-        final numCustomers = customers.length;
-
-        _EntityCatalog = LoadEntitiesResult(
-          retailers: retailers,
-          retailersCluster: retailerCluster,
-          customers: customers,
-          // basketFullSize: basketFullSize,
-          // numShopTrips: numShopTrips,
-        );
+        _EntityCatalog = LoadEntitiesResult.fromJson(dataMap);
         notifyListeners();
       }
     } catch (err) {
-      log.fine(err);
+      log.warning(err);
     }
   }
 
@@ -388,12 +389,18 @@ abstract class IMarketStateViewer extends ChangeNotifier {
 
   Future<RunSimulationResponseModel?> runFullSimulation({
     required GemberAppConfig configOptions,
-    required double convergenceThreshold,
-    required int maxN,
   });
 
   Future<RunSimulationResponseModel?> runRealTimeScenario({
     required GemberAppConfig configOptions,
+  });
+
+  Future<SimulationResult?> getSimulationResult({required String simulationId});
+
+  Future<SimulationComparisonHistory?> getSimulationComparisonHistory({
+    required List<String> simulationIds,
+    required String retailerName,
+    required String measureType,
   });
 
   void updateRetailerParamsHTTP(String simulationId, String retailerName,
@@ -529,6 +536,9 @@ abstract class IMarketStateViewer extends ChangeNotifier {
             response.message.toLowerCase().contains('simulation ran')) {
           _flagStopRunSim(); // simulation ran synchronously on server.
         }
+        _EntityCatalog = response.simulationData.entities;
+        _simConfig = response.simulationData.simulationConfig;
+        notifyListeners();
         return response;
       } else {
         _flagStopRunSim();
@@ -574,9 +584,29 @@ mixin HttpRequestMixin on SocketIoMixin, IMarketStateViewer {
 
   String wsConnectionStatus = 'No Websocket Connection';
 
-  Future<String?> getData(String url, {Map<String, String>? headers}) async {
+  Future<T?> getDataAndDecodeTyped<T>(String url,
+      {Map<String, String>? headers, Map<String, String>? queryParams}) async {
+    final response =
+        await getData(url, headers: headers, queryParams: queryParams);
+    if (response != null) {
+      try {
+        final T decoded = jsonDecode(response);
+        return decoded;
+      } catch (err) {
+        rethrow;
+      }
+    } else {
+      return null;
+    }
+  }
+
+  Future<String?> getData(String url,
+      {Map<String, String>? headers, Map<String, String>? queryParams}) async {
     _flagStartHttpCall;
-    final uri = _addKeyToUri(url);
+    var uri = _addKeyToUri(url);
+    if (queryParams != null) {
+      uri.queryParameters.addAll(queryParams);
+    }
     log.fine(PrintPens.orangePen('[GET]: Calling uri: $uri'));
     http.Response response;
 
@@ -601,7 +631,7 @@ mixin HttpRequestMixin on SocketIoMixin, IMarketStateViewer {
     }
   }
 
-  Future<String?> postData(String url, Map<String, String> postData) async {
+  Future<String?> postData(String url, Map<String, dynamic> postData) async {
     _flagStartHttpCall;
     final uri = _addKeyToUri(url);
     Map<String, String> headers = HashMap();
@@ -616,9 +646,17 @@ mixin HttpRequestMixin on SocketIoMixin, IMarketStateViewer {
         If [body] is a Map, it's encoded as form fields using [encoding]. The content-type of the request will be set to "application/x-www-form-urlencoded"; this cannot be overridden.
 
         [encoding] defaults to [utf8].*/
+      var _strPostData = <String, String>{};
+      try {
+        _strPostData = Map<String, String>.fromEntries(postData.entries
+            .map((entry) => MapEntry(entry.key, entry.value.toString())));
+      } catch (e) {
+        log.warning(
+            'Was unable to convert postData body to Map<String,String> with errMsg: $e');
+      }
       final response = await httpClient.post(
         uri,
-        body: postData,
+        body: _strPostData,
       );
       _flagStopHttpCall;
       if (backendServerDead) {
@@ -665,7 +703,17 @@ class MarketStateViewer extends SocketIoMixin with HttpRequestMixin {
         _simulationProgressEmitterController.stream.asBroadcastStream();
 
     onInit(onReconnect: () {
-      initialiseGemberPointsApp();
+      initialiseGemberPointsApp().then((appLoaded) {
+        if (appLoaded) {
+          return loadRetailerNames();
+        } else {
+          return Future.value(null);
+        }
+      }).then(
+        (retailerNamesHttp) {
+          retailerNames = retailerNamesHttp ?? <String>[];
+        },
+      );
     });
 
     // if (webSocketConnected) {
@@ -809,7 +857,8 @@ class MarketStateViewer extends SocketIoMixin with HttpRequestMixin {
     if (_EntityCatalog.isEmpty && !loadingEntities) {
       loadingEntities = true;
       try {
-        final data = await postData('$apiUrl/load-entities', {});
+        final data = await postData(
+            '$apiUrl/load-entities', configOptions?.toStrJson() ?? {});
         _loadEntities(data);
       } finally {
         loadingEntities = false;
@@ -945,14 +994,10 @@ class MarketStateViewer extends SocketIoMixin with HttpRequestMixin {
   @override
   Future<RunSimulationResponseModel?> runFullSimulation({
     required GemberAppConfig configOptions,
-    required double convergenceThreshold,
-    required int maxN,
   }) async {
     _flagStartRunSim();
     final response = await postData('$apiUrl/run-full-sim', {
       ...configOptions.toJson(),
-      'convergenceTH': "$convergenceThreshold",
-      'maxN': "$maxN",
     });
     return _loadSimulationEnvironment(response);
   }
@@ -961,6 +1006,37 @@ class MarketStateViewer extends SocketIoMixin with HttpRequestMixin {
   Future<AppTransactionsStateModel> loadAppTransactionsState() async {
     final response = await getData('$apiUrl/transactionsState');
     return _loadAppTransactionsState(response);
+  }
+
+  @override
+  Future<SimulationResult?> getSimulationResult(
+      {required String simulationId}) async {
+    final response = await getData('$apiUrl/sim-result',
+        queryParams: {'simulationId': simulationId});
+    throw UnimplementedError();
+    // return _parseSimulationProgressData(response);
+  }
+
+  @override
+  Future<SimulationComparisonHistory?> getSimulationComparisonHistory({
+    required List<String> simulationIds,
+    required String retailerName,
+    required String measureType,
+  }) async {
+    final response = await getData('$apiUrl/sim-compare', queryParams: {
+      'simulationIds': simulationIds.join(','),
+      'retailerName': retailerName,
+      'measureType': measureType,
+    });
+    throw UnimplementedError();
+    // return _parseSimulationProgressData(response);
+  }
+
+  @override
+  Future<List<String>> loadRetailerNames() async {
+    final response =
+        await getDataAndDecodeTyped<List<String>>('$apiUrl/retailer_names');
+    return response ?? <String>[];
   }
 }
 
@@ -1439,10 +1515,9 @@ class MarketStateViewerMock extends IMarketStateViewer {
   }
 
   @override
-  Future<RunSimulationResponseModel?> runFullSimulation(
-      {required GemberAppConfig configOptions,
-      required double convergenceThreshold,
-      required int maxN}) {
+  Future<RunSimulationResponseModel?> runFullSimulation({
+    required GemberAppConfig configOptions,
+  }) {
     // TODO: implement runFullSimulation
     throw UnimplementedError();
   }
@@ -1459,6 +1534,27 @@ class MarketStateViewerMock extends IMarketStateViewer {
       {required GemberAppConfig configOptions}) {
     // TODO: implement runRealTimeScenario
     throw UnimplementedError();
+  }
+
+  @override
+  Future<SimulationResult?> getSimulationResult(
+      {required String simulationId}) {
+    // TODO: implement getSimulationResult
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<SimulationComparisonHistory?> getSimulationComparisonHistory(
+      {required List<String> simulationIds,
+      required String retailerName,
+      required String measureType}) {
+    // TODO: implement getSimulationComparisonHistory
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<String>> loadRetailerNames() {
+    return Future.value(_EntityCatalog.retailers.map((r) => r.name).toList());
   }
 }
 

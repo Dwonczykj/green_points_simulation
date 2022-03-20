@@ -3,6 +3,7 @@ import 'dart:html';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:webtemplate/navigation/app_router.gr.dart';
 import 'package:webtemplate/ui/components/components.dart';
 import 'package:webtemplate/ui/network/network.dart';
 
@@ -15,6 +16,9 @@ abstract class ConfigOptions {
   static const String numCustomers = 'NUM_CUSTOMERS';
   static const String maxN = 'maxN';
   static const String convergenceTH = 'convergenceTH';
+  static const String sustainabilityBaseline = 'sustainabilityBaseline';
+  static const String strategy = 'strategy';
+  // static const String controlRetailerName = 'controlRetailerName';
 
   static const labels = <String, String>{
     ConfigOptions.fullBasketSize: 'full basket size',
@@ -22,6 +26,10 @@ abstract class ConfigOptions {
     ConfigOptions.numCustomers: '# customers',
     ConfigOptions.maxN: 'max # iterations',
     ConfigOptions.convergenceTH: 'condition for convergence of sim',
+    ConfigOptions.strategy: 'gember points issuing generosity',
+    ConfigOptions.sustainabilityBaseline:
+        'sustainability rating of retailer supply chain',
+    // ConfigOptions.controlRetailerName: 'demonstrative retailer',
   };
 
   static int get count => labels.length;
@@ -37,12 +45,19 @@ class ConfigDialog extends StatelessWidget {
 
   bool fullScreen;
 
+  String? _controlRetailerName;
+
   Map<String, num> configOptions = <String, num>{
-    ConfigOptions.getLabel(ConfigOptions.fullBasketSize): 2,
-    ConfigOptions.getLabel(ConfigOptions.numTripsToShops): 3,
-    ConfigOptions.getLabel(ConfigOptions.numCustomers): 4,
+    ConfigOptions.getLabel(ConfigOptions.strategy):
+        RetailerStrategy.COMPETITIVE,
+    ConfigOptions.getLabel(ConfigOptions.sustainabilityBaseline):
+        RetailerSustainability.AVERAGE,
     ConfigOptions.getLabel(ConfigOptions.maxN): 2,
     ConfigOptions.getLabel(ConfigOptions.convergenceTH): 0.0,
+    ConfigOptions.getLabel(ConfigOptions.numCustomers): 4,
+    ConfigOptions.getLabel(ConfigOptions.fullBasketSize): 2,
+    ConfigOptions.getLabel(ConfigOptions.numTripsToShops): 3,
+    // ConfigOptions.getLabel(ConfigOptions.controlRetailerName): '',
   };
 
   GemberAppConfig get configOptionsDTO => GemberAppConfig(
@@ -60,20 +75,131 @@ class ConfigDialog extends StatelessWidget {
         convergenceTH:
             configOptions[ConfigOptions.getLabel(ConfigOptions.convergenceTH)]!
                 .toDouble(),
+        strategy: configOptions[ConfigOptions.getLabel(ConfigOptions.strategy)]!
+            .toDouble(),
+        sustainabilityBaseline: configOptions[
+                ConfigOptions.getLabel(ConfigOptions.sustainabilityBaseline)]!
+            .toDouble(),
+        controlRetailerName: _controlRetailerName,
       );
 
   @override
   Widget build(BuildContext context) {
     final appStateMgr = Provider.of<AppStateManager>(context);
     final marketStateViewer = Provider.of<IMarketStateViewer>(context);
-    // final autoRouter = AutoRouter.of(context);
+    final autoRouter = AutoRouter.of(context);
+    final routeBelow = autoRouter.current.parent;
+    // if((routeBelow?.name ?? '').contains('CustomerViewRouter')){
 
+    // }
     return fullScreen
-        ? getFullScreen(context, appStateMgr)
-        : getPopover(context, appStateMgr);
+        ? getFullScreen(context, appStateMgr, autoRouter, onClose: () {
+            appStateMgr
+                .loadEntitiesWithParams(configOptions: configOptionsDTO)
+                .then((ents) {
+              autoRouter.popAndPush(CustomerViewScreenRoute());
+            });
+          })
+        : getPopover(
+            context,
+            appStateMgr,
+            autoRouter,
+            onClose: () {
+              appStateMgr
+                  .loadEntitiesWithParams(configOptions: configOptionsDTO)
+                  .then((ents) {
+                autoRouter.pop();
+              });
+            },
+          );
   }
 
-  Widget getPopover(BuildContext context, AppStateManager appStateMgr) {
+  List<Widget> getDialogChildren(
+      BuildContext context, AppStateManager appStateMgr, StackRouter router,
+      {required void Function() onClose}) {
+    return <Widget>[
+      // if ((router.current.parent?.name ?? '').contains('CustomerViewRouter'))
+      ConfigDialogDrowdown(
+        appStateMgr: appStateMgr,
+        label: 'Aggregation',
+        value: appStateMgr.viewAggType,
+        onChanged: (ViewAggregationType? value) {
+          appStateMgr.updateAggregationType(
+              value ?? ViewAggregationType.runningAverage);
+        },
+        labelsToValuesMap: Map<String, ViewAggregationType>.fromEntries(
+            ViewAggregationType.values
+                .map((v) => MapEntry(getAggregationUILabel(v), v))),
+      ),
+      // if ((router.current.parent?.name ?? '').contains('CustomerViewRouter'))
+      ConfigDialogDrowdown(
+        appStateMgr: appStateMgr,
+        label: 'Performance measure',
+        value: appStateMgr.viewMeasType,
+        onChanged: (ViewMeasureType? value) {
+          appStateMgr.updateMeasureType(value ?? ViewMeasureType.salesCount);
+        },
+        labelsToValuesMap: Map<String, ViewMeasureType>.fromEntries(
+            ViewMeasureType.values
+                .map((v) => MapEntry(getMeasureUILabel(v), v))),
+      ),
+      ConfigDialogDrowdown<String>(
+        appStateMgr: appStateMgr,
+        label: 'Demonstrative Retailer',
+        value: appStateMgr.controlRetailer ?? '',
+        hint: Text('*', style: Theme.of(context).textTheme.bodySmall),
+        onChanged: (String? value) {
+          _controlRetailerName = value;
+          appStateMgr.updateNextSimConfig(configOptions: configOptionsDTO);
+        },
+        labelsToValuesMap: Map<String, String>.fromIterable(
+            appStateMgr.retailerNames?.map((v) => MapEntry(v, v)) ??
+                <MapEntry<String, String>>[]),
+      ),
+      ...(configOptions.entries.map((configOpt) {
+        return ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: 200),
+          child: NumberInput(
+            label: configOpt.key,
+            value: '${configOpt.value}',
+            allowDecimal: false,
+            disabled: appStateMgr.runningSimulation,
+            onChanged: (dynamic val) {
+              configOptions[configOpt.key] = val;
+              appStateMgr.updateNextSimConfig(configOptions: configOptionsDTO);
+            },
+          ),
+        );
+      })),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ElevatedButton(
+                child: Text('Done',
+                    style: Theme.of(context).textTheme.labelMedium),
+                onPressed: onClose),
+          )
+        ],
+      )
+    ];
+  }
+
+  Widget getFullScreen(
+      BuildContext context, AppStateManager appStateMgr, StackRouter router,
+      {required void Function() onClose}) {
+    return Center(
+        child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children:
+          getDialogChildren(context, appStateMgr, router, onClose: onClose),
+    ));
+  }
+
+  Widget getPopover(
+      BuildContext context, AppStateManager appStateMgr, StackRouter router,
+      {required void Function() onClose}) {
     return SimpleDialog(
       title: Stack(
         children: [
@@ -100,7 +226,7 @@ class ConfigDialog extends StatelessWidget {
                 shadowColor: Theme.of(context).backgroundColor,
                 avatar: CircleAvatar(
                   backgroundImage: NetworkImage(
-                      "https://pbs.twimg.com/profile_images/1304985167476523008/QNHrwL2q_400x400.jpg"), //NetwordImage
+                      "https://pbs.twimg.com/profile_images/1304985167476523008/QNHrwL2q_400x400.jpg"), //NetworkImage
                 ), //CircleAvatar
                 label: Text(
                   '',
@@ -111,142 +237,11 @@ class ConfigDialog extends StatelessWidget {
           )
         ],
       ),
-      children: getDialogChildren(context, appStateMgr),
+      children:
+          getDialogChildren(context, appStateMgr, router, onClose: onClose),
     );
   }
-
-  List<Widget> getDialogChildren(
-      BuildContext context, AppStateManager appStateMgr) {
-    return <Widget>[
-      Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              'Aggregation',
-              style: Theme.of(context).textTheme.labelSmall,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: DropdownButton(
-              items: const [
-                DropdownMenuItem(
-                  child: Text(
-                    'Average',
-                  ),
-                  value: ViewAggregationType.runningAverage,
-                ),
-                DropdownMenuItem(
-                  child: Text(
-                    'Variance',
-                  ),
-                  value: ViewAggregationType.runningVariance,
-                ),
-                DropdownMenuItem(
-                  child: Text(
-                    'Cum. Sum',
-                  ),
-                  value: ViewAggregationType.runningSum,
-                ),
-              ],
-              // onTap: (){
-              //   showItems()
-              // } ,
-              onChanged: (ViewAggregationType? value) {
-                appStateMgr.updateAggregationType(
-                    value ?? ViewAggregationType.runningAverage);
-              },
-            ),
-          )
-        ],
-      ),
-      Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          Text(
-            'Performance measure',
-            style: Theme.of(context).textTheme.labelSmall,
-          ),
-          DropdownButton(
-            items: const [
-              DropdownMenuItem(
-                child: Text(
-                  'Sales Vol.',
-                ),
-                value: ViewMeasureType.salesCount,
-              ),
-              DropdownMenuItem(
-                child: Text(
-                  'Gember Points issued',
-                ),
-                value: ViewMeasureType.greenPointsIssued,
-              ),
-            ],
-            onChanged: (ViewMeasureType? value) {
-              appStateMgr
-                  .updateMeasureType(value ?? ViewMeasureType.salesCount);
-            },
-          )
-        ],
-      ),
-      ...(configOptions.entries.map((configOpt) {
-        return ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 200),
-          child: NumberInput(
-            label: configOpt.key,
-            value: '${configOpt.value}',
-            allowDecimal: false,
-            disabled: appStateMgr.runningSimulation,
-            onChanged: (num val) {
-              configOptions[configOpt.key] = val;
-              appStateMgr.updateNextSimConfig(configOptions: configOptionsDTO);
-            },
-          ),
-        );
-      })),
-      Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ElevatedButton(
-              child:
-                  Text('Done', style: Theme.of(context).textTheme.labelMedium),
-              onPressed: () {
-                appStateMgr
-                    .loadEntitiesWithParams(configOptions: configOptionsDTO)
-                    .then((ents) {
-                  // Navigator.of(context).pop(); // fix this with autorouter using a route if thats how it is showing?...
-                  // WE are meant to push another route to the stack to show a dialog: https://api.flutter.dev/flutter/material/AlertDialog-class.html
-                });
-              },
-            ),
-          )
-        ],
-      )
-    ];
-  }
-
-  Widget getFullScreen(BuildContext context, AppStateManager appStateMgr) {
-    return Center(
-        // alignment: Alignment.center,
-        // // height: MediaQuery.of(context).size.height,
-        // height: 400,
-        // // width: MediaQuery.of(context).size.width,
-        // width: 400,
-        // padding: EdgeInsets.all(8.0),
-        child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: getDialogChildren(context, appStateMgr),
-      // children: getDialogChildren(context, appStateMgr),
-    ));
-  }
 }
-  
 
 // SingleChildScrollView(
 //           child: ListBody(
@@ -256,3 +251,66 @@ class ConfigDialog extends StatelessWidget {
 //             ],
 //           ),
 //         ),
+
+class ConfigDialogDrowdown<TVal> extends StatelessWidget {
+  ConfigDialogDrowdown({
+    Key? key,
+    required this.appStateMgr,
+    required this.label,
+    required this.value,
+    required this.onChanged,
+    required this.labelsToValuesMap,
+    this.hint,
+    this.disabledHint,
+  }) : super(key: key);
+
+  final AppStateManager appStateMgr;
+  final String label;
+  final TVal value;
+  final void Function(TVal? value) onChanged;
+  final Map<String, TVal> labelsToValuesMap;
+  final Widget? hint;
+  final Widget? disabledHint;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: <Widget>[
+        Text(
+          label,
+          style: Theme.of(context).textTheme.labelSmall,
+        ),
+        DropdownButton(
+          value: value,
+          hint: hint,
+          disabledHint: disabledHint,
+          icon: const Icon(Icons.arrow_downward),
+          elevation: 16,
+          style: TextStyle(
+              color: Theme.of(context).buttonTheme.colorScheme?.primary ??
+                  Colors.limeAccent[100]),
+          underline: Container(
+            height: 2,
+            color: Theme.of(context).buttonTheme.colorScheme?.secondary ??
+                Colors.deepPurpleAccent,
+          ),
+          // selectedItemBuilder: ,
+          items: labelsToValuesMap.entries
+              .map((entry) => DropdownMenuItem(
+                    child: Text(
+                      entry.key,
+                    ),
+                    value: entry.value,
+                  ))
+              .toList(),
+          // onChanged: (ViewMeasureType? value) {
+          //   appStateMgr
+          //       .updateMeasureType(value ?? ViewMeasureType.salesCount);
+          onChanged: onChanged,
+        )
+      ],
+    );
+  }
+}

@@ -14,8 +14,10 @@ import pandas as pd
 import numpy as np
 from flask_socketio import SocketIO
 import abc
+from Multipliable import Numeric
 
 # from Singleton import classproperty
+from enums import *
 from data_fetcher import get_dataset, pd_dataframe_explain_update
 from Observer import Observable, Observer
 from Bank import Bank, BankAccountView, ControlRetailer, Customer, Entity, RetailerStrategyGPMultiplier, Retailer, RetailerSustainabilityIntercept, SalesAggregation
@@ -26,6 +28,7 @@ from ISerializable import TSTRUC_ALIAS, SerializableList
 from event_names import WebSocketServerResponseEvent
 from gpApp_entity_initializer import *
 from app_config import SimulationConfig, SimulationIterationConfig
+
 
 
 from web_socket_stack import WebSocketsStack
@@ -437,30 +440,37 @@ class GreenPointsLoyaltyApp():
     #         return None
 
     class IterationResultRunningAverage:
-        def __init__(self, iterationNumber:int,
+        def __init__(self, iterationNumber:int, maxNIterations:int,
                      runningSum:GreenPointsLoyaltyApp.IterationResult,
                      runningAverage:GreenPointsLoyaltyApp.IterationResult,
                      runningVariance:GreenPointsLoyaltyApp.IterationResult):
             self.iterationNumber = iterationNumber
+            self.maxNIterations = maxNIterations
             self.runningSum = runningSum
             self.runningAverage = runningAverage
             self.runningVariance = runningVariance
             
         @staticmethod
-        def initialIteration(iterationResult:GreenPointsLoyaltyApp.IterationResult):
+        def initialIteration(iterationResult:GreenPointsLoyaltyApp.IterationResult, maxNIterations:int):
             return GreenPointsLoyaltyApp.IterationResultRunningAverage(
                     iterationNumber=1,
+                maxNIterations=maxNIterations,
                     runningSum=iterationResult,
                     runningAverage=iterationResult,
                     runningVariance=GreenPointsLoyaltyApp.IterationResult(
                         salesCount=iterationResult.salesCount * 0.0,
-                        greenPointsIssued=iterationResult.greenPointsIssued * 0.0
-                    )
+                        greenPointsIssued=iterationResult.greenPointsIssued * 0.0,
+                        marketShare=iterationResult.marketShare * 0.0,
+                        totalSalesRevenue=iterationResult.totalSalesRevenue * 0.0,
+                        totalSalesRevenueByItem=iterationResult.totalSalesRevenueByItem * 0.0,
+                        totalSalesRevenueLessGP=iterationResult.totalSalesRevenueLessGP * 0.0,
+                    ),
                 )
             
         def toJson(self):
             return {
                 'iteration_number': self.iterationNumber,
+                'maxNIterations': self.maxNIterations,
                 'running_sum': self.runningSum.toDict(),
                 'running_average': self.runningAverage.toDict(),
                 'running_variance': self.runningVariance.toDict()
@@ -473,13 +483,17 @@ class GreenPointsLoyaltyApp():
              '''https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford's_online_algorithm'''
              assert previous.iterationNumber >= 1, "Previous iteration number must be >= 1"
              n = previous.iterationNumber + 1
+             def _nextRVar(measureGetter:Callable[[GreenPointsLoyaltyApp.IterationResult],pd.Series]) -> pd.Series:
+                 return (measureGetter(previous.runningVariance) + 
+                             ((measureGetter(result) - measureGetter(previous.runningAverage)) * 
+                              (measureGetter(result) - measureGetter(runningAverage)))) / (n - 1)
              return GreenPointsLoyaltyApp.IterationResult(
-                 salesCount=(previous.runningVariance.salesCount + 
-                             ((result.salesCount - previous.runningAverage.salesCount) * 
-                              (result.salesCount - runningAverage.salesCount))) / (n - 1),
-                 greenPointsIssued=(previous.runningVariance.greenPointsIssued + 
-                             ((result.greenPointsIssued - previous.runningAverage.greenPointsIssued) * 
-                              (result.greenPointsIssued - runningAverage.greenPointsIssued))) / (n - 1),
+                 salesCount=_nextRVar(lambda ir: ir.salesCount),
+                 greenPointsIssued=_nextRVar(lambda ir: ir.greenPointsIssued),
+                 marketShare=_nextRVar(lambda ir: ir.marketShare),
+                 totalSalesRevenue=_nextRVar(lambda ir: ir.totalSalesRevenue),
+                 totalSalesRevenueByItem=_nextRVar(lambda ir: ir.totalSalesRevenueByItem),
+                 totalSalesRevenueLessGP=_nextRVar(lambda ir: ir.totalSalesRevenueLessGP),
              )
              
         
@@ -493,10 +507,22 @@ class GreenPointsLoyaltyApp():
             runningSum = GreenPointsLoyaltyApp.IterationResult(
                 salesCount=(previous.runningSum.salesCount + result.salesCount),
                 greenPointsIssued=(previous.runningSum.greenPointsIssued + result.greenPointsIssued),
+                marketShare=(previous.runningSum.marketShare +
+                             result.marketShare),
+                totalSalesRevenue=(previous.runningSum.totalSalesRevenue + result.totalSalesRevenue),
+                totalSalesRevenueByItem=(
+                    previous.runningSum.totalSalesRevenueByItem + result.totalSalesRevenueByItem),
+                totalSalesRevenueLessGP=(previous.runningSum.totalSalesRevenueLessGP + result.totalSalesRevenueLessGP),
             )
             runningAverage = GreenPointsLoyaltyApp.IterationResult(
                 salesCount=runningSum.salesCount.div(iterationNumber),
                 greenPointsIssued=runningSum.greenPointsIssued.div(iterationNumber),
+                marketShare=runningSum.marketShare.div(iterationNumber),
+                totalSalesRevenue=runningSum.totalSalesRevenue.div(iterationNumber),
+                totalSalesRevenueByItem=runningSum.totalSalesRevenueByItem.div(
+                    iterationNumber),
+                totalSalesRevenueLessGP=runningSum.totalSalesRevenueLessGP.div(
+                    iterationNumber),
             )
             
             runningVariance = GreenPointsLoyaltyApp.IterationResultRunningAverage\
@@ -506,6 +532,7 @@ class GreenPointsLoyaltyApp():
             
             return GreenPointsLoyaltyApp.IterationResultRunningAverage(
                 iterationNumber=iterationNumber,
+                maxNIterations=previous.maxNIterations,
                 runningSum=runningSum,
                 runningAverage=runningAverage,
                 runningVariance=runningVariance
@@ -513,9 +540,19 @@ class GreenPointsLoyaltyApp():
     
     
     class IterationResult:
-        def __init__(self, salesCount: pd.Series, greenPointsIssued: pd.Series) -> None:
+        def __init__(self, 
+                     salesCount: pd.Series[Numeric], 
+                     greenPointsIssued: pd.Series[Numeric], 
+                     marketShare: pd.Series[Numeric], 
+                     totalSalesRevenue: pd.Series[Numeric], 
+                     totalSalesRevenueByItem: pd.Series, 
+                     totalSalesRevenueLessGP: pd.Series[Numeric]) -> None:
             self._salesCount = salesCount
             self._greenPointsIssued = greenPointsIssued
+            self._marketShare = marketShare
+            self._totalSalesRevenue = totalSalesRevenue
+            self._totalSalesRevenueByItem = totalSalesRevenueByItem
+            self._totalSalesRevenueLessGP = totalSalesRevenueLessGP
             
         @property
         def salesCount(self):
@@ -525,11 +562,31 @@ class GreenPointsLoyaltyApp():
         def greenPointsIssued(self):
             '''number of greenpoints issues per retailer'''
             return self._greenPointsIssued
+        @property
+        def marketShare(self):
+            '''market share between 0 and 1 of retailer total sales volume vs the rest of the market'''
+            return self._marketShare
+        @property
+        def totalSalesRevenue(self):
+            '''Total amount of money recieved by the retailer for all sales'''
+            return self._totalSalesRevenue
+        @property
+        def totalSalesRevenueLessGP(self):
+            '''Total amount of money recieved by the retailer for all sales less the Gember Points issued to reward those sales'''
+            return self._totalSalesRevenueLessGP
+        @property
+        def totalSalesRevenueByItem(self):
+            '''Total amount of money recieved by the retailer for all sales indexed by retailer and then sub indexed by item name'''
+            return self._totalSalesRevenueByItem
         
         def toDataFrame(self):
             return pd.DataFrame({
-                'sales_count': self.salesCount,
-                'green_points_issued': self._greenPointsIssued,
+                GemberMeasureType.salesCount.value: self.salesCount,
+                GemberMeasureType.GP_Issued.value: self._greenPointsIssued,
+                GemberMeasureType.market_share.value: self._marketShare,
+                GemberMeasureType.total_sales_revenue.value: self._totalSalesRevenue,
+                # GemberMeasureType.total_sales_revenue_by_item.value: self._totalSalesRevenueByItem,
+                GemberMeasureType.total_sales_revenue_less_gp.value: self._totalSalesRevenueLessGP,
             })
             
         def toJson(self):
@@ -539,7 +596,27 @@ class GreenPointsLoyaltyApp():
             return self.toDataFrame().to_dict()
             
         @staticmethod
-        def fromRetailers(retailers:dict[str,Retailer]):
+        def fromRetailers(retailers:dict[str,Retailer], preferredCurrency:str|None=None):
+            
+            _preferredCurrency = 'GBP'
+            if preferredCurrency is None:
+                try:
+                    intersectingCurrencies:list|None = None
+                    for r in retailers.values():
+                        for r2 in retailers.values():
+                            if intersectingCurrencies is None:
+                                intersectingCurrencies = r.intersectingCurrencies(r2)
+                            else:    
+                                intersectingCurrencies = list(set(intersectingCurrencies).intersection(r.intersectingCurrencies(r2)))
+                    if not intersectingCurrencies:
+                        raise Warning('No intersecting currencies between all retailers\' accounts')
+                    else:
+                        _preferredCurrency = intersectingCurrencies[0]
+                except:
+                    pass
+            else:
+                _preferredCurrency = preferredCurrency
+                
             
             # Aggregate Customer Purchases to Gain Insight:
             dfAllSales = pd.DataFrame(
@@ -547,12 +624,60 @@ class GreenPointsLoyaltyApp():
 
             # Total Sales Count for each Retailer
             salesCount = {r.name: r.salesCount for r in retailers.values()}
-
+            
+            total_sales_count = sum(salesCount.values())
+            
+            marketShare = {r.name: (float(r.salesCount)/float(total_sales_count))
+                           for r in retailers.values()}
+            
+            def retailerRevenue(r:Retailer):
+                totalRevenue = sum([sale.item.cost.inCcy(
+                    _preferredCurrency, throughBank=r.bank).amount for sale in r.salesHistory])
+                # badTransactionsNotPaidToRetailer = [
+                #     sale.transaction for sale in r.salesHistory if sale.transaction.accountTo.owner.id != r.id]
+                # assert any(
+                #     badTransactionsNotPaidToRetailer) == False, f'Some sales in the salesHistory of [r.name=\'{r.name}\'] have an accountTo on the sale that is not owned by the retailer; such as {badTransactionsNotPaidToRetailer[0]}'
+                # totalRevenue = sum([sale.transaction.money for sale in r.salesHistory if sale.transaction.accountTo.owner.name == r.name])
+                return totalRevenue
+            
+            def retailerRevenueForItem(r:Retailer, itemName:str='*'):
+                totalRevenue = sum(
+                    [sale.item.cost.inCcy(
+                        _preferredCurrency, throughBank=r.bank).amount for sale in r.salesHistory
+                     if (sale.item.name == itemName or itemName=='*')
+                     ]
+                    )
+                return totalRevenue
+            
+            def retailerRevenueByItemName(r:Retailer):
+                itemNames = list(set((sale.item.name for sale in r.salesHistory)))
+                totalRevenueByItem = {itemName: retailerRevenueForItem(r,itemName) for itemName in itemNames}
+                return totalRevenueByItem
+            
+            totalSalesRevenue = {
+                r.name: retailerRevenue(r) for r in retailers.values()}
+            
+            totalSalesRevenueByItem = {
+                r.name: retailerRevenueByItemName(r) for r in retailers.values()}
+            
             # Total Vol. Green Points issued by each Retailer
             gpIssued = {r.name: sum(
                 sale.greenPointsIssuedForItem.greenPoints.amount for sale in r._salesHistory) for r in retailers.values()}
             
-            return GreenPointsLoyaltyApp.IterationResult(salesCount=pd.Series(salesCount), greenPointsIssued=pd.Series(gpIssued))
+            gpIssuedValueInPegged = {r.name: sum(
+                sale.greenPointsIssuedForItem.greenPoints.valueInPeggedCurrency for sale in r._salesHistory) for r in retailers.values()}
+
+            totalSalesRevenueLessGP = {
+                r.name: (totalSalesRevenue[r.name] - gpIssuedValueInPegged[r.name]) for r in retailers.values()}
+            x = pd.Series(totalSalesRevenueByItem)
+            return GreenPointsLoyaltyApp.IterationResult(
+                salesCount=pd.Series(salesCount),
+                greenPointsIssued=pd.Series(gpIssued),
+                marketShare=pd.Series(marketShare),
+                totalSalesRevenue=pd.Series(totalSalesRevenue),
+                totalSalesRevenueByItem=pd.Series(totalSalesRevenueByItem),
+                totalSalesRevenueLessGP=pd.Series(totalSalesRevenueLessGP),
+                )
     
     
           
@@ -626,6 +751,13 @@ class GreenPointsLoyaltyApp():
                 **retailer_banks,
                 **customer_banks,
             }.values())
+            
+        @property
+        def data(self):
+            return {
+                **self.entities,
+                **self._simConfig.toJson()
+            }
 
         @property
         def entities(self) -> dict[str, dict[str, TSTRUC_ALIAS]]:
@@ -822,12 +954,12 @@ class GreenPointsLoyaltyApp():
                 retailers=retailersSnapshot,
             )
         
-        def summarise_first_iteration(self, retailersSnapshot:dict[str,Retailer], debug: bool = False):
+        def summarise_first_iteration(self, retailersSnapshot:dict[str,Retailer], maxNIterations:int, debug: bool = False):
             iterationResult = GreenPointsLoyaltyApp.IterationResult.fromRetailers(
                 retailers=retailersSnapshot,   
             )
             return GreenPointsLoyaltyApp.IterationResultRunningAverage.\
-                initialIteration(iterationResult=iterationResult)
+                initialIteration(iterationResult=iterationResult,maxNIterations=maxNIterations)
              
         def summarise_subsequent_iteration(self,
                                             retailersSnapshot:dict[str,Retailer], 
@@ -863,7 +995,10 @@ class GreenPointsLoyaltyApp():
             
         def run_isolated_iteration(self, debug:bool=False):
             retailersFixedForSimIteration = self._run_iteration(run_isolated_iteration=True)
-            return self._getSummaryDf(result=self.summarise_isolated_iteration(retailersSnapshot=retailersFixedForSimIteration, debug=debug), debug=debug)
+            sim_output = self._getSummaryDf(result=self.summarise_isolated_iteration(retailersSnapshot=retailersFixedForSimIteration, debug=debug), debug=debug).to_dict()
+            self.gpApp._emit_event(event_name=WebSocketServerResponseEvent.simulation_ran,
+                                   data=sim_output)
+            return sim_output
             
         def run_simulation(self, betweenIterationCallback: Callable[[], None]):
             '''
@@ -885,7 +1020,7 @@ class GreenPointsLoyaltyApp():
             iterCounter = 1
             retailersFixedForSimIteration = self._run_iteration(run_isolated_iteration=False,
                                 iterationCounter=iterCounter)
-            runningAverage = self.summarise_first_iteration(retailersSnapshot=retailersFixedForSimIteration, debug=False)
+            runningAverage = self.summarise_first_iteration(retailersSnapshot=retailersFixedForSimIteration, maxNIterations=self.maxN, debug=False)
             self.numIterationsCalculated = iterCounter
             self.gpApp._emit_event(event_name=WebSocketServerResponseEvent.simulation_iteration_completed,
                                    data=runningAverage.toJson())
@@ -914,16 +1049,48 @@ class GreenPointsLoyaltyApp():
                 self.gpApp._emit_event(event_name=WebSocketServerResponseEvent.simulation_iteration_completed,
                                        data=runningAverage.toJson())
                 # eventlet.sleep(5.0)
-            return self.summarise_simulation()
+            sim_output = self.summarise_simulation_to_dict()
+            self.gpApp._emit_event(event_name=WebSocketServerResponseEvent.simulation_ran,
+                                   data=sim_output)
+            return sim_output
             
-        def summarise_simulation(self, debug:bool=False):
+        def summarise_simulation_to_df(self, debug:bool=False):
+            '''
+            Summary DF containing a salesCount row & GP Issued row
+            ---
+            Columns are indexed by retailer and contain the salesCounts/GP of the final runningAverage of all iterations
+            '''
             finalRunningAverage = self.runningHistory[-1].runningAverage
             return self._getSummaryDf(result=finalRunningAverage, debug=debug)
+            
+        def summarise_simulation_to_dict(self, forRetailer:str|None=None, debug:bool=False):
+            '''
+            Summary DF containing a [GemberMeasureType.salesCount] row & [GemberMeasureType.GP_Issued] row
+            ---
+            Columns are indexed by measure and rows are indexed by retailer name. 
+            The values contain the final runningAverage of all iterations.
+            '''
+            finalRunningAverage = self.runningHistory[-1].runningAverage
+            if forRetailer is not None:
+                if forRetailer in finalRunningAverage.toDataFrame().index.values:
+                    finalRunningAverageDict = finalRunningAverage.toDataFrame(
+                    ).loc[forRetailer].to_dict()
+                    return finalRunningAverageDict
+                elif forRetailer not in self.retailerNames:
+                    raise Exception('Bad Simulation result as does not contain the full list of retailers')
+                else:
+                    raise Exception('Bad forRetailer passed to SimulationEnvironment.summarise_simulation_to_dict()')
+            else:
+                return finalRunningAverage.toDict()
         
         def _getSummaryDf(self, result:GreenPointsLoyaltyApp.IterationResult, debug:bool=False):
             out_df = self._out_df_template.copy()
-            out_df.loc['salesCount'] = result.salesCount
-            out_df.loc['GP Issued'] = result.greenPointsIssued
+            out_df.loc[GemberMeasureType.salesCount.value] = result.salesCount
+            out_df.loc[GemberMeasureType.GP_Issued.value] = result.greenPointsIssued
+            out_df.loc[GemberMeasureType.market_share.value] = result.marketShare
+            out_df.loc[GemberMeasureType.total_sales_revenue.value] = result.totalSalesRevenue
+            out_df.loc[GemberMeasureType.total_sales_revenue_by_item.value] = result.totalSalesRevenueByItem
+            out_df.loc[GemberMeasureType.total_sales_revenue_less_gp.value] = result.totalSalesRevenueLessGP
 
             if debug:
                 logging.debug(out_df)
@@ -1004,6 +1171,9 @@ class GreenPointsLoyaltyApp():
              self._envInitializer.createSimulationFullEnvironment(simConfigParams=simConfig))
         return simulationId.id, self._simulationEnvironments[simulationId.id][1].simulationType
     
+    def getSimulationDummyEnvironment(self):
+        return self._envInitializer.createSimulationSingleIterationEnvironment(simConfigParams=SimulationIterationConfig())
+        
     def initSimulationSingleIterationEnvironment(self, simConfig:SimulationIterationConfig):
         simulationId = SimStamp(str(uuid.uuid4()), time.time())
         self._simulationEnvironments[simulationId.id] = \
@@ -1028,11 +1198,15 @@ class GreenPointsLoyaltyApp():
     
     def adjustSimParameters(self,
                             simulationId:str,
-                            controlRetailer: ControlRetailer):
+                            controlRetailer: ControlRetailer,
+                            blocking:bool=False):
         simEnv = self.getSimulationEnvironment(simulationId=simulationId)
         
         if simEnv is not None and isinstance(simEnv,GreenPointsLoyaltyApp.SimulationScenarioEnvironment):
-            simEnv.queueStrategyUpdateForOneRetailer(controlRetailer=controlRetailer)
+            if not blocking:
+                simEnv.queueStrategyUpdateForOneRetailer(controlRetailer=controlRetailer)
+            else:
+                simEnv.adjustStrategyForOneRetailerNonBlock(controlRetailer=controlRetailer)
             return True
         else:
             return False
@@ -1101,8 +1275,8 @@ class GreenPointsLoyaltyApp():
     
     def start_isolated_iteration(self, simulationId:str):
         if self.initialised:
-            (resultDf, simEnv) = self.run_isolated_iteration(simulationId=simulationId)
-            return (resultDf.to_json(), simEnv)
+            (resultDict, simEnv) = self.run_isolated_iteration(simulationId=simulationId)
+            return (resultDict, simEnv)
         return (None,None)
         
     def reset(self):

@@ -11,7 +11,74 @@ import 'all_models.dart';
 import 'simulation_data_cache.dart';
 
 enum ViewAggregationType { runningSum, runningAverage, runningVariance }
-enum ViewMeasureType { salesCount, greenPointsIssued }
+enum ViewMeasureType {
+  salesCount,
+  greenPointsIssued,
+  marketShare,
+  totalSalesRevenue,
+  totalSalesRevenueLessGP,
+  totalSalesRevenueByItem
+}
+
+String getMeasureDTOLabel(ViewMeasureType measType) {
+  if (measType == ViewMeasureType.salesCount) {
+    return 'sales_count';
+  } else if (measType == ViewMeasureType.greenPointsIssued) {
+    return 'green_points_issued';
+  } else if (measType == ViewMeasureType.marketShare) {
+    return 'market_share';
+  } else if (measType == ViewMeasureType.totalSalesRevenue) {
+    return 'total_sales_revenue';
+  } else if (measType == ViewMeasureType.totalSalesRevenueLessGP) {
+    return 'total_sales_revenue_less_gp';
+  } else if (measType == ViewMeasureType.totalSalesRevenueByItem) {
+    return 'total_sales_revenue_by_item';
+  } else {
+    throw TypeError();
+  }
+}
+
+String getAggregationDTOLabel(ViewAggregationType aggType) {
+  if (aggType == ViewAggregationType.runningSum) {
+    return 'running_sum';
+  } else if (aggType == ViewAggregationType.runningAverage) {
+    return 'running_average';
+  } else if (aggType == ViewAggregationType.runningVariance) {
+    return 'running_variance';
+  } else {
+    throw TypeError();
+  }
+}
+
+String getMeasureUILabel(ViewMeasureType measType) {
+  if (measType == ViewMeasureType.salesCount) {
+    return 'Sales Vol.';
+  } else if (measType == ViewMeasureType.greenPointsIssued) {
+    return 'Gember pts issued';
+  } else if (measType == ViewMeasureType.marketShare) {
+    return 'Market Share %';
+  } else if (measType == ViewMeasureType.totalSalesRevenue) {
+    return 'Total Sales Revenue';
+  } else if (measType == ViewMeasureType.totalSalesRevenueLessGP) {
+    return 'Total Sales Revenue net GP';
+  } else if (measType == ViewMeasureType.totalSalesRevenueByItem) {
+    return 'Total Sales Revenue by item';
+  } else {
+    throw TypeError();
+  }
+}
+
+String getAggregationUILabel(ViewAggregationType aggType) {
+  if (aggType == ViewAggregationType.runningSum) {
+    return 'cum. sum';
+  } else if (aggType == ViewAggregationType.runningAverage) {
+    return 'run. average';
+  } else if (aggType == ViewAggregationType.runningVariance) {
+    return 'run. variance';
+  } else {
+    throw TypeError();
+  }
+}
 
 /// An enum to switch between different types of tests to run in the simulation environment to demonstrate different features of how Gember Points work.
 enum ScenarioTest {
@@ -27,6 +94,10 @@ enum ScenarioTest {
 
 abstract class AppStateManagerProperties {
   List<String> runningSimulationsWithIds = <String>[];
+  List<String> _simulationComparisonHistoryIds = <String>[];
+  SimulationComparisonHistory? simulationComparisonHistory;
+  GemberProgressBar _simulationProgressBar = GemberProgressBar(i: 0, N: 1);
+  GemberProgressBar get simulationProgressBar => _simulationProgressBar;
   List<String>? retailerNames;
   Map<String, Color>? retailerColorMap;
   SimulationDataCache? simulationDataCache;
@@ -57,6 +128,7 @@ abstract class AppStateManagerProperties {
   final log = Logger('AppStateManager');
 
   RunSimulationResponseModel? _runningSimDetails;
+  final _simulationComparisonHistory = <String, RunSimulationResponseModel>{};
 
   bool get runningSimulation => marketStateViewerInst.simulationInProgress;
 
@@ -72,6 +144,18 @@ abstract class AppStateManagerProperties {
 
   double convergenceThreshold = 0.0;
 
+  String? _controlRetailer;
+
+  String? get controlRetailer => _controlRetailer;
+
+  double _retailerStrategy = RetailerStrategy.COMPETITIVE;
+
+  double get retailerStrategy => _retailerStrategy;
+
+  double _retailerSustainability = RetailerSustainability.AVERAGE;
+
+  double get retailerSustainability => _retailerSustainability;
+
   bool get _simConfigValid => (basketSizeForNextSim != null &&
       numTripsToShopsForNextSim != null &&
       numCustomersForNextSim != null);
@@ -82,36 +166,51 @@ abstract class AppStateManagerProperties {
           NUM_SHOP_TRIPS_PER_ITERATION: numTripsToShopsForNextSim,
           NUM_CUSTOMERS: numCustomersForNextSim,
           maxN: maxN,
-          convergenceTH: convergenceThreshold)
+          convergenceTH: convergenceThreshold,
+          strategy: retailerStrategy,
+          sustainabilityBaseline: retailerSustainability,
+          controlRetailerName: controlRetailer,
+        )
       : null;
 
   ViewAggregationType _viewAggType = ViewAggregationType.runningAverage;
   ViewMeasureType _viewMeasType = ViewMeasureType.salesCount;
   ViewAggregationType get viewAggType => _viewAggType;
+  String get viewAggTypeDTOLabel => getAggregationDTOLabel(_viewAggType);
   ViewMeasureType get viewMeasType => _viewMeasType;
+  String get viewMeasTypeDTOLabel => getMeasureDTOLabel(_viewMeasType);
 
-  var simulationRunningMetricsChartBackingData = <String,
-      Map<String, Map<String, charts.Series<IterationDataPoint, int>>>>{};
+  var _simulationRunningMetricsChartBackingData = <String,dynamic>{};
+  // var _simulationRunningMetricsChartBackingData = <String,Map<String, Map<String, charts.Series<IterationDataPoint, int>>>>{};
+
+  
 }
 
 class AppStateManager extends ChangeNotifier with AppStateManagerProperties {
-  AppStateManager._privateConstructor(BuildContext context,
+  AppStateManager._privateConstructor(
       {required IMarketStateViewer marketStateViewer}) {
     _instance = this;
     _initialised = false;
-    // marketStateViewer = Provider.of<IMarketStateViewer>(context, listen: true);
     marketStateViewerInst = marketStateViewer;
     marketStateViewerInst.addListener(_listenSocket);
-    marketStateViewerInst.initialiseGemberPointsApp();
+    marketStateViewerInst.initialiseGemberPointsApp().then((appLoaded) {
+        if (appLoaded) {
+          return marketStateViewerInst.loadRetailerNames();
+        } else {
+          return Future.value(null);
+        }
+      }).then(
+        (retailerNamesHttp) {
+          retailerNames = retailerNamesHttp ?? <String>[];
+        },
+      );
   }
 
   static AppStateManager? _instance;
 
-  factory AppStateManager.getInstance(
-          BuildContext context, IMarketStateViewer marketStateViewer) =>
+  factory AppStateManager.getInstance(IMarketStateViewer marketStateViewer) =>
       AppStateManager._instance ??
-      AppStateManager._privateConstructor(context,
-          marketStateViewer: marketStateViewer);
+      AppStateManager._privateConstructor(marketStateViewer: marketStateViewer);
 
   _listenSocket() {
     _connectionStatus = marketStateViewerInst.connectionStatus;
@@ -159,8 +258,58 @@ class AppStateManager extends ChangeNotifier with AppStateManagerProperties {
 
   String? _loadSimulationDetails(RunSimulationResponseModel? simDetails) {
     _runningSimDetails = simDetails;
+    if (simDetails != null) {
+      var config = simDetails.simulationData.simulationConfig;
+      _simulationComparisonHistory[config.toString()] = simDetails;
+    }
+    notifyListeners();
     return simDetails?.simulationId;
   }
+
+  bool isRunningSim(String simulationId) =>
+      runningSimulationsWithIds.contains(simulationId);
+
+  bool addCompletedSimulation(SimulationResult simulation) {
+    final removed = runningSimulationsWithIds.remove(simulation.simulationId);
+    _simulationComparisonHistoryIds.add(simulation.simulationId);
+    return removed;
+  }
+
+  bool changeControlRetailer(String? retailerNameOrNull) {
+    var retailerExistsOrIsNull = true;
+    if (retailerNameOrNull != null) {
+      if ((entities?.isNotEmpty ?? false) &&
+          (entities?.retailersCluster.retailerNames
+                  .contains(retailerNameOrNull) ??
+              false)) {
+        retailerExistsOrIsNull = true;
+      } else {
+        retailerExistsOrIsNull = false;
+      }
+    }
+    if (retailerExistsOrIsNull) {
+      _controlRetailer = retailerNameOrNull;
+    }
+    return retailerExistsOrIsNull;
+  }
+
+  void refreshSimulationComparisonHistory() {
+    if (_controlRetailer == null) {
+      /* TODO: instead load a popup dialog in the frontend of form alert to get the user to pick the retailer to focus on.
+        the popup will have a onRetailerSelected handler and onRetailerClearedHandler, if selected, this function will be called again...
+      */
+      throw UnimplementedError(
+          'Implement a Control Retailer Selection Dialog for refreshSimulationComparisonHistory @ gp_simulation/lib/ui/model/app_state_manager.dart:247');
+    }
+    marketStateViewerInst.getSimulationComparisonHistory(
+      simulationIds: _simulationComparisonHistoryIds,
+      retailerName: _controlRetailer!,
+      measureType: viewMeasTypeDTOLabel,
+    );
+  }
+
+  Map<String, Map<String, Map<String, charts.Series<IterationDataPoint, int>>>>? get simulationRunningMetricsChartBackingData =>
+      _mapChartBackingData(filterRetailerName:controlRetailer);
 
   /**
    * runs one full simulation using the current simulation configuration 
@@ -171,8 +320,6 @@ class AppStateManager extends ChangeNotifier with AppStateManagerProperties {
       return marketStateViewerInst
           .runFullSimulation(
             configOptions: simulationConfig!,
-            maxN: maxN,
-            convergenceThreshold: convergenceThreshold,
           )
           .then(_loadSimulationDetails);
     }
@@ -217,6 +364,8 @@ class AppStateManager extends ChangeNotifier with AppStateManagerProperties {
     _subscription = marketStateViewerInst.onSimulationProgress.listen(
       (SimulationProgressData? wsMessage) {
         if (wsMessage != null) {
+          _simulationProgressBar = GemberProgressBar(
+              i: wsMessage.iterationNumber, N: wsMessage.maxNIterations);
           if (retailerNames == null) {
             retailerNames = wsMessage.runningAverage.salesCount.keys.toList();
             retailerColorMap = Map<String, Color>.fromEntries(retailerNames!
@@ -229,7 +378,9 @@ class AppStateManager extends ChangeNotifier with AppStateManagerProperties {
             simulationDataCache!.append(wsMessage);
           }
 
-          simulationRunningMetricsChartBackingData = simulationDataCache!
+          //TODO: Emphasize the lines of the retailer in focus and show a comparison history of this retailer
+
+          _simulationRunningMetricsChartBackingData = simulationDataCache!
               .mapAggType((aggType, seriesColn) => seriesColn.map((seriesName,
                       seriesByRetailer) =>
                   seriesByRetailer.map((rname, datapoints) => MapEntry(
@@ -252,5 +403,35 @@ class AppStateManager extends ChangeNotifier with AppStateManagerProperties {
         log.info('Transaction stream closed!');
       },
     );
+  }
+
+  Map<String,Map<String, Map<String, charts.Series<IterationDataPoint, int>>>>? _mapChartBackingData({String? filterRetailerName}) =>
+    simulationDataCache?.mapAggType((aggType, seriesColn) => seriesColn.map((seriesName,
+                      seriesByRetailer) =>
+                  Map.fromEntries(seriesByRetailer.entries.where((entry) => entry.key == filterRetailerName || filterRetailerName == null)).map((rname, datapoints) => MapEntry(
+                      rname,
+                      charts.Series<IterationDataPoint, int>(
+                        id: '$rname $seriesName ($aggType)',
+                        seriesCategory: aggType,
+                        labelAccessorFn: (datapoint, _) =>
+                            '$rname $seriesName ($aggType)',
+                        colorFn: (_, __) => charts.ColorUtil.fromDartColor(
+                            retailerColorMap?[rname] ??
+                                const Color.fromRGBO(100, 100, 100, 1)),
+                        domainFn: (datapoint, _) => datapoint.iterationNumber,
+                        measureFn: (datapoint, _) => datapoint.datapoint,
+                        data: datapoints,
+                      )))));
+}
+
+class GemberProgressBar {
+  GemberProgressBar({required this.i, required this.N});
+
+  final int i;
+  final int N;
+
+  @override
+  String toString() {
+    return '$i/$N';
   }
 }

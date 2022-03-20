@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'dart:html';
 import 'dart:math';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
@@ -910,6 +912,7 @@ class RunSimulationResponseModel extends TSerializable {
   final String taskId;
   final String simulationId;
   final String simulationType;
+  final LoadSimulationDataEnvResult simulationData;
 
   RunSimulationResponseModel({
     required this.status,
@@ -917,6 +920,7 @@ class RunSimulationResponseModel extends TSerializable {
     required this.taskId,
     required this.simulationId,
     required this.simulationType,
+    required this.simulationData,
   }) : super();
 
   factory RunSimulationResponseModel.fromJson(Map<String, dynamic> json) {
@@ -941,6 +945,8 @@ class RunSimulationResponseModel extends TSerializable {
         json,
         'simulation_type',
       ),
+      simulationData: TSerializable.getJsonValue(
+          json, 'simulation_data', LoadSimulationDataEnvResult.fromJson),
     );
   }
 
@@ -951,7 +957,42 @@ class RunSimulationResponseModel extends TSerializable {
         'task_id': taskId,
         'simulation_id': simulationId,
         'simulation_type': simulationType,
+        'simulation_data': simulationData.toJson(),
       };
+}
+
+class PandasDF {
+  PandasDF.fromJson(dynamic data) {
+    dynamic dataMap;
+    assert(data != null);
+    if (data is String) {
+      dataMap = jsonDecode(data);
+    }
+    //TODO: parse the df json
+    throw UnimplementedError('Implement PandasDF.fromJson()');
+  }
+}
+
+class SimulationResult extends TSerializable {
+  final String simulationId;
+
+  SimulationResult({
+    required this.simulationId,
+  }) : super();
+
+  @override
+  Map<String, dynamic> toJson() {
+    // TODO: implement toJson
+    throw UnimplementedError();
+  }
+}
+
+class SimulationComparisonHistory extends TSerializable {
+  @override
+  Map<String, dynamic> toJson() {
+    // TODO: implement toJson
+    throw UnimplementedError();
+  }
 }
 
 class AppTransactionsStateModel extends TSerializable {
@@ -976,7 +1017,7 @@ class AppTransactionsStateModel extends TSerializable {
       };
 }
 
-class AggregatedRetailers {
+class AggregatedRetailers extends TSerializable {
   final BankAccountViewModel balance;
   final CostModel balanceMoney;
   final List<SaleModel> salesHistory;
@@ -1004,6 +1045,52 @@ class AggregatedRetailers {
         numItemsIssued: 0,
         itemCountMap: {},
       ));
+
+  factory AggregatedRetailers.fromJson(
+      Map<String, dynamic> json, List<String> retailerNames) {
+    return AggregatedRetailers(
+      balance: TSerializable.getJsonValueFromChain(
+          json, ['balance'], BankAccountViewModel.fromJson),
+      balanceMoney: TSerializable.getJsonValueFromChain(
+          json, ['balanceMoney'], CostModel.fromJson),
+      salesHistory: TSerializable.getJsonListValueFromChain(
+          json, ['salesHistory'], SaleModel.fromJson),
+      totalSales: TSerializable.getJsonValueFromChain(
+          json, ['totalSales'], SalesAggregationModel.fromJson),
+      retailerNames: retailerNames,
+    );
+  }
+
+  // @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'balance': balance.toJson(),
+        'balanceMoney': balanceMoney.toJson(),
+        'salesHistory': salesHistory.map((sh) => sh.toJson()).toList(),
+        'totalSales': totalSales.toJson(),
+      };
+}
+
+class LoadSimulationDataEnvResult extends TSerializable {
+  final LoadEntitiesResult entities;
+  final GemberAppConfig simulationConfig;
+
+  LoadSimulationDataEnvResult({
+    required this.entities,
+    required this.simulationConfig,
+  }) : super();
+
+  factory LoadSimulationDataEnvResult.fromJson(Map<String, dynamic> json) {
+    return LoadSimulationDataEnvResult(
+      entities: LoadEntitiesResult.fromJson(json),
+      simulationConfig: GemberAppConfig.fromJson(json),
+    );
+  }
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        ...entities.toJson(),
+        ...simulationConfig.toJson(),
+      };
 }
 
 class LoadEntitiesResult {
@@ -1034,6 +1121,30 @@ class LoadEntitiesResult {
   bool get isEmpty => retailers.isEmpty && customers.isEmpty;
 
   bool get isNotEmpty => !isEmpty;
+
+  factory LoadEntitiesResult.fromJson(Map<String, dynamic> json) {
+    final _ret = TSerializable.getJsonMapValue(
+        json, 'retailers', RetailerModel.fromJson);
+    return LoadEntitiesResult(
+      customers: TSerializable.getJsonMapValue(
+              json, 'customers', CustomerModel.fromJson)
+          .values
+          .toList(),
+      retailers: _ret.values.toList(),
+      retailersCluster: TSerializable.getJsonValue<AggregatedRetailers>(
+          json,
+          'retailersCluster',
+          (Map<String, dynamic> json) =>
+              AggregatedRetailers.fromJson(json, _ret.keys.toList())),
+    );
+  }
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'customers': customers.map((ent) => ent.toJson()).toList(),
+        'retailers': retailers.map((ent) => ent.toJson()).toList(),
+        'retailersCluster': retailersCluster.toJson(),
+      };
 }
 
 class LoadTransactionsForEntityResult {
@@ -1061,35 +1172,74 @@ class LoadSalesForItem {
 }
 
 class SimulationProgressData {
-  SimulationProgressData({required this.iterationNumber, required dynamic data})
-      : runningSum = SimulationProgressDataSeries(
-            salesCount:
-                Map<String, num>.from(data["running_sum"]["sales_count"]),
-            greenPointsIssued: Map<String, num>.from(
-                data["running_sum"]["green_points_issued"])),
-        runningAverage = SimulationProgressDataSeries(
-            salesCount:
-                Map<String, num>.from(data["running_average"]["sales_count"]),
-            greenPointsIssued: Map<String, num>.from(
-                data["running_average"]["green_points_issued"])),
-        runningVariance = SimulationProgressDataSeries(
-            salesCount:
-                Map<String, num>.from(data["running_variance"]["sales_count"]),
-            greenPointsIssued: Map<String, num>.from(
-                data["running_variance"]["green_points_issued"]));
+  SimulationProgressData({required dynamic data})
+      : runningSum = TSerializable.getJsonValue(
+            data, "running_sum", SimulationProgressDataSeries.fromJson),
+        runningAverage = TSerializable.getJsonValue(
+            data, "running_average", SimulationProgressDataSeries.fromJson),
+        runningVariance = TSerializable.getJsonValue(
+            data, "running_variance", SimulationProgressDataSeries.fromJson),
+        iterationNumber =
+            TSerializable.getJsonValTypeValue<int>(data, "iteration_number"),
+        maxNIterations =
+            TSerializable.getJsonValTypeValue<int>(data, "maxNIterations");
 
   final SimulationProgressDataSeries runningSum;
   final SimulationProgressDataSeries runningAverage;
   final SimulationProgressDataSeries runningVariance;
   final int iterationNumber;
+  final int maxNIterations;
 }
 
-class SimulationProgressDataSeries {
+class SimulationProgressDataSeries extends TSerializable {
   final Map<String, num> salesCount;
   final Map<String, num> greenPointsIssued;
+  final Map<String, num> marketShare;
+  final Map<String, num> totalSalesRevenue;
+  final Map<String, num> totalSalesRevenueLessGP;
+  // final Map<String, Map<String,num>> totalSalesRevenueByItem;
 
-  const SimulationProgressDataSeries(
-      {required this.salesCount, required this.greenPointsIssued});
+  SimulationProgressDataSeries(
+      {required this.salesCount,
+      required this.greenPointsIssued,
+      required this.marketShare,
+      required this.totalSalesRevenue,
+      required this.totalSalesRevenueLessGP})
+      : super();
+
+  factory SimulationProgressDataSeries.fromJson(Map<String, dynamic> json) {
+    return SimulationProgressDataSeries(
+      salesCount: TSerializable.getJsonMapValTypeValue<num>(
+        json,
+        'sales_count',
+      ),
+      greenPointsIssued: TSerializable.getJsonMapValTypeValue<num>(
+        json,
+        'gp_issued',
+      ),
+      marketShare: TSerializable.getJsonMapValTypeValue<num>(
+        json,
+        'market_share',
+      ),
+      totalSalesRevenue: TSerializable.getJsonMapValTypeValue<num>(
+        json,
+        'total_sales_revenues',
+      ),
+      totalSalesRevenueLessGP: TSerializable.getJsonMapValTypeValue<num>(
+        json,
+        'total_sales_revenue_less_gp',
+      ),
+    );
+  }
+
+  @override
+  Map<String, Map<String, num>> toJson() => <String, Map<String, num>>{
+        'sales_count': salesCount,
+        'gp_issued': greenPointsIssued,
+        'market_share': marketShare,
+        'total_sales_revenues': totalSalesRevenue,
+        'total_sales_revenue_less_gp': totalSalesRevenueLessGP,
+      };
 }
 
 class SimulationScenarioRef {
@@ -1107,6 +1257,9 @@ class GemberAppConfig extends TSerializable {
     required this.NUM_CUSTOMERS,
     this.maxN = 1,
     this.convergenceTH = 0.0,
+    this.strategy = 0.0,
+    this.sustainabilityBaseline = 0.0,
+    this.controlRetailerName,
   }) : super();
 
   factory GemberAppConfig.fromJson(Map<String, dynamic> json) {
@@ -1131,6 +1284,18 @@ class GemberAppConfig extends TSerializable {
         json,
         'convergenceTH',
       ),
+      strategy: TSerializable.getJsonValTypeValue<double>(
+        json,
+        'strategy',
+      ),
+      sustainabilityBaseline: TSerializable.getJsonValTypeValue<double>(
+        json,
+        'sustainability',
+      ),
+      controlRetailerName: TSerializable.getJsonValTypeValue<String?>(
+        json,
+        'controlRetailerName',
+      ),
     );
   }
 
@@ -1139,6 +1304,9 @@ class GemberAppConfig extends TSerializable {
   final int NUM_CUSTOMERS;
   final int maxN;
   final double convergenceTH;
+  final double strategy;
+  final double sustainabilityBaseline;
+  final String? controlRetailerName;
 
   @override
   Map<String, dynamic> toJson() => <String, dynamic>{
@@ -1147,8 +1315,43 @@ class GemberAppConfig extends TSerializable {
         'NUM_CUSTOMERS': NUM_CUSTOMERS,
         'maxN': maxN,
         'convergenceTH': convergenceTH,
+        'strategy': strategy,
+        'sustainability': sustainabilityBaseline,
+        'controlRetailerName': controlRetailerName,
       };
 
   Map<String, String> toStrJson() => Map<String, String>.fromEntries(
       toJson().entries.map((e) => MapEntry(e.key, e.value.toString())));
+
+  @override
+  String toString() {
+    return 'N=$maxN;a=$convergenceTH;cust=$controlRetailerName;strat=$strategy;sust=$sustainabilityBaseline;numCust=$NUM_CUSTOMERS;';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is GemberAppConfig &&
+        other.BASKET_FULL_SIZE == BASKET_FULL_SIZE &&
+        other.NUM_SHOP_TRIPS_PER_ITERATION == NUM_SHOP_TRIPS_PER_ITERATION &&
+        other.NUM_CUSTOMERS == NUM_CUSTOMERS &&
+        other.maxN == maxN &&
+        other.convergenceTH == convergenceTH &&
+        other.strategy == strategy &&
+        other.controlRetailerName == controlRetailerName &&
+        other.sustainabilityBaseline == sustainabilityBaseline;
+  }
+
+  @override
+  int get hashCode {
+    return BASKET_FULL_SIZE.hashCode ^
+        NUM_SHOP_TRIPS_PER_ITERATION.hashCode ^
+        NUM_CUSTOMERS.hashCode ^
+        maxN.hashCode ^
+        convergenceTH.hashCode ^
+        strategy.hashCode ^
+        sustainabilityBaseline.hashCode ^
+        controlRetailerName.hashCode;
+  }
 }

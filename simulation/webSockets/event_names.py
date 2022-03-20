@@ -30,12 +30,16 @@ class WebSocketClientEvent(Enum):
 
 class WebSocketServerResponseEvent(Enum):
     gpApp_initialised = 'gpApp initialised'
+    
     simulation_initialised = 'simulation initialised'
     simulation_iteration_completed = 'simulation iteration completed'
     simulation_ran = 'simulation ran'
     simulation_already_running = 'simulation already running'
+    
     unknown_client_event_response = 'unknown client event response'
+    
     message_received = 'message received'
+    
     purchase_delay = 'purchase delay'
     
     app_state_loaded = 'app state loaded'
