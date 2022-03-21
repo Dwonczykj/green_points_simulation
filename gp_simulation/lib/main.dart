@@ -18,7 +18,7 @@ Future main() async {
 }
 
 void _setupLogging() {
-  Logger.root.level = Level.INFO;
+  Logger.root.level = Level.FINER;
   Logger.root.onRecord.listen(
     (rec) {
       print('${rec.level.name}: ${rec.time}: ${rec.message}');

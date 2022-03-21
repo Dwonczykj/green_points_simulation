@@ -354,7 +354,7 @@ def load_entities():
 @flaskHttpApp.route('/retailer_names', methods=['GET'])
 def get_retailer_names():
     simEnv = gpApp.getSimulationDummyEnvironment()
-    retailerNames = simEnv.retailerNames
+    retailerNames = {'retailer_names': simEnv.retailerNames}
     return wrap_CORS_response(make_response(retailerNames,HTTPStatus.OK))
 
     

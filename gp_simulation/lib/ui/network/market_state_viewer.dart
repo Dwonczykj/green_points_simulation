@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:logging/logging.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:tuple/tuple.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/status.dart' as status;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -95,7 +96,7 @@ mixin WSBaseMixin on IMarketStateViewer {
       log.fine(PrintPens.greenPen('ran_iteration_$i'));
       return SimulationProgressData(data: event);
     } on Exception catch (e) {
-      log.fine('market_state_viewer._parseSimulationProgressData threw $e');
+      log.warning('market_state_viewer._parseSimulationProgressData threw $e');
       return null;
     }
   }
@@ -140,6 +141,8 @@ abstract class WebSocketHandlers extends IMarketStateViewer with WSBaseMixin {
           appStateMgr.addCompletedSimulation(simulationData);
           appStateMgr.refreshSimulationComparisonHistory();
         }
+      } else {
+        
       }
     },
   };
@@ -351,7 +354,7 @@ abstract class IMarketStateViewer extends ChangeNotifier {
   }
 
   SimulationResult _parseSimulationResult(Map<String, dynamic> data) {
-    return SimulationResult(simulationId: 'simulationId');
+    return SimulationResult.fromJson(data);
   }
 
   Future<bool> initialiseGemberPointsApp();
@@ -564,6 +567,48 @@ abstract class IMarketStateViewer extends ChangeNotifier {
   void updatePurchaseDelaySpeed(double newSpeed);
 }
 
+enum RequestType { GET, POST }
+
+abstract class WebCall {
+  final Uri uri;
+  final Map<String, String>? headers;
+  final RequestType requestType;
+
+  WebCall({
+    required this.uri,
+    this.headers,
+    required this.requestType,
+  });
+
+  bool isRequestCall() => (this is WebCallRequest);
+
+  bool isResponseCall() => (this is WebCallResponse);
+}
+
+class WebCallRequest extends WebCall {
+  final Map<String, String>? body;
+
+  WebCallRequest({
+    required uri,
+    headers,
+    required requestType,
+    this.body,
+  }) : super(uri: uri, requestType: requestType, headers: headers);
+}
+
+class WebCallResponse extends WebCall {
+  final String? responseBody;
+  final int statusCode;
+
+  WebCallResponse({
+    required uri,
+    required this.statusCode,
+    headers,
+    required requestType,
+    this.responseBody,
+  }) : super(uri: uri, requestType: requestType, headers: headers);
+}
+
 mixin HttpRequestMixin on SocketIoMixin, IMarketStateViewer {
   Uri _addKeyToUri(String url) {
     final uri = Uri.parse(url);
@@ -584,6 +629,18 @@ mixin HttpRequestMixin on SocketIoMixin, IMarketStateViewer {
 
   String wsConnectionStatus = 'No Websocket Connection';
 
+  WebCall? _lastCall;
+
+  StreamController<WebCall> _callHistoryStreamController =
+      StreamController<WebCall>(
+    onCancel: () {},
+  );
+
+  Stream<WebCall> get callHistoryStream =>
+      _callHistoryStreamController.stream.asBroadcastStream();
+
+  WebCall? get lastCall => _lastCall;
+
   Future<T?> getDataAndDecodeTyped<T>(String url,
       {Map<String, String>? headers, Map<String, String>? queryParams}) async {
     final response =
@@ -600,6 +657,37 @@ mixin HttpRequestMixin on SocketIoMixin, IMarketStateViewer {
     }
   }
 
+  void logCallRequest(
+      {required Uri uri,
+      required RequestType requestType,
+      Map<String, String>? headers,
+      Map<String, String>? body}) {
+    _lastCall = WebCallRequest(
+        uri: uri, requestType: requestType, headers: headers, body: body);
+    if (_callHistoryStreamController.hasListener) {
+      _callHistoryStreamController.sink.add(_lastCall!);
+    }
+    // notifyListeners();
+  }
+
+  void logCallResponse(
+      {required Uri uri,
+      required RequestType requestType,
+      required int statusCode,
+      Map<String, String>? headers,
+      String? body}) {
+    _lastCall = WebCallResponse(
+        uri: uri,
+        requestType: requestType,
+        statusCode: statusCode,
+        headers: headers,
+        responseBody: body);
+    if (_callHistoryStreamController.hasListener) {
+      _callHistoryStreamController.sink.add(_lastCall!);
+    }
+    // notifyListeners();
+  }
+
   Future<String?> getData(String url,
       {Map<String, String>? headers, Map<String, String>? queryParams}) async {
     _flagStartHttpCall;
@@ -607,12 +695,24 @@ mixin HttpRequestMixin on SocketIoMixin, IMarketStateViewer {
     if (queryParams != null) {
       uri.queryParameters.addAll(queryParams);
     }
+
     log.fine(PrintPens.orangePen('[GET]: Calling uri: $uri'));
     http.Response response;
 
     try {
+      logCallRequest(
+          uri: uri,
+          requestType: RequestType.GET,
+          headers: headers,
+          body: queryParams);
       response = await httpClient.get(uri, headers: headers);
       _flagStopHttpCall;
+      logCallResponse(
+          uri: uri,
+          requestType: RequestType.GET,
+          statusCode: response.statusCode,
+          headers: response.headers,
+          body: response.body);
       if (backendServerDead) {
         backendServerDead = false;
         notifyListeners();
@@ -654,11 +754,25 @@ mixin HttpRequestMixin on SocketIoMixin, IMarketStateViewer {
         log.warning(
             'Was unable to convert postData body to Map<String,String> with errMsg: $e');
       }
+
+      logCallRequest(
+          uri: uri,
+          requestType: RequestType.POST,
+          headers: headers,
+          body: _strPostData);
+
       final response = await httpClient.post(
         uri,
         body: _strPostData,
       );
       _flagStopHttpCall;
+      logCallResponse(
+          uri: uri,
+          requestType: RequestType.GET,
+          statusCode: response.statusCode,
+          headers: response.headers,
+          body: response.body);
+
       if (backendServerDead) {
         backendServerDead = false;
         notifyListeners();
@@ -703,6 +817,9 @@ class MarketStateViewer extends SocketIoMixin with HttpRequestMixin {
         _simulationProgressEmitterController.stream.asBroadcastStream();
 
     onInit(onReconnect: () {
+      if (appStateMgr.initialised) {
+        return;
+      }
       initialiseGemberPointsApp().then((appLoaded) {
         if (appLoaded) {
           return loadRetailerNames();
@@ -854,17 +971,17 @@ class MarketStateViewer extends SocketIoMixin with HttpRequestMixin {
   @override
   Future<LoadEntitiesResult> loadEntities(
       {GemberAppConfig? configOptions}) async {
-    if (_EntityCatalog.isEmpty && !loadingEntities) {
-      loadingEntities = true;
-      try {
-        final data = await postData(
-            '$apiUrl/load-entities', configOptions?.toStrJson() ?? {});
-        _loadEntities(data);
-      } finally {
-        loadingEntities = false;
-      }
-      _requestPurchaseSpeed();
+    // if (_EntityCatalog.isEmpty && !loadingEntities) {
+    // }
+    loadingEntities = true;
+    try {
+      final data = await postData(
+          '$apiUrl/load-entities', configOptions?.toStrJson() ?? {});
+      _loadEntities(data);
+    } finally {
+      loadingEntities = false;
     }
+    _requestPurchaseSpeed();
     return _EntityCatalog;
   }
 
@@ -1034,9 +1151,13 @@ class MarketStateViewer extends SocketIoMixin with HttpRequestMixin {
 
   @override
   Future<List<String>> loadRetailerNames() async {
-    final response =
-        await getDataAndDecodeTyped<List<String>>('$apiUrl/retailer_names');
-    return response ?? <String>[];
+    final response = await getData('$apiUrl/retailer_names');
+    if (response == null) {
+      return <String>[];
+    } else {
+      final data = jsonDecode(response);
+      return List<String>.from(data['retailer_names']);
+    }
   }
 }
 

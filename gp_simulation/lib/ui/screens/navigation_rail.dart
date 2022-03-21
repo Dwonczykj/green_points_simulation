@@ -1,51 +1,11 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:webtemplate/ui/screens/dummy_screen.dart';
-import 'package:webtemplate/ui/screens/i_page_wrapper.dart';
+
 import 'package:webtemplate/ui/screens/view_simulation.dart';
 import '../../navigation/app_router.gr.dart';
-import '../model/all_models.dart';
-import '../network/network.dart';
+
 import 'customer_view_screen.dart';
-// import 'package:webtemplate/ui/components/retailer_consumer_spider.dart';
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key}) : super(key: key);
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  
-  @override
-  Widget build(BuildContext context) {
-    // return const ViewSimulationPage();
-    return AutoTabsScaffold(
-      routes: const [
-        CustomerViewRouter(),
-        ViewSimulationRouter(),
-      ],
-      bottomNavigationBuilder: (_, tabsRouter) {
-        return BottomNavigationBar(
-          currentIndex: tabsRouter.activeIndex,
-          onTap: tabsRouter.setActiveIndex,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.book),
-              label: 'Books',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.account_box),
-              label: 'Account',
-            ),
-          ],
-        );
-      },
-    );
-  }
-}
+import 'debug_screen.dart';
 
 class NavigationRailSelectedViewPage extends StatefulWidget {
   const NavigationRailSelectedViewPage({Key? key}) : super(key: key);
@@ -60,12 +20,14 @@ class _NavigationRailSelectedViewPageState
   int _selectedIndex = 1;
   final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
   final routes = const <PageRouteInfo<void>>[
-    CustomerViewRouter(),
     ViewSimulationRouter(),
+    CustomerViewRouter(),
+    DebugRouter(),
   ];
   final routeTitles = <String>[
     ViewSimulationPage.title,
     CustomerViewScreenPage.title,
+    DebugPage.title,
   ];
 
   @override
@@ -78,12 +40,16 @@ class _NavigationRailSelectedViewPageState
           onTap: tabsRouter.setActiveIndex,
           items: const [
             BottomNavigationBarItem(
+              icon: Icon(Icons.data_exploration),
+              label: 'Simulate',
+            ),
+            BottomNavigationBarItem(
               icon: Icon(Icons.person),
               label: 'Visualise',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.data_exploration),
-              label: 'Simulate',
+              icon: Icon(Icons.construction),
+              label: 'Debug',
             ),
           ],
         );

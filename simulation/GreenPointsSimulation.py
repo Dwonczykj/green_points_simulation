@@ -462,7 +462,7 @@ class GreenPointsLoyaltyApp():
                         greenPointsIssued=iterationResult.greenPointsIssued * 0.0,
                         marketShare=iterationResult.marketShare * 0.0,
                         totalSalesRevenue=iterationResult.totalSalesRevenue * 0.0,
-                        totalSalesRevenueByItem=iterationResult.totalSalesRevenueByItem * 0.0,
+                        # totalSalesRevenueByItem=iterationResult.totalSalesRevenueByItem * 0.0,
                         totalSalesRevenueLessGP=iterationResult.totalSalesRevenueLessGP * 0.0,
                     ),
                 )
@@ -492,7 +492,7 @@ class GreenPointsLoyaltyApp():
                  greenPointsIssued=_nextRVar(lambda ir: ir.greenPointsIssued),
                  marketShare=_nextRVar(lambda ir: ir.marketShare),
                  totalSalesRevenue=_nextRVar(lambda ir: ir.totalSalesRevenue),
-                 totalSalesRevenueByItem=_nextRVar(lambda ir: ir.totalSalesRevenueByItem),
+                #  totalSalesRevenueByItem=_nextRVar(lambda ir: ir.totalSalesRevenueByItem),
                  totalSalesRevenueLessGP=_nextRVar(lambda ir: ir.totalSalesRevenueLessGP),
              )
              
@@ -510,8 +510,8 @@ class GreenPointsLoyaltyApp():
                 marketShare=(previous.runningSum.marketShare +
                              result.marketShare),
                 totalSalesRevenue=(previous.runningSum.totalSalesRevenue + result.totalSalesRevenue),
-                totalSalesRevenueByItem=(
-                    previous.runningSum.totalSalesRevenueByItem + result.totalSalesRevenueByItem),
+                # totalSalesRevenueByItem=(
+                #     previous.runningSum.totalSalesRevenueByItem + result.totalSalesRevenueByItem),
                 totalSalesRevenueLessGP=(previous.runningSum.totalSalesRevenueLessGP + result.totalSalesRevenueLessGP),
             )
             runningAverage = GreenPointsLoyaltyApp.IterationResult(
@@ -519,8 +519,8 @@ class GreenPointsLoyaltyApp():
                 greenPointsIssued=runningSum.greenPointsIssued.div(iterationNumber),
                 marketShare=runningSum.marketShare.div(iterationNumber),
                 totalSalesRevenue=runningSum.totalSalesRevenue.div(iterationNumber),
-                totalSalesRevenueByItem=runningSum.totalSalesRevenueByItem.div(
-                    iterationNumber),
+                # totalSalesRevenueByItem=runningSum.totalSalesRevenueByItem.div(
+                #     iterationNumber),
                 totalSalesRevenueLessGP=runningSum.totalSalesRevenueLessGP.div(
                     iterationNumber),
             )
@@ -545,13 +545,14 @@ class GreenPointsLoyaltyApp():
                      greenPointsIssued: pd.Series[Numeric], 
                      marketShare: pd.Series[Numeric], 
                      totalSalesRevenue: pd.Series[Numeric], 
-                     totalSalesRevenueByItem: pd.Series, 
+                    #  totalSalesRevenueByItem: pd.Series, 
                      totalSalesRevenueLessGP: pd.Series[Numeric]) -> None:
             self._salesCount = salesCount
             self._greenPointsIssued = greenPointsIssued
             self._marketShare = marketShare
             self._totalSalesRevenue = totalSalesRevenue
-            self._totalSalesRevenueByItem = totalSalesRevenueByItem
+            # self._totalSalesRevenueByItem = totalSalesRevenueByItem
+            self._totalSalesRevenueByItem = totalSalesRevenue
             self._totalSalesRevenueLessGP = totalSalesRevenueLessGP
             
         @property
@@ -665,17 +666,17 @@ class GreenPointsLoyaltyApp():
                 sale.greenPointsIssuedForItem.greenPoints.amount for sale in r._salesHistory) for r in retailers.values()}
             
             gpIssuedValueInPegged = {r.name: sum(
-                sale.greenPointsIssuedForItem.greenPoints.valueInPeggedCurrency for sale in r._salesHistory) for r in retailers.values()}
+                sale.greenPointsIssuedForItem.greenPoints.valueInPeggedCurrency.amount for sale in r._salesHistory) for r in retailers.values()}
 
             totalSalesRevenueLessGP = {
                 r.name: (totalSalesRevenue[r.name] - gpIssuedValueInPegged[r.name]) for r in retailers.values()}
-            x = pd.Series(totalSalesRevenueByItem)
+            
             return GreenPointsLoyaltyApp.IterationResult(
                 salesCount=pd.Series(salesCount),
                 greenPointsIssued=pd.Series(gpIssued),
                 marketShare=pd.Series(marketShare),
                 totalSalesRevenue=pd.Series(totalSalesRevenue),
-                totalSalesRevenueByItem=pd.Series(totalSalesRevenueByItem),
+                # totalSalesRevenueByItem=pd.Series(totalSalesRevenueByItem),
                 totalSalesRevenueLessGP=pd.Series(totalSalesRevenueLessGP),
                 )
     
@@ -688,6 +689,8 @@ class GreenPointsLoyaltyApp():
             self.gpApp = initializer.gpApp
             self._simulationType = simType
             self._simConfig = simConfig
+            self._simStamp = simulationId = SimStamp(
+                str(uuid.uuid4()), time.time())
             
             self._out_df_template = pd.DataFrame(
                 columns=self._initializer.retailerNames)
@@ -721,7 +724,11 @@ class GreenPointsLoyaltyApp():
             
         @abc.abstractproperty
         def simulationType(self):
-            return self._simulationType  
+            return self._simulationType
+        
+        @property
+        def simulationStamp(self):
+            return self._simStamp
             
         @property
         def BASKET_FULL_SIZE(self):
@@ -1023,7 +1030,7 @@ class GreenPointsLoyaltyApp():
             runningAverage = self.summarise_first_iteration(retailersSnapshot=retailersFixedForSimIteration, maxNIterations=self.maxN, debug=False)
             self.numIterationsCalculated = iterCounter
             self.gpApp._emit_event(event_name=WebSocketServerResponseEvent.simulation_iteration_completed,
-                                   data=runningAverage.toJson())
+                                   data={**self.simulationConfig.toJson(), **runningAverage.toJson()})
             betweenIterationCallback()
             convergence_TH_not_reached = True
             while iterCounter < maxN and convergence_TH_not_reached:
@@ -1047,7 +1054,7 @@ class GreenPointsLoyaltyApp():
                     logging.debug(f'Running Variance for Sim: iter[{iterCounter}] ; SalesCount:{maxSalesCountRunningVar}; GPIssues:{maxGPIssuedRunningVar}')
                 self.numIterationsCalculated = iterCounter
                 self.gpApp._emit_event(event_name=WebSocketServerResponseEvent.simulation_iteration_completed,
-                                       data=runningAverage.toJson())
+                                       data={**self.simulationConfig.toJson(), **runningAverage.toJson()})
                 # eventlet.sleep(5.0)
             sim_output = self.summarise_simulation_to_dict()
             self.gpApp._emit_event(event_name=WebSocketServerResponseEvent.simulation_ran,
@@ -1081,7 +1088,11 @@ class GreenPointsLoyaltyApp():
                 else:
                     raise Exception('Bad forRetailer passed to SimulationEnvironment.summarise_simulation_to_dict()')
             else:
-                return finalRunningAverage.toDict()
+                return {
+                    'simulation_id': self.simulationStamp.id,
+                    'started_at': self.simulationStamp.timestamp,
+                    **finalRunningAverage.toDict(),
+                }
         
         def _getSummaryDf(self, result:GreenPointsLoyaltyApp.IterationResult, debug:bool=False):
             out_df = self._out_df_template.copy()
@@ -1165,27 +1176,33 @@ class GreenPointsLoyaltyApp():
         return self._running == True
     
     def initSimulationFullEnvironment(self, simConfig:SimulationConfig):
-        simulationId = SimStamp(str(uuid.uuid4()), time.time())
+        
+        simEnv = self._envInitializer.createSimulationFullEnvironment(simConfigParams=simConfig)
+        simulationId = simEnv.simulationStamp
         self._simulationEnvironments[simulationId.id] = \
-            (simulationId.timestamp, 
-             self._envInitializer.createSimulationFullEnvironment(simConfigParams=simConfig))
+            (simulationId.timestamp, simEnv)
         return simulationId.id, self._simulationEnvironments[simulationId.id][1].simulationType
     
     def getSimulationDummyEnvironment(self):
         return self._envInitializer.createSimulationSingleIterationEnvironment(simConfigParams=SimulationIterationConfig())
         
     def initSimulationSingleIterationEnvironment(self, simConfig:SimulationIterationConfig):
-        simulationId = SimStamp(str(uuid.uuid4()), time.time())
+        
+        simEnv = self._envInitializer.createSimulationSingleIterationEnvironment(simConfigParams=simConfig)
+        simulationId = simEnv.simulationStamp
         self._simulationEnvironments[simulationId.id] = \
             (simulationId.timestamp, 
-             self._envInitializer.createSimulationSingleIterationEnvironment(simConfigParams=simConfig))
+             simEnv)
         return simulationId.id, self._simulationEnvironments[simulationId.id][1].simulationType
     
     def initSimulationScenarioRunEnvironment(self, simConfig: SimulationIterationConfig):
-        simulationId = SimStamp(str(uuid.uuid4()), time.time())
+        
+        simEnv = self._envInitializer.createSimulationScenarioRunEnvironment(
+            simConfigParams=simConfig)
+        simulationId = simEnv.simulationStamp
         self._simulationEnvironments[simulationId.id] = \
             (simulationId.timestamp, 
-             self._envInitializer.createSimulationScenarioRunEnvironment(simConfigParams=simConfig))
+             simEnv)
         return simulationId.id, self._simulationEnvironments[simulationId.id][1].simulationType
     
     def getSimConfig(self, simulationId:str):

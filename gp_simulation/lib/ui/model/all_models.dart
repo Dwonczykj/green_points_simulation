@@ -973,20 +973,6 @@ class PandasDF {
   }
 }
 
-class SimulationResult extends TSerializable {
-  final String simulationId;
-
-  SimulationResult({
-    required this.simulationId,
-  }) : super();
-
-  @override
-  Map<String, dynamic> toJson() {
-    // TODO: implement toJson
-    throw UnimplementedError();
-  }
-}
-
 class SimulationComparisonHistory extends TSerializable {
   @override
   Map<String, dynamic> toJson() {
@@ -1182,13 +1168,60 @@ class SimulationProgressData {
         iterationNumber =
             TSerializable.getJsonValTypeValue<int>(data, "iteration_number"),
         maxNIterations =
-            TSerializable.getJsonValTypeValue<int>(data, "maxNIterations");
+            TSerializable.getJsonValTypeValue<int>(data, "maxNIterations"),
+        simConfig = GemberAppConfig.fromJson(data);
 
   final SimulationProgressDataSeries runningSum;
   final SimulationProgressDataSeries runningAverage;
   final SimulationProgressDataSeries runningVariance;
   final int iterationNumber;
   final int maxNIterations;
+  final GemberAppConfig simConfig;
+}
+
+class SimulationResult extends SimulationProgressDataSeries {
+  final String simulationId;
+  final double startedAt;
+
+  SimulationResult({
+    required salesCount,
+    required greenPointsIssued,
+    required marketShare,
+    required totalSalesRevenue,
+    required totalSalesRevenueLessGP,
+    required this.simulationId,
+    required this.startedAt,
+  }) : super(
+          salesCount: salesCount,
+          greenPointsIssued: greenPointsIssued,
+          marketShare: marketShare,
+          totalSalesRevenue: totalSalesRevenue,
+          totalSalesRevenueLessGP: totalSalesRevenueLessGP,
+        );
+
+  SimulationResult.fromSuper(
+      SimulationProgressDataSeries superObj, this.simulationId, this.startedAt)
+      : super(
+          salesCount: superObj.salesCount,
+          greenPointsIssued: superObj.greenPointsIssued,
+          marketShare: superObj.marketShare,
+          totalSalesRevenue: superObj.totalSalesRevenue,
+          totalSalesRevenueLessGP: superObj.totalSalesRevenueLessGP,
+        );
+
+  factory SimulationResult.fromJson(Map<String, dynamic> json) {
+    return SimulationResult.fromSuper(
+      SimulationProgressDataSeries.fromJson(json),
+      TSerializable.getJsonValTypeValue<String>(json, 'simulation_id'),
+      TSerializable.getJsonValTypeValue<double>(json, 'started_at'),
+    );
+  }
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        ...super.toJson(),
+        'simulation_id': simulationId,
+        'started_at': startedAt,
+      };
 }
 
 class SimulationProgressDataSeries extends TSerializable {
@@ -1199,13 +1232,13 @@ class SimulationProgressDataSeries extends TSerializable {
   final Map<String, num> totalSalesRevenueLessGP;
   // final Map<String, Map<String,num>> totalSalesRevenueByItem;
 
-  SimulationProgressDataSeries(
-      {required this.salesCount,
-      required this.greenPointsIssued,
-      required this.marketShare,
-      required this.totalSalesRevenue,
-      required this.totalSalesRevenueLessGP})
-      : super();
+  SimulationProgressDataSeries({
+    required this.salesCount,
+    required this.greenPointsIssued,
+    required this.marketShare,
+    required this.totalSalesRevenue,
+    required this.totalSalesRevenueLessGP,
+  }) : super();
 
   factory SimulationProgressDataSeries.fromJson(Map<String, dynamic> json) {
     return SimulationProgressDataSeries(
@@ -1233,7 +1266,7 @@ class SimulationProgressDataSeries extends TSerializable {
   }
 
   @override
-  Map<String, Map<String, num>> toJson() => <String, Map<String, num>>{
+  Map<String, dynamic> toJson() => <String, dynamic>{
         'sales_count': salesCount,
         'gp_issued': greenPointsIssued,
         'market_share': marketShare,

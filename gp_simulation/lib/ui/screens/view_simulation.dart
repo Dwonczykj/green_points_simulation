@@ -19,7 +19,7 @@ class ViewSimulationPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return IPageWrapper(
         title: title,
-        childGetter: (marketStateViewer, appStateManager, snapshot) =>
+        childGetter: (marketStateViewer, appStateManager) =>
             ViewSimulation(
               marketStateViewer: marketStateViewer,
               appStateManager: appStateManager,
@@ -41,7 +41,6 @@ class ViewSimulation extends StatefulWidget {
   _ViewSimulationState createState() => _ViewSimulationState();
 }
 
-//TODO: Design Spec: Add ability to filter a particular retailer line on the graph and then view historical sims to see the effects of tweaking the retailer's parameters.
 class _ViewSimulationState extends State<ViewSimulation> {
   final log = Logger('_ViewSimulationState');
   List<String> runningSimulationsWithIds = <String>[];

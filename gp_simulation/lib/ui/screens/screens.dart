@@ -1,12 +1,11 @@
-export 'home.dart';
+export 'my_home_page.dart';
+export 'navigation_rail.dart';
+export 'debug_screen.dart';
 export 'circles.dart';
 export 'spiral.dart';
 export 'planets.dart';
 export 'polygon.dart';
-
-// TODO P1: Remove the following poc import.
 export 'customer_view_screen.dart';
 export 'spider_layout.dart';
 export 'animated_align_demo.dart';
-
 export 'view_simulation.dart';

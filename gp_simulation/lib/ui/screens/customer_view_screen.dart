@@ -28,15 +28,10 @@ class CustomerViewScreenPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return IPageWrapper(
         title: title,
-        childGetter: (marketStateViewer, appStateManager, snapshot) =>
-            snapshot.hasData &&
-                    snapshot.data!.customers.isNotEmpty &&
-                    snapshot.data!.retailers.isNotEmpty
+        childGetter: (marketStateViewer, appStateManager) =>
+            (appStateManager.entities?.isNotEmpty ?? false)
                 ? CustomersView(
                     marketStateViewer: marketStateViewer,
-                    customers: snapshot.data!.customers,
-                    retailers: snapshot.data!.retailers,
-                    retailersCluster: snapshot.data!.retailersCluster,
                     appStateManager: appStateManager)
                 : const Placeholder());
   }
@@ -45,19 +40,19 @@ class CustomerViewScreenPage extends StatelessWidget {
 class CustomersView extends StatefulWidget {
   const CustomersView({
     Key? key,
-    required this.customers,
-    required this.retailers,
-    required this.retailersCluster,
     required this.marketStateViewer,
       required this.appStateManager
   }) : super(key: key);
 
-  final List<CustomerModel> customers;
-  final List<RetailerModel> retailers;
-  final AggregatedRetailers retailersCluster;
   final IMarketStateViewer marketStateViewer;
   final AppStateManager appStateManager;
 
+  List<CustomerModel> get customers =>
+      appStateManager.entities?.customers ?? <CustomerModel>[];
+  List<RetailerModel> get retailers =>
+      appStateManager.entities?.retailers ?? <RetailerModel>[];
+  AggregatedRetailers get retailersCluster =>
+      appStateManager.entities?.retailersCluster ?? AggregatedRetailers.zero();
   int get numCustomers => customers.length;
   int get numRetailers => retailers.length;
 

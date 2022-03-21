@@ -107,6 +107,8 @@ abstract class AppStateManagerProperties {
 
   bool _initialised = false;
   bool get initialised => _initialised;
+  bool _initialising = false;
+  bool get initialising => _initialising;
 
   // set initialised(bool initialised) {
   //   _initialised = initialised;
@@ -180,10 +182,10 @@ abstract class AppStateManagerProperties {
   ViewMeasureType get viewMeasType => _viewMeasType;
   String get viewMeasTypeDTOLabel => getMeasureDTOLabel(_viewMeasType);
 
-  var _simulationRunningMetricsChartBackingData = <String,dynamic>{};
+  var _simulationRunningMetricsChartBackingData = <String, dynamic>{};
   // var _simulationRunningMetricsChartBackingData = <String,Map<String, Map<String, charts.Series<IterationDataPoint, int>>>>{};
 
-  
+  List<WebCall> wsCallHist = <WebCall>[];
 }
 
 class AppStateManager extends ChangeNotifier with AppStateManagerProperties {
@@ -193,17 +195,27 @@ class AppStateManager extends ChangeNotifier with AppStateManagerProperties {
     _initialised = false;
     marketStateViewerInst = marketStateViewer;
     marketStateViewerInst.addListener(_listenSocket);
+    if (marketStateViewerInst is MarketStateViewer) {
+      (marketStateViewerInst as MarketStateViewer)
+          .callHistoryStream
+          .listen((event) {
+        wsCallHist.add(event);
+      });
+    }
     marketStateViewerInst.initialiseGemberPointsApp().then((appLoaded) {
-        if (appLoaded) {
-          return marketStateViewerInst.loadRetailerNames();
-        } else {
-          return Future.value(null);
-        }
-      }).then(
-        (retailerNamesHttp) {
-          retailerNames = retailerNamesHttp ?? <String>[];
-        },
-      );
+      if (appLoaded) {
+        return marketStateViewerInst.loadRetailerNames();
+      } else {
+        return Future.value(null);
+      }
+    }).then(
+      (retailerNamesHttp) {
+        retailerNames = retailerNamesHttp ?? <String>[];
+        notifyListeners();
+      },
+    );
+
+    registerWSSNotifactions();
   }
 
   static AppStateManager? _instance;
@@ -219,10 +231,12 @@ class AppStateManager extends ChangeNotifier with AppStateManagerProperties {
 
   Future<LoadEntitiesResult> loadEntitiesWithParams(
       {required GemberAppConfig configOptions}) {
+    _initialising = true;
     return marketStateViewerInst
         .loadEntities(configOptions: configOptions)
         .then((e) {
       entities = e;
+      _initialising = false;
       _initialised = true;
       notifyListeners();
       return e;
@@ -308,8 +322,9 @@ class AppStateManager extends ChangeNotifier with AppStateManagerProperties {
     );
   }
 
-  Map<String, Map<String, Map<String, charts.Series<IterationDataPoint, int>>>>? get simulationRunningMetricsChartBackingData =>
-      _mapChartBackingData(filterRetailerName:controlRetailer);
+  Map<String, Map<String, Map<String, charts.Series<IterationDataPoint, int>>>>?
+      get simulationRunningMetricsChartBackingData =>
+          _mapChartBackingData(filterRetailerName: controlRetailer);
 
   /**
    * runs one full simulation using the current simulation configuration 
@@ -331,6 +346,9 @@ class AppStateManager extends ChangeNotifier with AppStateManagerProperties {
     numCustomersForNextSim = configOptions.NUM_CUSTOMERS;
     maxN = configOptions.maxN;
     convergenceThreshold = configOptions.convergenceTH;
+    changeControlRetailer(configOptions.controlRetailerName);
+    _retailerStrategy = configOptions.strategy;
+    _retailerSustainability = configOptions.sustainabilityBaseline;
     notifyListeners();
   }
 
@@ -366,6 +384,7 @@ class AppStateManager extends ChangeNotifier with AppStateManagerProperties {
         if (wsMessage != null) {
           _simulationProgressBar = GemberProgressBar(
               i: wsMessage.iterationNumber, N: wsMessage.maxNIterations);
+          
           if (retailerNames == null) {
             retailerNames = wsMessage.runningAverage.salesCount.keys.toList();
             retailerColorMap = Map<String, Color>.fromEntries(retailerNames!
@@ -375,6 +394,7 @@ class AppStateManager extends ChangeNotifier with AppStateManagerProperties {
                         .withOpacity(1.0))));
             simulationDataCache = SimulationDataCache(wsMessage);
           } else {
+            // TODO Add a ghost label to previously run seriesNames to help differentiate them.
             simulationDataCache!.append(wsMessage);
           }
 
@@ -405,10 +425,13 @@ class AppStateManager extends ChangeNotifier with AppStateManagerProperties {
     );
   }
 
-  Map<String,Map<String, Map<String, charts.Series<IterationDataPoint, int>>>>? _mapChartBackingData({String? filterRetailerName}) =>
-    simulationDataCache?.mapAggType((aggType, seriesColn) => seriesColn.map((seriesName,
-                      seriesByRetailer) =>
-                  Map.fromEntries(seriesByRetailer.entries.where((entry) => entry.key == filterRetailerName || filterRetailerName == null)).map((rname, datapoints) => MapEntry(
+  Map<String, Map<String, Map<String, charts.Series<IterationDataPoint, int>>>>?
+      _mapChartBackingData({String? filterRetailerName}) =>
+          simulationDataCache?.mapAggType((aggType, seriesColn) => seriesColn.map(
+              (seriesName, seriesByRetailer) => Map.fromEntries(seriesByRetailer
+                      .entries
+                      .where((entry) => entry.key == filterRetailerName || filterRetailerName == null))
+                  .map((rname, datapoints) => MapEntry(
                       rname,
                       charts.Series<IterationDataPoint, int>(
                         id: '$rname $seriesName ($aggType)',

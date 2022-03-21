@@ -37,7 +37,7 @@ abstract class ConfigOptions {
   static String getLabel(String option) => labels[option]!;
 }
 
-class ConfigDialog extends StatelessWidget {
+class ConfigDialog extends StatefulWidget {
   ConfigDialog({
     Key? key,
     required this.fullScreen,
@@ -45,6 +45,11 @@ class ConfigDialog extends StatelessWidget {
 
   bool fullScreen;
 
+  @override
+  State<ConfigDialog> createState() => _ConfigDialogState();
+}
+
+class _ConfigDialogState extends State<ConfigDialog> {
   String? _controlRetailerName;
 
   Map<String, num> configOptions = <String, num>{
@@ -85,19 +90,19 @@ class ConfigDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final appStateMgr = Provider.of<AppStateManager>(context);
+    final appStateMgr = Provider.of<AppStateManager>(context, listen: true);
     final marketStateViewer = Provider.of<IMarketStateViewer>(context);
     final autoRouter = AutoRouter.of(context);
     final routeBelow = autoRouter.current.parent;
     // if((routeBelow?.name ?? '').contains('CustomerViewRouter')){
 
     // }
-    return fullScreen
+    return widget.fullScreen
         ? getFullScreen(context, appStateMgr, autoRouter, onClose: () {
             appStateMgr
                 .loadEntitiesWithParams(configOptions: configOptionsDTO)
                 .then((ents) {
-              autoRouter.popAndPush(CustomerViewScreenRoute());
+              autoRouter.popAndPush(ViewSimulationRoute());
             });
           })
         : getPopover(
@@ -149,12 +154,17 @@ class ConfigDialog extends StatelessWidget {
         value: appStateMgr.controlRetailer ?? '',
         hint: Text('*', style: Theme.of(context).textTheme.bodySmall),
         onChanged: (String? value) {
-          _controlRetailerName = value;
+          setState(() {
+            _controlRetailerName = value;
+          });
           appStateMgr.updateNextSimConfig(configOptions: configOptionsDTO);
         },
-        labelsToValuesMap: Map<String, String>.fromIterable(
-            appStateMgr.retailerNames?.map((v) => MapEntry(v, v)) ??
-                <MapEntry<String, String>>[]),
+        labelsToValuesMap: <String, String>{
+          ...{'': ''},
+          ...Map<String, String>.fromEntries(
+              appStateMgr.retailerNames?.map((v) => MapEntry(v, v)) ??
+                  <MapEntry<String, String>>[])
+        },
       ),
       ...(configOptions.entries.map((configOpt) {
         return ConstrainedBox(
@@ -165,7 +175,11 @@ class ConfigDialog extends StatelessWidget {
             allowDecimal: false,
             disabled: appStateMgr.runningSimulation,
             onChanged: (dynamic val) {
-              configOptions[configOpt.key] = val;
+              
+              setState(() {
+                configOptions[configOpt.key] = val;
+              });
+              
               appStateMgr.updateNextSimConfig(configOptions: configOptionsDTO);
             },
           ),
@@ -224,10 +238,10 @@ class ConfigDialog extends StatelessWidget {
                     ? Color.fromARGB(255, 224, 118, 18)
                     : Colors.greenAccent[100],
                 shadowColor: Theme.of(context).backgroundColor,
-                avatar: CircleAvatar(
-                  backgroundImage: NetworkImage(
-                      "https://pbs.twimg.com/profile_images/1304985167476523008/QNHrwL2q_400x400.jpg"), //NetworkImage
-                ), //CircleAvatar
+                // avatar: CircleAvatar(
+                //   backgroundImage: NetworkImage(
+                //       "https://www.freepik.com/premium-vector/cute-dog-head-avatar_4888042.htm"), //NetworkImage
+                // ), //CircleAvatar
                 label: Text(
                   '',
                   style: TextStyle(fontSize: 20),

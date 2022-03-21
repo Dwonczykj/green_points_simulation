@@ -5,11 +5,14 @@ class SimulationDataCache {
   final Map<String, SimulationDataCache_SeriesCollection> data;
 
   void append(SimulationProgressData message) {
-    data['runningSum']?.append(message.runningSum, message.iterationNumber);
+    data['runningSum']?.append(
+        message.runningSum, message.iterationNumber, message.simConfig);
     data['runningAverage']
-        ?.append(message.runningAverage, message.iterationNumber);
+        ?.append(
+        message.runningAverage, message.iterationNumber, message.simConfig);
     data['runningVariance']
-        ?.append(message.runningVariance, message.iterationNumber);
+        ?.append(
+        message.runningVariance, message.iterationNumber, message.simConfig);
   }
 
   Map<String, T> mapAggType<T>(
@@ -42,30 +45,56 @@ class SimulationDataCache_SeriesCollection {
 
   final Map<String, Map<String, List<IterationDataPoint>>> data;
 
+  static MapEntry<String, Map<String, List<IterationDataPoint>>>
+      _transformSeries(String seriesName, Map<String, num> series,
+          int firstIterationNumber) {
+    return MapEntry(
+        seriesName,
+        series.map((rname, value) => MapEntry(rname, <IterationDataPoint>[
+              IterationDataPoint(firstIterationNumber, rname, value, seriesName)
+            ])));
+  }
+
+  void _appendSeries(String seriesName, Map<String, num> series,
+      int iterationNumber, GemberAppConfig simConfig) {
+    data[seriesName]?.forEach((rname, s) {
+      var ghostName = seriesName;
+      if (s.any((element) =>
+          element.iterationNumber == iterationNumber &&
+          element.seriesName == seriesName)) {
+        ghostName = '$seriesName [${simConfig.toString()}]';
+      }
+      s.add(
+          IterationDataPoint(iterationNumber, rname, series[rname], ghostName));
+    });
+  }
+
   SimulationDataCache_SeriesCollection(
       SimulationProgressDataSeries series, int firstIterationNumber)
-      : data = {
-          'salesCount': series.salesCount.map((rname, value) => MapEntry(
-                  rname, <IterationDataPoint>[
-                IterationDataPoint(
-                    firstIterationNumber, rname, value, 'salesCount')
-              ])),
-          'greenPointsIssued': series.greenPointsIssued.map((rname, value) =>
-              MapEntry(rname, <IterationDataPoint>[
-                IterationDataPoint(
-                    firstIterationNumber, rname, value, 'greenPointsIssued')
-              ])),
-        };
+      : data = Map.fromEntries([
+          _transformSeries(
+              'salesCount', series.salesCount, firstIterationNumber),
+          _transformSeries('greenPointsIssued', series.greenPointsIssued,
+              firstIterationNumber),
+          _transformSeries(
+              'marketShare', series.marketShare, firstIterationNumber),
+          _transformSeries('totalSalesRevenue', series.totalSalesRevenue,
+              firstIterationNumber),
+          _transformSeries('totalSalesRevenueLessGP',
+              series.totalSalesRevenueLessGP, firstIterationNumber),
+        ]);
 
-  void append(SimulationProgressDataSeries series, int iterationNumber) {
-    data['salesCount']?.forEach((rname, s) {
-      s.add(IterationDataPoint(
-          iterationNumber, rname, series.salesCount[rname], 'salesCount'));
-    });
-    data['greenPointsIssued']?.forEach((rname, s) {
-      s.add(IterationDataPoint(iterationNumber, rname,
-          series.greenPointsIssued[rname], 'greenPointsIssued'));
-    });
+  void append(SimulationProgressDataSeries series, int iterationNumber,
+      GemberAppConfig simConfig) {
+    _appendSeries('salesCount', series.salesCount, iterationNumber, simConfig);
+    _appendSeries('greenPointsIssued', series.greenPointsIssued,
+        iterationNumber, simConfig);
+    _appendSeries(
+        'marketShare', series.marketShare, iterationNumber, simConfig);
+    _appendSeries('totalSalesRevenue', series.totalSalesRevenue,
+        iterationNumber, simConfig);
+    _appendSeries('totalSalesRevenueLessGP', series.totalSalesRevenueLessGP,
+        iterationNumber, simConfig);
   }
 }
 

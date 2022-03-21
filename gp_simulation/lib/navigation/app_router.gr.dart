@@ -11,12 +11,13 @@
 // ignore_for_file: type=lint
 
 import 'package:auto_route/auto_route.dart' as _i2;
-import 'package:flutter/material.dart' as _i3;
+import 'package:flutter/material.dart' as _i4;
 
+import '../ui/screens/debug_screen.dart' as _i3;
 import '../ui/screens/screens.dart' as _i1;
 
 class AppRouter extends _i2.RootStackRouter {
-  AppRouter([_i3.GlobalKey<_i3.NavigatorState>? navigatorKey])
+  AppRouter([_i4.GlobalKey<_i4.NavigatorState>? navigatorKey])
       : super(navigatorKey);
 
   @override
@@ -34,6 +35,10 @@ class AppRouter extends _i2.RootStackRouter {
       return _i2.MaterialPageX<dynamic>(
           routeData: routeData, child: const _i2.EmptyRouterPage());
     },
+    DebugRouter.name: (routeData) {
+      return _i2.MaterialPageX<dynamic>(
+          routeData: routeData, child: const _i2.EmptyRouterPage());
+    },
     CustomerViewScreenRoute.name: (routeData) {
       return _i2.MaterialPageX<dynamic>(
           routeData: routeData, child: const _i1.CustomerViewScreenPage());
@@ -41,6 +46,10 @@ class AppRouter extends _i2.RootStackRouter {
     ViewSimulationRoute.name: (routeData) {
       return _i2.MaterialPageX<dynamic>(
           routeData: routeData, child: const _i1.ViewSimulationPage());
+    },
+    DebugRoute.name: (routeData) {
+      return _i2.MaterialPageX<dynamic>(
+          routeData: routeData, child: const _i3.DebugPage());
     }
   };
 
@@ -70,6 +79,18 @@ class AppRouter extends _i2.RootStackRouter {
                     _i2.RouteConfig('*#redirect',
                         path: '*',
                         parent: ViewSimulationRouter.name,
+                        redirectTo: '',
+                        fullMatch: true)
+                  ]),
+              _i2.RouteConfig(DebugRouter.name,
+                  path: 'debug',
+                  parent: NavigationRailSelectedViewRoute.name,
+                  children: [
+                    _i2.RouteConfig(DebugRoute.name,
+                        path: '', parent: DebugRouter.name),
+                    _i2.RouteConfig('*#redirect',
+                        path: '*',
+                        parent: DebugRouter.name,
                         redirectTo: '',
                         fullMatch: true)
                   ])
@@ -107,6 +128,15 @@ class ViewSimulationRouter extends _i2.PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [_i2.EmptyRouterPage]
+class DebugRouter extends _i2.PageRouteInfo<void> {
+  const DebugRouter({List<_i2.PageRouteInfo>? children})
+      : super(DebugRouter.name, path: 'debug', initialChildren: children);
+
+  static const String name = 'DebugRouter';
+}
+
+/// generated route for
 /// [_i1.CustomerViewScreenPage]
 class CustomerViewScreenRoute extends _i2.PageRouteInfo<void> {
   const CustomerViewScreenRoute()
@@ -121,4 +151,12 @@ class ViewSimulationRoute extends _i2.PageRouteInfo<void> {
   const ViewSimulationRoute() : super(ViewSimulationRoute.name, path: '');
 
   static const String name = 'ViewSimulationRoute';
+}
+
+/// generated route for
+/// [_i3.DebugPage]
+class DebugRoute extends _i2.PageRouteInfo<void> {
+  const DebugRoute() : super(DebugRoute.name, path: '');
+
+  static const String name = 'DebugRoute';
 }

@@ -51,12 +51,12 @@ abstract class SocketIoMixin extends WebSocketHandlers with ReloadAppMixin {
   dynamic printPipe<T>(dynamic data, T Function(dynamic data) handler,
       [AnsiPen? pen]) {
     pen ??= PrintPens.bluePen;
-    log.fine(pen(data));
+    log.finest(pen(data));
     return handler(data);
   }
 
   void onInit({void Function()? onReconnect}) {
-    log.fine('WS: Connected to channel: ${globalNspChannel.protocol}');
+    log.finest('WS: Connected to channel: ${globalNspChannel.protocol}');
 
     transactionHandlers.entries.forEach((element) {
       transactionsChannel.socketOnEvent(element.key,

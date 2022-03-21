@@ -14,9 +14,10 @@ class IPageWrapper extends StatefulWidget {
 
   final String title;
   final Widget Function(
-      IMarketStateViewer marketStateViewer,
-      AppStateManager appStateManager,
-      AsyncSnapshot<LoadEntitiesResult> snapshot) childGetter;
+    IMarketStateViewer marketStateViewer,
+    AppStateManager appStateManager,
+    // AsyncSnapshot<LoadEntitiesResult> snapshot,
+  ) childGetter;
 
   @override
   State<IPageWrapper> createState() => _IPageWrapperState();
@@ -108,39 +109,40 @@ class _IPageWrapperState extends State<IPageWrapper> {
               ),
             ],
           ),
-          body: appStateManager.initialised
-              ? FutureBuilder<LoadEntitiesResult>(
-                  future: appStateManager.loadEntitiesWithParams(
-                      configOptions: appStateManager.simulationConfig!),
-                  initialData: LoadEntitiesResult(
-                    customers: <CustomerModel>[],
-                    retailers: <RetailerModel>[],
-                    retailersCluster: AggregatedRetailers.zero(),
-                    // basketFullSize: 1,
-                    // numShopTrips: 1,
-                  ),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData &&
-                        snapshot.data!.customers.isNotEmpty &&
-                        snapshot.data!.retailers.isNotEmpty) {
-                      return SafeArea(
-                    child: widget.childGetter(
-                        marketStateService, appStateManager, snapshot),
-                      );
-                    } else {
-                      return ConfigDialog(fullScreen: true);
-                    }
-                  })
-              // : Container(
-              //   alignment: Alignment.center,
-              //   child: const SizedBox(
-              //     height: 150,
-              //     width: 150,
-              //     child: FlutterLogo(),
-              //   )),
-              : ConfigDialog(
-                  fullScreen:
-                      true)); //TODO: This needs to be a full page dialog to work...
+          body: appStateManager.initialising
+              ? Center(
+                  child: CircularProgressIndicator(
+                      color: Theme.of(context).primaryColor))
+              :
+              // FutureBuilder<LoadEntitiesResult>(
+              //     future: appStateManager.loadEntitiesWithParams(
+              //         configOptions: appStateManager.simulationConfig!),
+              //     initialData: LoadEntitiesResult(
+              //       customers: <CustomerModel>[],
+              //       retailers: <RetailerModel>[],
+              //       retailersCluster: AggregatedRetailers.zero(),
+              //       // basketFullSize: 1,
+              //       // numShopTrips: 1,
+              //     ),
+              //     builder: (context, snapshot) {
+              //       if (snapshot.hasData &&
+              //           snapshot.data!.customers.isNotEmpty &&
+              //           snapshot.data!.retailers.isNotEmpty) {
+              //         return SafeArea(
+              //       child: widget.childGetter(
+              //           marketStateService, appStateManager, snapshot),
+              //         );
+              //       } else {
+              //         return ConfigDialog(fullScreen: true);
+              //       }
+              //     })
+              appStateManager.initialised
+                  ? SafeArea(child: Consumer<AppStateManager>(
+                      builder: (context, appStateManager, child) {
+                      return widget.childGetter(
+                          marketStateService, appStateManager);
+                    }))
+                  : ConfigDialog(fullScreen: true));
     });
   }
 
