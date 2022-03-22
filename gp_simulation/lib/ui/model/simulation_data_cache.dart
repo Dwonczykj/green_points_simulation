@@ -1,5 +1,6 @@
 import '../network/network.dart';
 import 'all_models.dart';
+import 'app_state_manager.dart';
 
 class SimulationDataCache {
   final Map<String, SimulationDataCache_SeriesCollection> data;
@@ -7,11 +8,9 @@ class SimulationDataCache {
   void append(SimulationProgressData message) {
     data['runningSum']?.append(
         message.runningSum, message.iterationNumber, message.simConfig);
-    data['runningAverage']
-        ?.append(
+    data['runningAverage']?.append(
         message.runningAverage, message.iterationNumber, message.simConfig);
-    data['runningVariance']
-        ?.append(
+    data['runningVariance']?.append(
         message.runningVariance, message.iterationNumber, message.simConfig);
   }
 
@@ -26,83 +25,121 @@ class SimulationDataCache {
   SimulationDataCache(SimulationProgressData initialMessage)
       : data = {
           'runningSum': SimulationDataCache_SeriesCollection(
-              initialMessage.runningSum, initialMessage.iterationNumber),
+              initialMessage.runningSum,
+              initialMessage.iterationNumber,
+              initialMessage.simConfig),
           'runningAverage': SimulationDataCache_SeriesCollection(
-              initialMessage.runningAverage, initialMessage.iterationNumber),
+              initialMessage.runningAverage,
+              initialMessage.iterationNumber,
+              initialMessage.simConfig),
           'runningVariance': SimulationDataCache_SeriesCollection(
-              initialMessage.runningVariance, initialMessage.iterationNumber),
+              initialMessage.runningVariance,
+              initialMessage.iterationNumber,
+              initialMessage.simConfig),
         };
 }
 
 class SimulationDataCache_SeriesCollection {
   Map<String, T> map<T>(
-      T Function(
-              String aggType, Map<String, List<IterationDataPoint>> seriesColn)
+      T Function(String aggType, Map<String, IterationDataPointList> seriesColn)
           func) {
     return data.map((aggType, seriesColn) =>
         MapEntry<String, T>(aggType, func(aggType, seriesColn)));
   }
 
-  final Map<String, Map<String, List<IterationDataPoint>>> data;
+  final Map<String, Map<String, IterationDataPointList>> data;
 
-  static MapEntry<String, Map<String, List<IterationDataPoint>>>
-      _transformSeries(String seriesName, Map<String, num> series,
-          int firstIterationNumber) {
+  static MapEntry<String, Map<String, IterationDataPointList>> _transformSeries(
+      String seriesTypeName,
+      Map<String, num> series,
+      int firstIterationNumber,
+      GemberAppConfig simConfig) {
     return MapEntry(
-        seriesName,
-        series.map((rname, value) => MapEntry(rname, <IterationDataPoint>[
-              IterationDataPoint(firstIterationNumber, rname, value, seriesName)
-            ])));
+        seriesTypeName,
+        series.map((rname, value) => MapEntry(
+            rname,
+            IterationDataPointList(rname, seriesTypeName,
+                '$rname [${simConfig.toString()}]', <IterationDataPoint>[
+              IterationDataPoint(firstIterationNumber, value)
+            ]))));
   }
 
-  void _appendSeries(String seriesName, Map<String, num> series,
+  void _appendSeries(String seriesTypeName, Map<String, num> retailerToNextVal,
       int iterationNumber, GemberAppConfig simConfig) {
-    data[seriesName]?.forEach((rname, s) {
-      var ghostName = seriesName;
-      if (s.any((element) =>
-          element.iterationNumber == iterationNumber &&
-          element.seriesName == seriesName)) {
-        ghostName = '$seriesName [${simConfig.toString()}]';
+    for (var retailerName in retailerToNextVal.keys) {
+      var rnameWConfig =
+          retailerName; //'$retailerName [${simConfig.toString()}]';
+      if (data[seriesTypeName] != null) {
+        if (data[seriesTypeName]!.containsKey(rnameWConfig)) {
+          data[seriesTypeName]![rnameWConfig]!.add(IterationDataPoint(
+              iterationNumber, retailerToNextVal[retailerName]));
+        } else {
+          data[seriesTypeName]![rnameWConfig] = IterationDataPointList(
+              retailerName,
+              seriesTypeName,
+              '$retailerName [${simConfig.toString()}]', [
+            IterationDataPoint(iterationNumber, retailerToNextVal[retailerName])
+          ]);
+        }
       }
-      s.add(
-          IterationDataPoint(iterationNumber, rname, series[rname], ghostName));
-    });
+    }
   }
 
-  SimulationDataCache_SeriesCollection(
-      SimulationProgressDataSeries series, int firstIterationNumber)
+  SimulationDataCache_SeriesCollection(SimulationProgressDataSeries series,
+      int firstIterationNumber, GemberAppConfig simConfig)
       : data = Map.fromEntries([
-          _transformSeries(
-              'salesCount', series.salesCount, firstIterationNumber),
-          _transformSeries('greenPointsIssued', series.greenPointsIssued,
-              firstIterationNumber),
-          _transformSeries(
-              'marketShare', series.marketShare, firstIterationNumber),
-          _transformSeries('totalSalesRevenue', series.totalSalesRevenue,
-              firstIterationNumber),
-          _transformSeries('totalSalesRevenueLessGP',
-              series.totalSalesRevenueLessGP, firstIterationNumber),
+          _transformSeries(ViewMeasureType.sales_count.name, series.salesCount,
+              firstIterationNumber, simConfig),
+          _transformSeries(ViewMeasureType.green_points_issued.name,
+              series.greenPointsIssued, firstIterationNumber, simConfig),
+          _transformSeries(ViewMeasureType.market_share.name,
+              series.marketShare, firstIterationNumber, simConfig),
+          _transformSeries(ViewMeasureType.total_sales_revenue.name,
+              series.totalSalesRevenue, firstIterationNumber, simConfig),
+          _transformSeries(ViewMeasureType.total_sales_revenue_less_GP.name,
+              series.totalSalesRevenueLessGP, firstIterationNumber, simConfig),
         ]);
 
   void append(SimulationProgressDataSeries series, int iterationNumber,
       GemberAppConfig simConfig) {
-    _appendSeries('salesCount', series.salesCount, iterationNumber, simConfig);
-    _appendSeries('greenPointsIssued', series.greenPointsIssued,
+    _appendSeries(ViewMeasureType.sales_count.name, series.salesCount,
         iterationNumber, simConfig);
-    _appendSeries(
-        'marketShare', series.marketShare, iterationNumber, simConfig);
-    _appendSeries('totalSalesRevenue', series.totalSalesRevenue,
+    _appendSeries(ViewMeasureType.green_points_issued.name,
+        series.greenPointsIssued, iterationNumber, simConfig);
+    _appendSeries(ViewMeasureType.market_share.name, series.marketShare,
         iterationNumber, simConfig);
-    _appendSeries('totalSalesRevenueLessGP', series.totalSalesRevenueLessGP,
-        iterationNumber, simConfig);
+    _appendSeries(ViewMeasureType.total_sales_revenue.name,
+        series.totalSalesRevenue, iterationNumber, simConfig);
+    _appendSeries(ViewMeasureType.total_sales_revenue_less_GP.name,
+        series.totalSalesRevenueLessGP, iterationNumber, simConfig);
   }
 }
 
 class IterationDataPoint {
-  final String retailer;
+  // final String retailer;
   final num? datapoint;
   final int iterationNumber;
-  final String seriesName;
-  const IterationDataPoint(
-      this.iterationNumber, this.retailer, this.datapoint, this.seriesName);
+  // final String seriesName;
+  const IterationDataPoint(this.iterationNumber, this.datapoint);
+}
+
+class IterationDataPointList {
+  final List<IterationDataPoint> points;
+
+  /// the retatailer's name
+  final String retailerName;
+
+  /// the measure type of the data
+  final String seriesTypeName;
+
+  final String seriesLabel;
+
+  IterationDataPointList(
+      this.retailerName, this.seriesTypeName, this.seriesLabel,
+      [this.points = const <IterationDataPoint>[]]);
+
+  void add(IterationDataPoint point) {
+    points.add(point);
+    points.sort((a, b) => a.iterationNumber - b.iterationNumber);
+  }
 }

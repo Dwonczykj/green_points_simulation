@@ -39,10 +39,19 @@ class _IPageWrapperState extends State<IPageWrapper> {
             title: Text(widget.title),
             actions: <Widget>[
               // ProgressBarWidget...
-              Padding(
-                padding: const EdgeInsets.only(right: 8.0),
-                child: Text(
-                    'Demonstrative retailer: ${appStateManager.controlRetailer ?? 'None'}'),
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: Text(
+                      'Demonstrative retailer: ${appStateManager.controlRetailer ?? 'None'}'),
+                ),
+              ),
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: Text(
+                      'Config: ${appStateManager.simulationConfig ?? 'None'}'),
+                ),
               ),
               Container(
                   child: Column(

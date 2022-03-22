@@ -582,7 +582,7 @@ class GreenPointsLoyaltyApp():
         
         def toDataFrame(self):
             return pd.DataFrame({
-                GemberMeasureType.salesCount.value: self.salesCount,
+                GemberMeasureType.sales_count.value: self.salesCount,
                 GemberMeasureType.GP_Issued.value: self._greenPointsIssued,
                 GemberMeasureType.market_share.value: self._marketShare,
                 GemberMeasureType.total_sales_revenue.value: self._totalSalesRevenue,
@@ -1096,7 +1096,7 @@ class GreenPointsLoyaltyApp():
         
         def _getSummaryDf(self, result:GreenPointsLoyaltyApp.IterationResult, debug:bool=False):
             out_df = self._out_df_template.copy()
-            out_df.loc[GemberMeasureType.salesCount.value] = result.salesCount
+            out_df.loc[GemberMeasureType.sales_count.value] = result.salesCount
             out_df.loc[GemberMeasureType.GP_Issued.value] = result.greenPointsIssued
             out_df.loc[GemberMeasureType.market_share.value] = result.marketShare
             out_df.loc[GemberMeasureType.total_sales_revenue.value] = result.totalSalesRevenue

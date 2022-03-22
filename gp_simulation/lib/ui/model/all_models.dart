@@ -14,7 +14,8 @@ class IdentifiableModel extends TSerializable {
 
   IdentifiableModel({required this.id}) : super();
 
-  factory IdentifiableModel.fromJson(Map<String, dynamic> json) {
+  factory IdentifiableModel.fromJson(Map<String, dynamic> json,
+      {bool shouldThrow = true}) {
     return IdentifiableModel(
         id: TSerializable.getJsonValTypeValue<String>(json, 'id',
             defaultVal: ''));
@@ -29,7 +30,8 @@ class InstitutionModel extends IdentifiableModel {
 
   InstitutionModel({required this.name, String id = ''}) : super(id: id);
 
-  factory InstitutionModel.fromJson(Map<String, dynamic> json) {
+  factory InstitutionModel.fromJson(Map<String, dynamic> json,
+      {bool shouldThrow = true}) {
     return InstitutionModel(
         name: TSerializable.getJsonValTypeValue<String>(json, 'name'),
         id: TSerializable.getJsonValTypeValue<String>(json, 'id',
@@ -57,7 +59,8 @@ class EntityModel extends InstitutionModel {
       InstitutionModel superObj, this.bank, this.balance, this.balanceMoney)
       : super(name: superObj.name, id: superObj.id);
 
-  factory EntityModel.fromJson(Map<String, dynamic> json) {
+  factory EntityModel.fromJson(Map<String, dynamic> json,
+      {bool shouldThrow = true}) {
     return EntityModel.fromSuper(
       InstitutionModel.fromJson(json),
       TSerializable.getJsonValue(json, 'bank', BankModel.fromJson),
@@ -100,7 +103,8 @@ class CustomerModel extends EntityModel {
             balance: superObj.balance,
             balanceMoney: superObj.balanceMoney);
 
-  factory CustomerModel.fromJson(Map<String, dynamic> json) {
+  factory CustomerModel.fromJson(Map<String, dynamic> json,
+      {bool shouldThrow = true}) {
     return CustomerModel.fromSuper(
         EntityModel.fromJson(json),
         TSerializable.getJsonListValue(json, 'basket', ItemModel.fromJson,
@@ -124,7 +128,8 @@ class RetailerNameModel extends InstitutionModel {
   RetailerNameModel.fromSuper(InstitutionModel superObj)
       : super(name: superObj.name, id: superObj.id);
 
-  factory RetailerNameModel.fromJson(Map<String, dynamic> json) {
+  factory RetailerNameModel.fromJson(Map<String, dynamic> json,
+      {bool shouldThrow = true}) {
     return RetailerNameModel.fromSuper(InstitutionModel.fromJson(json));
   }
 
@@ -192,7 +197,8 @@ class ControlRetailerModel extends RetailerNameModel {
           name: superObj.name,
         );
 
-  factory ControlRetailerModel.fromJson(Map<String, dynamic> json) {
+  factory ControlRetailerModel.fromJson(Map<String, dynamic> json,
+      {bool shouldThrow = true}) {
     return ControlRetailerModel.fromSuper(
       RetailerNameModel.fromJson(json),
       TSerializable.getJsonValTypeValue<double>(json, 'strategy'),
@@ -240,7 +246,8 @@ class RetailerModel extends EntityModel {
             balance: superObj.balance,
             balanceMoney: superObj.balanceMoney);
 
-  factory RetailerModel.fromJson(Map<String, dynamic> json) {
+  factory RetailerModel.fromJson(Map<String, dynamic> json,
+      {bool shouldThrow = true}) {
     return RetailerModel.fromSuper(
       EntityModel.fromJson(json),
       TSerializable.getJsonListValue(json, 'salesHistory', SaleModel.fromJson,
@@ -285,7 +292,8 @@ class SimulationTokenModel extends IdentifiableModel {
   SimulationTokenModel.fromSuper(IdentifiableModel superObj)
       : super(id: superObj.id);
 
-  factory SimulationTokenModel.fromJson(Map<String, dynamic> json) {
+  factory SimulationTokenModel.fromJson(Map<String, dynamic> json,
+      {bool shouldThrow = true}) {
     return SimulationTokenModel(
         simulationId:
             TSerializable.getJsonValTypeValue<String>(json, 'simulation_id'));
@@ -306,7 +314,8 @@ class BankModelLight extends InstitutionModel {
   BankModelLight.fromSuper(InstitutionModel superObj)
       : super(name: superObj.name, id: superObj.id);
 
-  factory BankModelLight.fromJson(Map<String, dynamic> json) {
+  factory BankModelLight.fromJson(Map<String, dynamic> json,
+      {bool shouldThrow = true}) {
     return BankModelLight.fromSuper(InstitutionModel.fromJson(json));
   }
 
@@ -327,7 +336,8 @@ class BankModel extends BankModelLight {
       {this.accounts = const <BankAccountModel>[]})
       : super(name: superObj.name, id: superObj.id);
 
-  factory BankModel.fromJson(Map<String, dynamic> json) {
+  factory BankModel.fromJson(Map<String, dynamic> json,
+      {bool shouldThrow = true}) {
     return BankModel.fromSuper(BankModelLight.fromJson(json),
         accounts: TSerializable.getJsonListValue(
             json, 'accounts', BankAccountModel.fromJson,
@@ -350,7 +360,8 @@ class BankAccountNameModel extends IdentifiableModel {
   BankAccountNameModel.fromSuper(IdentifiableModel superObj, this.ownerId)
       : super(id: superObj.id);
 
-  factory BankAccountNameModel.fromJson(Map<String, dynamic> json) {
+  factory BankAccountNameModel.fromJson(Map<String, dynamic> json,
+      {bool shouldThrow = true}) {
     return BankAccountNameModel.fromSuper(IdentifiableModel.fromJson(json),
         IdentifiableModel.fromJson(json['owner']));
   }
@@ -374,7 +385,8 @@ class CryptoWalletModel extends TSerializable {
     required this.ownerBank,
   }) : super();
 
-  factory CryptoWalletModel.fromJson(Map<String, dynamic> json) {
+  factory CryptoWalletModel.fromJson(Map<String, dynamic> json,
+      {bool shouldThrow = true}) {
     return CryptoWalletModel(
       ethBalance:
           TSerializable.getJsonValue(json, 'ethBalance', CoinModel.fromJson),
@@ -414,7 +426,8 @@ class BankAccountModel extends IdentifiableModel {
     this.cryptoWallet,
   }) : super(id: id);
 
-  factory BankAccountModel.fromJson(Map<String, dynamic> json) {
+  factory BankAccountModel.fromJson(Map<String, dynamic> json,
+      {bool shouldThrow = true}) {
     return BankAccountModel(
       json['id'],
       owner: TSerializable.getJsonValue(json, 'owner', EntityModel.fromJson),
@@ -454,7 +467,8 @@ class BankAccountModelLight extends IdentifiableModel {
     this.cryptoWallet,
   }) : super(id: id);
 
-  factory BankAccountModelLight.fromJson(Map<String, dynamic> json) {
+  factory BankAccountModelLight.fromJson(Map<String, dynamic> json,
+      {bool shouldThrow = true}) {
     return BankAccountModelLight(
       json['id'],
       owner:
@@ -497,7 +511,8 @@ class BankAccountViewModel extends TSerializable {
     required this.combinedBalance,
   }) : super();
 
-  factory BankAccountViewModel.fromJson(Map<String, dynamic> json) {
+  factory BankAccountViewModel.fromJson(Map<String, dynamic> json,
+      {bool shouldThrow = true}) {
     return BankAccountViewModel(
       viewCurrency:
           TSerializable.getJsonValTypeValue<String>(json, 'viewCurrency'),
@@ -542,7 +557,8 @@ class CoinModel extends TSerializable {
 
   CoinModel(this.amount) : super();
 
-  factory CoinModel.fromJson(Map<String, dynamic> json) {
+  factory CoinModel.fromJson(Map<String, dynamic> json,
+      {bool shouldThrow = true}) {
     return CoinModel(json['amount']);
   }
 
@@ -569,7 +585,8 @@ class CoinDetailModel extends CoinModel {
       this.valueInPeggedCurrency, this.peggedCurrency)
       : super(superObj.amount);
 
-  factory CoinDetailModel.fromJson(Map<String, dynamic> json) {
+  factory CoinDetailModel.fromJson(Map<String, dynamic> json,
+      {bool shouldThrow = true}) {
     return CoinDetailModel.fromSuper(
       CoinModel.fromJson(json),
       TSerializable.getJsonValTypeValue<double>(
@@ -595,7 +612,8 @@ class CostModel extends TSerializable {
 
   CostModel(this.amount, this.currency) : super();
 
-  factory CostModel.fromJson(Map<String, dynamic> json) {
+  factory CostModel.fromJson(Map<String, dynamic> json,
+      {bool shouldThrow = true}) {
     return CostModel(json['amount'], json['currency']);
   }
 
@@ -630,7 +648,8 @@ class ItemModel extends TSerializable {
       required this.GP})
       : super();
 
-  factory ItemModel.fromJson(Map<String, dynamic> json) {
+  factory ItemModel.fromJson(Map<String, dynamic> json,
+      {bool shouldThrow = true}) {
     return ItemModel(
         name: TSerializable.getJsonValTypeValue<String>(json, 'name'),
         id: TSerializable.getJsonValTypeValue<String>(json, 'id',
@@ -664,7 +683,8 @@ class GreenPointsPaymentModel extends TSerializable {
     required this.money,
   }) : super();
 
-  factory GreenPointsPaymentModel.fromJson(Map<String, dynamic> json) {
+  factory GreenPointsPaymentModel.fromJson(Map<String, dynamic> json,
+      {bool shouldThrow = true}) {
     return GreenPointsPaymentModel(
       greenPoints: TSerializable.getJsonValue(
           json, 'greenPoints', CoinDetailModel.fromJson),
@@ -692,7 +712,8 @@ class EtherPaymentModel extends TSerializable {
     required this.money,
   }) : super();
 
-  factory EtherPaymentModel.fromJson(Map<String, dynamic> json) {
+  factory EtherPaymentModel.fromJson(Map<String, dynamic> json,
+      {bool shouldThrow = true}) {
     return EtherPaymentModel(
       ether: TSerializable.getJsonValue(json, 'ether', CoinModel.fromJson),
       gas: TSerializable.getJsonValue(json, 'gas', CoinModel.fromJson),
@@ -736,7 +757,8 @@ class SaleModel extends ItemModel {
             KGCo2: superObj.KGCo2,
             GP: superObj.GP);
 
-  factory SaleModel.fromJson(Map<String, dynamic> json) {
+  factory SaleModel.fromJson(Map<String, dynamic> json,
+      {bool shouldThrow = true}) {
     return SaleModel.fromSuper(
         ItemModel.fromJson(json),
         TSerializable.getJsonValue(json, 'greenPointsIssuedForItem',
@@ -781,7 +803,8 @@ class PurchaseModel extends ItemModel {
             KGCo2: superObj.KGCo2,
             GP: superObj.GP);
 
-  factory PurchaseModel.fromJson(Map<String, dynamic> json) {
+  factory PurchaseModel.fromJson(Map<String, dynamic> json,
+      {bool shouldThrow = true}) {
     return PurchaseModel.fromSuper(
         ItemModel.fromJson(json),
         TSerializable.getJsonValue(
@@ -812,7 +835,8 @@ class SalesAggregationModel extends TSerializable {
     required this.itemCountMap,
   }) : super();
 
-  factory SalesAggregationModel.fromJson(Map<String, dynamic> json) {
+  factory SalesAggregationModel.fromJson(Map<String, dynamic> json,
+      {bool shouldThrow = true}) {
     return SalesAggregationModel(
       totalCostByCcy: TSerializable.getJsonMapValue(
           json, 'totalCostByCcy', CostModel.fromJson,
@@ -860,7 +884,8 @@ class TransactionModel extends TSerializable {
     required this.greenPoints,
   }) : super();
 
-  factory TransactionModel.fromJson(Map<String, dynamic> json) {
+  factory TransactionModel.fromJson(Map<String, dynamic> json,
+      {bool shouldThrow = true}) {
     return TransactionModel(
       accountFrom: TSerializable.getJsonValue(
           json, 'accountFrom', BankAccountModelLight.fromJson),
@@ -923,7 +948,8 @@ class RunSimulationResponseModel extends TSerializable {
     required this.simulationData,
   }) : super();
 
-  factory RunSimulationResponseModel.fromJson(Map<String, dynamic> json) {
+  factory RunSimulationResponseModel.fromJson(Map<String, dynamic> json,
+      {bool shouldThrow = true}) {
     return RunSimulationResponseModel(
       status: TSerializable.getJsonValTypeValue<int>(
         json,
@@ -988,7 +1014,8 @@ class AppTransactionsStateModel extends TSerializable {
     required this.transactionsByEntityId,
   }) : super();
 
-  factory AppTransactionsStateModel.fromJson(Map<String, dynamic> json) {
+  factory AppTransactionsStateModel.fromJson(Map<String, dynamic> json,
+      {bool shouldThrow = true}) {
     return AppTransactionsStateModel(
       transactionsByEntityId: TSerializable.getJsonMapListValue(
           json, 'transactionsByEntityId', TransactionModel.fromJson,
@@ -1065,7 +1092,8 @@ class LoadSimulationDataEnvResult extends TSerializable {
     required this.simulationConfig,
   }) : super();
 
-  factory LoadSimulationDataEnvResult.fromJson(Map<String, dynamic> json) {
+  factory LoadSimulationDataEnvResult.fromJson(Map<String, dynamic> json,
+      {bool shouldThrow = true}) {
     return LoadSimulationDataEnvResult(
       entities: LoadEntitiesResult.fromJson(json),
       simulationConfig: GemberAppConfig.fromJson(json),
@@ -1108,7 +1136,8 @@ class LoadEntitiesResult {
 
   bool get isNotEmpty => !isEmpty;
 
-  factory LoadEntitiesResult.fromJson(Map<String, dynamic> json) {
+  factory LoadEntitiesResult.fromJson(Map<String, dynamic> json,
+      {bool shouldThrow = true}) {
     final _ret = TSerializable.getJsonMapValue(
         json, 'retailers', RetailerModel.fromJson);
     return LoadEntitiesResult(
@@ -1120,7 +1149,7 @@ class LoadEntitiesResult {
       retailersCluster: TSerializable.getJsonValue<AggregatedRetailers>(
           json,
           'retailersCluster',
-          (Map<String, dynamic> json) =>
+          (Map<String, dynamic> json, {bool shouldThrow = true}) =>
               AggregatedRetailers.fromJson(json, _ret.keys.toList())),
     );
   }
@@ -1209,7 +1238,8 @@ class SimulationResult extends SimulationProgressDataSeries {
           totalSalesRevenueLessGP: superObj.totalSalesRevenueLessGP,
         );
 
-  factory SimulationResult.fromJson(Map<String, dynamic> json) {
+  factory SimulationResult.fromJson(Map<String, dynamic> json,
+      {bool shouldThrow = true}) {
     return SimulationResult.fromSuper(
       SimulationProgressDataSeries.fromJson(json),
       TSerializable.getJsonValTypeValue<String>(json, 'simulation_id'),
@@ -1240,7 +1270,8 @@ class SimulationProgressDataSeries extends TSerializable {
     required this.totalSalesRevenueLessGP,
   }) : super();
 
-  factory SimulationProgressDataSeries.fromJson(Map<String, dynamic> json) {
+  factory SimulationProgressDataSeries.fromJson(Map<String, dynamic> json,
+      {bool shouldThrow = true}) {
     return SimulationProgressDataSeries(
       salesCount: TSerializable.getJsonMapValTypeValue<num>(
         json,
@@ -1248,7 +1279,7 @@ class SimulationProgressDataSeries extends TSerializable {
       ),
       greenPointsIssued: TSerializable.getJsonMapValTypeValue<num>(
         json,
-        'gp_issued',
+        'green_points_issued',
       ),
       marketShare: TSerializable.getJsonMapValTypeValue<num>(
         json,
@@ -1256,7 +1287,7 @@ class SimulationProgressDataSeries extends TSerializable {
       ),
       totalSalesRevenue: TSerializable.getJsonMapValTypeValue<num>(
         json,
-        'total_sales_revenues',
+        'total_sales_revenue',
       ),
       totalSalesRevenueLessGP: TSerializable.getJsonMapValTypeValue<num>(
         json,
@@ -1268,9 +1299,9 @@ class SimulationProgressDataSeries extends TSerializable {
   @override
   Map<String, dynamic> toJson() => <String, dynamic>{
         'sales_count': salesCount,
-        'gp_issued': greenPointsIssued,
+        'green_points_issued': greenPointsIssued,
         'market_share': marketShare,
-        'total_sales_revenues': totalSalesRevenue,
+        'total_sales_revenue': totalSalesRevenue,
         'total_sales_revenue_less_gp': totalSalesRevenueLessGP,
       };
 }
@@ -1295,7 +1326,8 @@ class GemberAppConfig extends TSerializable {
     this.controlRetailerName,
   }) : super();
 
-  factory GemberAppConfig.fromJson(Map<String, dynamic> json) {
+  factory GemberAppConfig.fromJson(Map<String, dynamic> json,
+      {bool shouldThrow = true}) {
     return GemberAppConfig(
       BASKET_FULL_SIZE: TSerializable.getJsonValTypeValue<int>(
         json,

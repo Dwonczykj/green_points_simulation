@@ -45,9 +45,9 @@ class _ViewSimulationState extends State<ViewSimulation> {
   final log = Logger('_ViewSimulationState');
   List<String> runningSimulationsWithIds = <String>[];
 
-  List<String>? get retailerNames => widget.appStateManager.retailerNames;
-  Map<String, Color>? get retailerColorMap =>
-      widget.appStateManager.retailerColorMap;
+  // List<String>? get retailerNames => widget.appStateManager.retailerNames;
+  // Map<String, Color>? get retailerColorMap =>
+  //     widget.appStateManager.retailerColorMap;
   SimulationDataCache? get data => widget.appStateManager.simulationDataCache;
 
   ViewAggregationType get viewAggType => widget.appStateManager.viewAggType;
@@ -69,6 +69,7 @@ class _ViewSimulationState extends State<ViewSimulation> {
                   .toList()))
           .toList() ??
       <charts.Series<IterationDataPoint, int>>[];
+      
   String get title =>
       ('Retailer ${viewMeasType.name.toSentenceCaseFromCamelCase()}');
 
@@ -82,24 +83,24 @@ class _ViewSimulationState extends State<ViewSimulation> {
     super.dispose();
   }
 
-  static List<charts.Series<IterationDataPoint, int>> _createSampleData() {
-    const data = [
-      IterationDataPoint(0, 'ASDA', 5, 'ASDA Sales'),
-      IterationDataPoint(1, 'ASDA', 25, 'ASDA Sales'),
-      IterationDataPoint(2, 'ASDA', 100, 'ASDA Sales'),
-      IterationDataPoint(3, 'ASDA', 75, 'ASDA Sales'),
-    ];
+  // static List<charts.Series<IterationDataPoint, int>> _createSampleData() {
+  //   const data = [
+  //     IterationDataPoint(0, 'ASDA', 5, 'ASDA Sales'),
+  //     IterationDataPoint(1, 'ASDA', 25, 'ASDA Sales'),
+  //     IterationDataPoint(2, 'ASDA', 100, 'ASDA Sales'),
+  //     IterationDataPoint(3, 'ASDA', 75, 'ASDA Sales'),
+  //   ];
 
-    return [
-      charts.Series<IterationDataPoint, int>(
-        id: 'Dummy Data',
-        colorFn: (_, __) => charts.MaterialPalette.blue.shadeDefault,
-        domainFn: (IterationDataPoint sales, _) => sales.iterationNumber,
-        measureFn: (IterationDataPoint sales, _) => sales.datapoint,
-        data: data,
-      )
-    ];
-  }
+  //   return [
+  //     charts.Series<IterationDataPoint, int>(
+  //       id: 'Dummy Data',
+  //       colorFn: (_, __) => charts.MaterialPalette.blue.shadeDefault,
+  //       domainFn: (IterationDataPoint sales, _) => sales.iterationNumber,
+  //       measureFn: (IterationDataPoint sales, _) => sales.datapoint,
+  //       data: data,
+  //     )
+  //   ];
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -184,7 +185,7 @@ class _ViewSimulationState extends State<ViewSimulation> {
               // SimpleLineChart.withSampleData(),
               chartDataGetter.isNotEmpty
                   ? charts.LineChart(
-                      chartDataGetter, //TODO P1: See if still works with the getter -> [this.chartDataGetter]
+                      chartDataGetter,
                       // customSeriesRenderers: [],
                       animate:
                           true, //TODO P1: Also filter SalesCount vs GPIssues with a slider

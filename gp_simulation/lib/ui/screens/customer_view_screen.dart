@@ -163,7 +163,7 @@ class _CustomersViewState extends State<CustomersView>
         }
       },
       onDone: () {
-        print('Transaction stream closed!');
+        // print('Transaction stream closed!');
       },
     );
   }

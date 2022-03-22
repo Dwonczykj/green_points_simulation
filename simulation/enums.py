@@ -20,7 +20,7 @@ class InvalidRetailerReason(enum.Enum):
     invalidSustainability=2
     
 class GemberMeasureType(enum.Enum):
-    salesCount='salesCount'
+    sales_count='sales_count'
     GP_Issued='green_points_issued'
     market_share='market_share'
     total_sales_revenue='total_sales_revenue'

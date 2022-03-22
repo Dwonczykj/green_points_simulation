@@ -2,6 +2,8 @@
 
 import 'package:logging/logging.dart';
 
+import 'custom_stack_trace.dart';
+
 abstract class TSerializable {
   TSerializable();
 
@@ -17,35 +19,48 @@ abstract class TSerializable {
   static Map<String, T> getJsonMapValue<T extends TSerializable>(
       Map<String, dynamic> json,
       String fieldName,
-      T Function(Map<String, dynamic> a) fromJsonFactory,
-      {Map<String, T>? defaultVal}) {
+      T Function(Map<String, dynamic> a, {bool shouldThrow}) fromJsonFactory,
+      {Map<String, T>? defaultVal,
+      bool shouldThrow = true}) {
     try {
-      json = _defaultJson(json, fieldName, defaultVal: defaultVal);
+      json = _defaultJson(json, fieldName,
+          defaultVal: defaultVal, shouldThrow: shouldThrow);
       return json[fieldName] == null ||
               (json[fieldName] as Map<String, dynamic>).isEmpty
           ? defaultVal!
-          : (json[fieldName] as Map<String, dynamic>)
-              .map((key, value) => MapEntry(key, fromJsonFactory(value)));
+          : (json[fieldName] as Map<String, dynamic>).map((key, value) =>
+              MapEntry(key, fromJsonFactory(value, shouldThrow: shouldThrow)));
     } on JsonParseException catch (err) {
-      throw JsonParseException('Unable to pass json of fieldName: $fieldName',
-          fieldName: '${err.fieldName}.$fieldName');
+      if (defaultVal == null || shouldThrow) {
+        throw JsonParseException(
+            'Unable to pass json of fieldName: $fieldName, \n\twanted a Map<String, $T> but got $json',
+            fieldName: '${err.fieldName}.$fieldName');
+      }
     } catch (err) {
-      throw JsonParseException('Unable to pass json of fieldName: $fieldName',
-          fieldName: fieldName);
+      if (defaultVal == null || shouldThrow) {
+        throw JsonParseException(
+            'Unable to pass json of fieldName: $fieldName, \n\twanted a Map<String, $T> but got $json',
+            fieldName: fieldName);
+      }
     }
+    return defaultVal;
   }
 
   static List<T> getJsonListValue<T extends TSerializable>(
       Map<String, dynamic> json,
       String fieldName,
-      T Function(Map<String, dynamic> a) fromJsonFactory,
-      {List<T>? defaultVal}) {
+      T Function(Map<String, dynamic> a, {bool shouldThrow}) fromJsonFactory,
+      {List<T>? defaultVal,
+      bool shouldThrow = true}) {
     try {
-      json = _defaultJson(json, fieldName, defaultVal: defaultVal ?? <T>[]);
+      json = _defaultJson(json, fieldName,
+          defaultVal: defaultVal ?? <T>[], shouldThrow: shouldThrow);
       assert(json[fieldName] is List);
       return json[fieldName] == null || (json[fieldName] as List).isEmpty
           ? defaultVal!
-          : (json[fieldName] as List).map((j) => fromJsonFactory(j)).toList();
+          : (json[fieldName] as List)
+              .map((j) => fromJsonFactory(j, shouldThrow: shouldThrow))
+              .toList();
       // return (json.containsKey(fieldName) &&
       //             ((json[fieldName] ?? []) as List).isNotEmpty
       //         ? (json[fieldName] as List)
@@ -53,22 +68,31 @@ abstract class TSerializable {
       //             .toList()
       //         : const <ItemModel>[])
     } on JsonParseException catch (err) {
-      throw JsonParseException('Unable to pass json of fieldName: $fieldName',
-          fieldName: '${err.fieldName}.$fieldName');
+      if (defaultVal == null || shouldThrow) {
+        throw JsonParseException(
+            'Unable to pass json of fieldName: $fieldName, \n\twanted a List<$T> but got $json',
+            fieldName: '${err.fieldName}.$fieldName');
+      }
     } catch (err) {
-      throw JsonParseException('Unable to pass json of fieldName: $fieldName',
-          fieldName: fieldName);
+      if (defaultVal == null || shouldThrow) {
+        throw JsonParseException(
+            'Unable to pass json of fieldName: $fieldName, \n\twanted a List<$T> but got $json',
+            fieldName: fieldName);
+      }
     }
+    return defaultVal;
   }
 
   static Map<String, List<T>> getJsonMapListValue<T extends TSerializable>(
       Map<String, dynamic> json,
       String fieldName,
-      T Function(Map<String, dynamic> a) fromJsonFactory,
-      {Map<String, List<T>>? defaultVal}) {
+      T Function(Map<String, dynamic> a, {bool shouldThrow}) fromJsonFactory,
+      {Map<String, List<T>>? defaultVal,
+      bool shouldThrow = true}) {
     try {
       json = _defaultJson(json, fieldName,
-          defaultVal: defaultVal ?? <String, List<T>>{});
+          defaultVal: defaultVal ?? <String, List<T>>{},
+          shouldThrow: shouldThrow);
       return json[fieldName] == null ||
               (json[fieldName] as Map<String, dynamic>).isEmpty ||
               (json[fieldName] is! Map<String, List>)
@@ -76,39 +100,59 @@ abstract class TSerializable {
           : (json[fieldName] as Map<String, List>).map((key, value) => MapEntry(
               key,
               value
-                  .map((v) => fromJsonFactory(v as Map<String, dynamic>))
+                  .map((v) => fromJsonFactory(v as Map<String, dynamic>,
+                      shouldThrow: shouldThrow))
                   .toList()));
     } on JsonParseException catch (err) {
-      throw JsonParseException('Unable to pass json of fieldName: $fieldName',
-          fieldName: '${err.fieldName}.$fieldName');
+      if (defaultVal == null || shouldThrow) {
+        throw JsonParseException(
+            'Unable to pass json of fieldName: $fieldName, \n\twanted a Map<String, List<$T>> but got $json',
+            fieldName: '${err.fieldName}.$fieldName');
+      }
     } catch (err) {
-      throw JsonParseException('Unable to pass json of fieldName: $fieldName',
-          fieldName: fieldName);
+      if (defaultVal == null || shouldThrow) {
+        throw JsonParseException(
+            'Unable to pass json of fieldName: $fieldName, \n\twanted a Map<String, List<$T>> but got $json',
+            fieldName: fieldName);
+      }
     }
+    return defaultVal;
   }
 
-  static T getJsonValue<T extends TSerializable>(Map<String, dynamic> json,
-      String fieldName, T Function(Map<String, dynamic> a) fromJsonFactory,
-      {T? defaultVal}) {
+  static T getJsonValue<T extends TSerializable>(
+      Map<String, dynamic> json,
+      String fieldName,
+      T Function(Map<String, dynamic> a, {bool shouldThrow}) fromJsonFactory,
+      {T? defaultVal,
+      bool shouldThrow = true}) {
     try {
-      json = _defaultJson(json, fieldName, defaultVal: defaultVal);
+      json = _defaultJson(json, fieldName,
+          defaultVal: defaultVal, shouldThrow: shouldThrow);
       // assert(json[fieldName] is! List);
       return json[fieldName] == null
           ? defaultVal!
-          : fromJsonFactory(json[fieldName]);
+          : fromJsonFactory(json[fieldName], shouldThrow: shouldThrow);
     } on JsonParseException catch (err) {
-      throw JsonParseException('Unable to pass json of fieldName: $fieldName',
-          fieldName: '${err.fieldName}.$fieldName');
+      if (defaultVal == null || shouldThrow) {
+        throw JsonParseException(
+            'Unable to pass json of fieldName: $fieldName, \n\twanted a $T but got $json',
+            fieldName: '${err.fieldName}.$fieldName');
+      }
     } catch (err) {
-      throw JsonParseException('Unable to pass json of fieldName: $fieldName',
-          fieldName: fieldName);
+      if (defaultVal == null || shouldThrow) {
+        throw JsonParseException(
+            'Unable to pass json of fieldName: $fieldName, \n\twanted a $T but got $json',
+            fieldName: fieldName);
+      }
     }
+    return defaultVal;
   }
 
   static T getJsonValTypeValue<T>(Map<String, dynamic> json, String fieldName,
-      {T? defaultVal}) {
+      {T? defaultVal, bool shouldThrow = true}) {
     try {
-      json = _defaultJson(json, fieldName, defaultVal: defaultVal);
+      json = _defaultJson(json, fieldName,
+          defaultVal: defaultVal, shouldThrow: shouldThrow);
       assert(json.containsKey(fieldName));
       json[fieldName] ??= defaultVal;
       // assert(json[fieldName] is T); // BUG: Dont check type as type is _JsonMap
@@ -117,19 +161,28 @@ abstract class TSerializable {
       }
       return (json[fieldName] ?? defaultVal);
     } on JsonParseException catch (err) {
-      throw JsonParseException('Unable to pass json of fieldName: $fieldName',
-          fieldName: '${err.fieldName}.$fieldName');
+      if (defaultVal == null || shouldThrow) {
+        throw JsonParseException(
+            'Unable to pass json of fieldName: $fieldName, \n\twanted a $T but got $json',
+            fieldName: '${err.fieldName}.$fieldName');
+      }
     } catch (err) {
-      throw JsonParseException('Unable to pass json of fieldName: $fieldName',
-          fieldName: fieldName);
+      if (defaultVal == null || shouldThrow) {
+        throw JsonParseException(
+            'Unable to pass json of fieldName: $fieldName, \n\twanted a $T but got $json',
+            fieldName: fieldName);
+      }
     }
+
+    return defaultVal;
   }
 
   static Map<String, TVal> getJsonMapValTypeValue<TVal>(
       Map<String, dynamic> json, String fieldName,
-      {Map<String, TVal>? defaultVal}) {
+      {Map<String, TVal>? defaultVal, bool shouldThrow = true}) {
     try {
-      json = _defaultJson(json, fieldName, defaultVal: defaultVal);
+      json = _defaultJson(json, fieldName,
+          defaultVal: defaultVal, shouldThrow: shouldThrow);
       assert(json.containsKey(fieldName));
       json[fieldName] ??= defaultVal;
       // assert(json[fieldName] is T); // BUG: Dont check type as type is _JsonMap
@@ -138,19 +191,29 @@ abstract class TSerializable {
       }
       return (json[fieldName] ?? defaultVal);
     } on JsonParseException catch (err) {
-      throw JsonParseException('Unable to pass json of fieldName: $fieldName',
-          fieldName: '${err.fieldName}.$fieldName');
+      if (defaultVal == null || shouldThrow) {
+        throw JsonParseException(
+            'Unable to pass json of fieldName: $fieldName, \n\twanted a Map<String, $TVal> but got $json',
+            fieldName: '${err.fieldName}.$fieldName');
+      }
     } catch (err) {
-      throw JsonParseException('Unable to pass json of fieldName: $fieldName',
-          fieldName: fieldName);
+      if (defaultVal == null || shouldThrow) {
+        throw JsonParseException(
+            'Unable to pass json of fieldName: $fieldName, \n\twanted a Map<String, $TVal> but got $json',
+            fieldName: fieldName);
+      }
     }
+    return defaultVal;
   }
 
   static T getJsonValTypeTryParseValue<T>(
       Map<String, dynamic> json, String fieldName,
-      {required T? Function(String jsonVal) parser, T? defaultVal}) {
+      {required T? Function(String jsonVal) parser,
+      T? defaultVal,
+      bool shouldThrow = true}) {
     try {
-      json = _defaultJson(json, fieldName, defaultVal: defaultVal);
+      json = _defaultJson(json, fieldName,
+          defaultVal: defaultVal, shouldThrow: shouldThrow);
       assert(json.containsKey(fieldName));
       json[fieldName] ??= defaultVal;
       // assert(json[fieldName] is T); // BUG: Dont check type as type is _JsonMap
@@ -161,19 +224,27 @@ abstract class TSerializable {
       }
       return (json[fieldName] ?? defaultVal);
     } on JsonParseException catch (err) {
-      throw JsonParseException('Unable to pass json of fieldName: $fieldName',
-          fieldName: '${err.fieldName}.$fieldName');
+      if (defaultVal == null || shouldThrow) {
+        throw JsonParseException(
+            'Unable to pass json of fieldName: $fieldName, \n\twanted a $T but got $json',
+            fieldName: '${err.fieldName}.$fieldName');
+      }
     } catch (err) {
-      throw JsonParseException('Unable to pass json of fieldName: $fieldName',
-          fieldName: fieldName);
+      if (defaultVal == null || shouldThrow) {
+        throw JsonParseException(
+            'Unable to pass json of fieldName: $fieldName, \n\twanted a $T but got $json',
+            fieldName: fieldName);
+      }
     }
+    return defaultVal;
   }
 
   static T getJsonValueFromChain<T extends TSerializable>(
       Map<String, dynamic> json,
       List<String> fieldNames,
-      T Function(Map<String, dynamic> a) fromJsonFactory,
-      {T? defaultVal}) {
+      T Function(Map<String, dynamic> a, {bool shouldThrow}) fromJsonFactory,
+      {T? defaultVal,
+      bool shouldThrow = true}) {
     dynamic out = json;
     try {
       assert(fieldNames.isNotEmpty);
@@ -183,24 +254,33 @@ abstract class TSerializable {
         out = out[fieldName];
       }
       assert(out != null || defaultVal != null);
-      return out == null ? defaultVal! : fromJsonFactory(out);
+      return out == null
+          ? defaultVal!
+          : fromJsonFactory(out, shouldThrow: shouldThrow);
     } on JsonParseException catch (err) {
       var fieldNameJ = fieldNames.join('.');
-      throw JsonParseException('Unable to pass json of fieldName: $fieldNameJ',
-          fieldName: '${err.fieldName}.$fieldNameJ');
+      if (defaultVal == null || shouldThrow) {
+        throw JsonParseException(
+            'Unable to pass json of fieldName: $fieldNameJ, \n\twanted a $T but got $json',
+            fieldName: '${err.fieldName}.$fieldNameJ');
+      }
     } catch (err) {
       var fieldNameJ = fieldNames.join('.');
-      throw JsonParseException(
-          'Unable to pass json of fieldName: $fieldNameJ with value: $out',
-          fieldName: fieldNameJ);
+      if (defaultVal == null || shouldThrow) {
+        throw JsonParseException(
+            'Unable to pass json of fieldName: $fieldNameJ with value: $out',
+            fieldName: fieldNameJ);
+      }
     }
+    return defaultVal;
   }
 
   static List<T> getJsonListValueFromChain<T extends TSerializable>(
       Map<String, dynamic> json,
       List<String> fieldNames,
-      T Function(Map<String, dynamic> a) fromJsonFactory,
-      {List<T>? defaultVal}) {
+      T Function(Map<String, dynamic> a, {bool shouldThrow}) fromJsonFactory,
+      {List<T>? defaultVal,
+      bool shouldThrow = true}) {
     try {
       assert(fieldNames.isNotEmpty);
       dynamic out = json;
@@ -214,21 +294,30 @@ abstract class TSerializable {
       }
       return out == null
           ? defaultVal!
-          : (out as List).map((j) => fromJsonFactory(j)).toList();
+          : (out as List)
+              .map((j) => fromJsonFactory(j, shouldThrow: shouldThrow))
+              .toList();
     } on JsonParseException catch (err) {
       var fieldNameJ = fieldNames.join('.');
-      throw JsonParseException('Unable to pass json of fieldName: $fieldNameJ',
-          fieldName: '${err.fieldName}.$fieldNameJ');
+      if (defaultVal == null || shouldThrow) {
+        throw JsonParseException(
+            'Unable to pass json of fieldName: $fieldNameJ, \n\twanted a List<$T> but got $json',
+            fieldName: '${err.fieldName}.$fieldNameJ');
+      }
     } catch (err) {
       var fieldNameJ = fieldNames.join('.');
-      throw JsonParseException('Unable to pass json of fieldName: $fieldNameJ',
-          fieldName: fieldNameJ);
+      if (defaultVal == null || shouldThrow) {
+        throw JsonParseException(
+            'Unable to pass json of fieldName: $fieldNameJ, \n\twanted a List<$T> but got $json',
+            fieldName: fieldNameJ);
+      }
     }
+    return defaultVal;
   }
 
   static T getJsonValTypeValueFromChain<T>(
       Map<String, dynamic> json, List<String> fieldNames,
-      {T? defaultVal}) {
+      {T? defaultVal, bool shouldThrow = true}) {
     try {
       assert(fieldNames.isNotEmpty);
       dynamic out = json;
@@ -240,18 +329,25 @@ abstract class TSerializable {
       return out;
     } on JsonParseException catch (err) {
       var fieldNameJ = fieldNames.join('.');
-      throw JsonParseException('Unable to pass json of fieldName: $fieldNameJ',
-          fieldName: '${err.fieldName}.$fieldNameJ');
+      if (defaultVal == null || shouldThrow) {
+        throw JsonParseException(
+            'Unable to pass json of fieldName: $fieldNameJ, \n\twanted a $T but got $json',
+            fieldName: '${err.fieldName}.$fieldNameJ');
+      }
     } catch (err) {
       var fieldNameJ = fieldNames.join('.');
-      throw JsonParseException('Unable to pass json of fieldName: $fieldNameJ',
-          fieldName: fieldNameJ);
+      if (defaultVal == null || shouldThrow) {
+        throw JsonParseException(
+            'Unable to pass json of fieldName: $fieldNameJ, \n\twanted a $T but got $json',
+            fieldName: fieldNameJ);
+      }
     }
+    return defaultVal;
   }
 
   static Map<String, dynamic> _defaultJson(
       Map<String, dynamic> json, String fieldName,
-      {dynamic defaultVal}) {
+      {dynamic defaultVal, bool shouldThrow = true}) {
     try {
       if (defaultVal == null) {
         assert(json.containsKey(fieldName));
@@ -262,12 +358,19 @@ abstract class TSerializable {
       }
       return json;
     } on JsonParseException catch (err) {
-      throw JsonParseException('Unable to pass json of fieldName: $fieldName',
-          fieldName: '${err.fieldName}.$fieldName');
+      if (defaultVal == null || shouldThrow) {
+        throw JsonParseException(
+            'Unable to pass json of fieldName: $fieldName, \n\twanted a Map<String, dynamic> but got $json',
+            fieldName: '${err.fieldName}.$fieldName');
+      }
     } catch (err) {
-      throw JsonParseException('Unable to pass json of fieldName: $fieldName',
-          fieldName: fieldName);
+      if (defaultVal == null || shouldThrow) {
+        throw JsonParseException(
+            'Unable to pass json of fieldName: $fieldName, \n\twanted a Map<String, dynamic> but got $json',
+            fieldName: fieldName);
+      }
     }
+    return <String, dynamic>{};
   }
 }
 
@@ -276,8 +379,10 @@ abstract class ServiceInterface<T extends TSerializable> {
 }
 
 class JsonParseException implements Exception {
+  late CustomTrace programInfo;
+
   JsonParseException(this.message, {required this.fieldName}) : super() {
-    log.fine(errMsg);
+    programInfo = CustomTrace(StackTrace.current);
   }
 
   static final log = Logger('JsonParseException');
@@ -285,5 +390,8 @@ class JsonParseException implements Exception {
   final String fieldName;
   final String message;
 
-  String get errMsg => 'JsonParseException: $message';
+  String get errMsg => """JsonParseException: $message
+  Source file: ${programInfo.fileName}, 
+  current line of code since the instanciation/creation of the custom trace object: ${programInfo.lineNumber}, 
+  even the column(yay!): ${programInfo.columnNumber}""";
 }

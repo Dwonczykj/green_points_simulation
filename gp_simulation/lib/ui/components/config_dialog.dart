@@ -57,13 +57,15 @@ class _ConfigDialogState extends State<ConfigDialog> {
         RetailerStrategy.COMPETITIVE,
     ConfigOptions.getLabel(ConfigOptions.sustainabilityBaseline):
         RetailerSustainability.AVERAGE,
-    ConfigOptions.getLabel(ConfigOptions.maxN): 2,
+    ConfigOptions.getLabel(ConfigOptions.maxN): 5,
     ConfigOptions.getLabel(ConfigOptions.convergenceTH): 0.0,
     ConfigOptions.getLabel(ConfigOptions.numCustomers): 4,
     ConfigOptions.getLabel(ConfigOptions.fullBasketSize): 2,
     ConfigOptions.getLabel(ConfigOptions.numTripsToShops): 3,
     // ConfigOptions.getLabel(ConfigOptions.controlRetailerName): '',
   };
+
+  
 
   GemberAppConfig get configOptionsDTO => GemberAppConfig(
         BASKET_FULL_SIZE:
@@ -91,6 +93,7 @@ class _ConfigDialogState extends State<ConfigDialog> {
   @override
   Widget build(BuildContext context) {
     final appStateMgr = Provider.of<AppStateManager>(context, listen: true);
+    appStateMgr.updateNextSimConfigNoNotifiy(configOptions: configOptionsDTO);
     final marketStateViewer = Provider.of<IMarketStateViewer>(context);
     final autoRouter = AutoRouter.of(context);
     final routeBelow = autoRouter.current.parent;
@@ -142,7 +145,7 @@ class _ConfigDialogState extends State<ConfigDialog> {
         label: 'Performance measure',
         value: appStateMgr.viewMeasType,
         onChanged: (ViewMeasureType? value) {
-          appStateMgr.updateMeasureType(value ?? ViewMeasureType.salesCount);
+          appStateMgr.updateMeasureType(value ?? ViewMeasureType.sales_count);
         },
         labelsToValuesMap: Map<String, ViewMeasureType>.fromEntries(
             ViewMeasureType.values

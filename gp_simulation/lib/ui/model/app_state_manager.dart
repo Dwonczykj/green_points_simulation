@@ -12,24 +12,24 @@ import 'simulation_data_cache.dart';
 
 enum ViewAggregationType { runningSum, runningAverage, runningVariance }
 enum ViewMeasureType {
-  salesCount,
-  greenPointsIssued,
-  marketShare,
-  totalSalesRevenue,
-  totalSalesRevenueLessGP,
+  sales_count,
+  green_points_issued,
+  market_share,
+  total_sales_revenue,
+  total_sales_revenue_less_GP,
   totalSalesRevenueByItem
 }
 
 String getMeasureDTOLabel(ViewMeasureType measType) {
-  if (measType == ViewMeasureType.salesCount) {
+  if (measType == ViewMeasureType.sales_count) {
     return 'sales_count';
-  } else if (measType == ViewMeasureType.greenPointsIssued) {
+  } else if (measType == ViewMeasureType.green_points_issued) {
     return 'green_points_issued';
-  } else if (measType == ViewMeasureType.marketShare) {
+  } else if (measType == ViewMeasureType.market_share) {
     return 'market_share';
-  } else if (measType == ViewMeasureType.totalSalesRevenue) {
+  } else if (measType == ViewMeasureType.total_sales_revenue) {
     return 'total_sales_revenue';
-  } else if (measType == ViewMeasureType.totalSalesRevenueLessGP) {
+  } else if (measType == ViewMeasureType.total_sales_revenue_less_GP) {
     return 'total_sales_revenue_less_gp';
   } else if (measType == ViewMeasureType.totalSalesRevenueByItem) {
     return 'total_sales_revenue_by_item';
@@ -51,15 +51,15 @@ String getAggregationDTOLabel(ViewAggregationType aggType) {
 }
 
 String getMeasureUILabel(ViewMeasureType measType) {
-  if (measType == ViewMeasureType.salesCount) {
+  if (measType == ViewMeasureType.sales_count) {
     return 'Sales Vol.';
-  } else if (measType == ViewMeasureType.greenPointsIssued) {
+  } else if (measType == ViewMeasureType.green_points_issued) {
     return 'Gember pts issued';
-  } else if (measType == ViewMeasureType.marketShare) {
+  } else if (measType == ViewMeasureType.market_share) {
     return 'Market Share %';
-  } else if (measType == ViewMeasureType.totalSalesRevenue) {
+  } else if (measType == ViewMeasureType.total_sales_revenue) {
     return 'Total Sales Revenue';
-  } else if (measType == ViewMeasureType.totalSalesRevenueLessGP) {
+  } else if (measType == ViewMeasureType.total_sales_revenue_less_GP) {
     return 'Total Sales Revenue net GP';
   } else if (measType == ViewMeasureType.totalSalesRevenueByItem) {
     return 'Total Sales Revenue by item';
@@ -98,9 +98,20 @@ abstract class AppStateManagerProperties {
   SimulationComparisonHistory? simulationComparisonHistory;
   GemberProgressBar _simulationProgressBar = GemberProgressBar(i: 0, N: 1);
   GemberProgressBar get simulationProgressBar => _simulationProgressBar;
-  List<String>? retailerNames;
+  List<String>? _retailerNames;
+
+  List<String>? get retailerNames => _retailerNames;
+
+  set retailerNames(List<String>? retailerNames) {
+    _retailerNames = retailerNames;
+    retailerColorMap = Map<String, Color>.fromEntries(retailerNames!
+                .map((rname) => MapEntry<String, Color>(
+                    rname,
+                    Color((math.Random().nextDouble() * 0xFFFFFF).toInt())
+                        .withOpacity(1.0))));
+  }
   Map<String, Color>? retailerColorMap;
-  SimulationDataCache? simulationDataCache;
+  
 
   String _connectionStatus = 'N/A';
   String get connectionStatus => _connectionStatus;
@@ -176,7 +187,7 @@ abstract class AppStateManagerProperties {
       : null;
 
   ViewAggregationType _viewAggType = ViewAggregationType.runningAverage;
-  ViewMeasureType _viewMeasType = ViewMeasureType.salesCount;
+  ViewMeasureType _viewMeasType = ViewMeasureType.sales_count;
   ViewAggregationType get viewAggType => _viewAggType;
   String get viewAggTypeDTOLabel => getAggregationDTOLabel(_viewAggType);
   ViewMeasureType get viewMeasType => _viewMeasType;
@@ -189,6 +200,12 @@ abstract class AppStateManagerProperties {
 }
 
 class AppStateManager extends ChangeNotifier with AppStateManagerProperties {
+
+  static SimulationDataCache? _simulationDataCache;
+  
+  SimulationDataCache? get simulationDataCache => _simulationDataCache;
+
+
   AppStateManager._privateConstructor(
       {required IMarketStateViewer marketStateViewer}) {
     _instance = this;
@@ -308,18 +325,13 @@ class AppStateManager extends ChangeNotifier with AppStateManagerProperties {
   }
 
   void refreshSimulationComparisonHistory() {
-    if (_controlRetailer == null) {
-      /* TODO: instead load a popup dialog in the frontend of form alert to get the user to pick the retailer to focus on.
-        the popup will have a onRetailerSelected handler and onRetailerClearedHandler, if selected, this function will be called again...
-      */
-      throw UnimplementedError(
-          'Implement a Control Retailer Selection Dialog for refreshSimulationComparisonHistory @ gp_simulation/lib/ui/model/app_state_manager.dart:247');
+    if (_controlRetailer != null) {
+      marketStateViewerInst.getSimulationComparisonHistory(
+        simulationIds: _simulationComparisonHistoryIds,
+        retailerName: _controlRetailer!,
+        measureType: viewMeasTypeDTOLabel,
+      );
     }
-    marketStateViewerInst.getSimulationComparisonHistory(
-      simulationIds: _simulationComparisonHistoryIds,
-      retailerName: _controlRetailer!,
-      measureType: viewMeasTypeDTOLabel,
-    );
   }
 
   Map<String, Map<String, Map<String, charts.Series<IterationDataPoint, int>>>>?
@@ -332,6 +344,7 @@ class AppStateManager extends ChangeNotifier with AppStateManagerProperties {
    */
   Future<String?> runFullSimulation() async {
     if (simulationConfig != null) {
+      log.fine('Run full sim with config: $simulationConfig');
       return marketStateViewerInst
           .runFullSimulation(
             configOptions: simulationConfig!,
@@ -341,6 +354,11 @@ class AppStateManager extends ChangeNotifier with AppStateManagerProperties {
   }
 
   void updateNextSimConfig({required GemberAppConfig configOptions}) {
+    updateNextSimConfigNoNotifiy(configOptions: configOptions);
+    notifyListeners();
+  }
+
+  void updateNextSimConfigNoNotifiy({required GemberAppConfig configOptions}) {
     basketSizeForNextSim = configOptions.BASKET_FULL_SIZE;
     numTripsToShopsForNextSim = configOptions.NUM_SHOP_TRIPS_PER_ITERATION;
     numCustomersForNextSim = configOptions.NUM_CUSTOMERS;
@@ -349,14 +367,12 @@ class AppStateManager extends ChangeNotifier with AppStateManagerProperties {
     changeControlRetailer(configOptions.controlRetailerName);
     _retailerStrategy = configOptions.strategy;
     _retailerSustainability = configOptions.sustainabilityBaseline;
-    notifyListeners();
   }
 
   /// update the Aggregation type that is focused on in the app.
   /// i.e. to focus on the running average or the running variance of a simulation.
   void updateAggregationType(ViewAggregationType newAgg) {
     _viewAggType = newAgg;
-    notifyListeners();
   }
 
   /// update the retailer performance measure to view.
@@ -365,9 +381,6 @@ class AppStateManager extends ChangeNotifier with AppStateManagerProperties {
     _viewMeasType = newMeasurementFocus;
     notifyListeners();
   }
-
-  //todo 1 add set and get handlers for all the above properties and make into private fields.
-  //todo 1.1 add notifiyListeners when any setter is used, move the fields getters and setters to a mixin so that the _private fields are not exposed to the class methods iether.
 
   StreamSubscription<dynamic>? _subscription;
 
@@ -384,39 +397,33 @@ class AppStateManager extends ChangeNotifier with AppStateManagerProperties {
         if (wsMessage != null) {
           _simulationProgressBar = GemberProgressBar(
               i: wsMessage.iterationNumber, N: wsMessage.maxNIterations);
-          
-          if (retailerNames == null) {
-            retailerNames = wsMessage.runningAverage.salesCount.keys.toList();
-            retailerColorMap = Map<String, Color>.fromEntries(retailerNames!
-                .map((rname) => MapEntry<String, Color>(
-                    rname,
-                    Color((math.Random().nextDouble() * 0xFFFFFF).toInt())
-                        .withOpacity(1.0))));
-            simulationDataCache = SimulationDataCache(wsMessage);
-          } else {
-            // TODO Add a ghost label to previously run seriesNames to help differentiate them.
-            simulationDataCache!.append(wsMessage);
-          }
 
+          
+          retailerNames ??= wsMessage.runningAverage.salesCount.keys.toList();
+          
+
+          _simulationDataCache ??= SimulationDataCache(wsMessage);
+          _simulationDataCache!.append(wsMessage);
+          notifyListeners();
           //TODO: Emphasize the lines of the retailer in focus and show a comparison history of this retailer
 
-          _simulationRunningMetricsChartBackingData = simulationDataCache!
-              .mapAggType((aggType, seriesColn) => seriesColn.map((seriesName,
-                      seriesByRetailer) =>
-                  seriesByRetailer.map((rname, datapoints) => MapEntry(
-                      rname,
-                      charts.Series<IterationDataPoint, int>(
-                        id: '$rname $seriesName ($aggType)',
-                        seriesCategory: aggType,
-                        labelAccessorFn: (datapoint, _) =>
-                            '$rname $seriesName ($aggType)',
-                        colorFn: (_, __) => charts.ColorUtil.fromDartColor(
-                            retailerColorMap?[rname] ??
-                                const Color.fromRGBO(100, 100, 100, 1)),
-                        domainFn: (datapoint, _) => datapoint.iterationNumber,
-                        measureFn: (datapoint, _) => datapoint.datapoint,
-                        data: datapoints,
-                      )))));
+          // _simulationRunningMetricsChartBackingData = simulationDataCache!
+          //     .mapAggType((aggType, seriesColn) => seriesColn.map((seriesName,
+          //             seriesByRetailer) =>
+          //         seriesByRetailer.map((rname, datapoints) => MapEntry(
+          //             rname,
+          //             charts.Series<IterationDataPoint, int>(
+          //               id: '$rname $seriesName ($aggType)',
+          //               seriesCategory: aggType,
+          //               labelAccessorFn: (datapoint, _) =>
+          //                   '$rname $seriesName ($aggType)',
+          //               colorFn: (_, __) => charts.ColorUtil.fromDartColor(
+          //                   retailerColorMap?[rname] ??
+          //                       const Color.fromRGBO(100, 100, 100, 1)),
+          //               domainFn: (datapoint, _) => datapoint.iterationNumber,
+          //               measureFn: (datapoint, _) => datapoint.datapoint,
+          //               data: datapoints,
+          //             )))));
         }
       },
       onDone: () {
@@ -427,23 +434,23 @@ class AppStateManager extends ChangeNotifier with AppStateManagerProperties {
 
   Map<String, Map<String, Map<String, charts.Series<IterationDataPoint, int>>>>?
       _mapChartBackingData({String? filterRetailerName}) =>
-          simulationDataCache?.mapAggType((aggType, seriesColn) => seriesColn.map(
+          _simulationDataCache?.mapAggType((aggType, seriesColn) => seriesColn.map(
               (seriesName, seriesByRetailer) => Map.fromEntries(seriesByRetailer
                       .entries
-                      .where((entry) => entry.key == filterRetailerName || filterRetailerName == null))
-                  .map((rname, datapoints) => MapEntry(
-                      rname,
+                      .where((retAndConfNameToPointsList) => retAndConfNameToPointsList.value.retailerName == filterRetailerName || filterRetailerName == null))
+                  .map((retailerName, datapoints) => MapEntry(
+                      datapoints.seriesLabel,
                       charts.Series<IterationDataPoint, int>(
-                        id: '$rname $seriesName ($aggType)',
+                        id: datapoints.seriesLabel,
                         seriesCategory: aggType,
                         labelAccessorFn: (datapoint, _) =>
-                            '$rname $seriesName ($aggType)',
+                            '$retailerName $seriesName ($aggType)',
                         colorFn: (_, __) => charts.ColorUtil.fromDartColor(
-                            retailerColorMap?[rname] ??
-                                const Color.fromRGBO(100, 100, 100, 1)),
+                            retailerColorMap?[retailerName] ??
+                                Color((math.Random().nextDouble() * 0xFFFFFF).toInt()).withOpacity(1.0)),
                         domainFn: (datapoint, _) => datapoint.iterationNumber,
                         measureFn: (datapoint, _) => datapoint.datapoint,
-                        data: datapoints,
+                        data: datapoints.points,
                       )))));
 }
 

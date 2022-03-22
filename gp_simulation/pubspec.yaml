@@ -51,7 +51,8 @@ dependencies:
   syncfusion_flutter_charts: ^19.4.53
   ansicolor: ^2.0.1
   auto_route: ^3.2.4
-  f_logs: ^2.0.0
+  # f_logs: ^2.0.0
+  logger:
   
 
 dev_dependencies:

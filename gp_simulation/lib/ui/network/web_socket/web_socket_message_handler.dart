@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:ansicolor/ansicolor.dart';
+import 'package:webtemplate/utils/ansi_print_colors.dart';
 
 import '../../model/all_models.dart';
 import '../service_interface.dart';
@@ -41,7 +42,7 @@ class WebSocketMessageHandler {
         'data': msg
       };
     }
-    print(greenPen(type.toString()));
+    PrintPens.greenPen(type.toString());
     return _jsonObj!;
   }
 
@@ -57,7 +58,7 @@ class WebSocketMessageHandler {
   bool looksLikeTransactionJson() {
     if (data is Map<String, dynamic>) {
       try {
-        model = TransactionModel.fromJson(data);
+        model = TransactionModel.fromJson(data, shouldThrow: false);
         return true;
       } catch (e) {
         return false;
@@ -69,14 +70,14 @@ class WebSocketMessageHandler {
   bool looksLikeEntityJson() {
     if (data is Map<String, dynamic>) {
       try {
-        model = RetailerModel.fromJson(data);
+        model = RetailerModel.fromJson(data, shouldThrow: false);
         return true;
       } on JsonParseException {
       } catch (e) {
         return false;
       }
       try {
-        model = CustomerModel.fromJson(data);
+        model = CustomerModel.fromJson(data, shouldThrow: false);
         return true;
       } on JsonParseException {
         return false;

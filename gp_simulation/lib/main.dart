@@ -4,6 +4,7 @@ import 'package:webtemplate/ui/model/models.dart';
 import 'package:webtemplate/ui/style/app_theme.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:logging/logging.dart';
+import 'package:webtemplate/utils/ansi_print_colors.dart';
 
 import 'navigation/app_router.gr.dart';
 import 'ui/model/all_models.dart';
@@ -21,7 +22,14 @@ void _setupLogging() {
   Logger.root.level = Level.FINER;
   Logger.root.onRecord.listen(
     (rec) {
-      print('${rec.level.name}: ${rec.time}: ${rec.message}');
+      if (rec.level >= Level.WARNING) {
+        PrintPens.peachPen(
+            '${rec.level.name}: ${rec.time}: ${rec.stackTrace.toString().split("\n")[0]}: ${rec.message}');
+      } else {
+        PrintPens.bluePen(
+            '${rec.level.name}: ${rec.time}: ${rec.stackTrace.toString().split("\n")[0]}: ${rec.message}');
+      }
+      
     },
   );
 }

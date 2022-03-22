@@ -36,7 +36,7 @@ class _SpiralState extends State<Spiral> with SingleTickerProviderStateMixin {
             AnimatedBuilder(
               animation: _controller,
               builder: (context, child) {
-                print('${_controller.value}');
+                // print('${_controller.value}');
                 return Expanded(
                   child: Center(
                     child: CustomPaint(

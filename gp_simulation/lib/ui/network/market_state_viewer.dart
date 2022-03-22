@@ -136,11 +136,11 @@ abstract class WebSocketHandlers extends IMarketStateViewer with WSBaseMixin {
         WebSocketMessageHandler parser = SocketioMessageHandler(
             type: WebSocketServerResponseEvent.simulation_ran, data: data);
         final simulationData = _parseSimulationResult(parser.data);
-        if (appStateMgr.isRunningSim(simulationData.simulationId)) {
-          _flagStopRunSim();
-          appStateMgr.addCompletedSimulation(simulationData);
-          appStateMgr.refreshSimulationComparisonHistory();
-        }
+        // if (appStateMgr.runningSimulation) {
+        _flagStopRunSim();
+        appStateMgr.addCompletedSimulation(simulationData);
+        appStateMgr.refreshSimulationComparisonHistory();
+        // }
       } else {
         
       }
@@ -301,7 +301,7 @@ abstract class IMarketStateViewer extends ChangeNotifier {
 
   int get transactionsCounter => _transactions.length;
 
-  void testWsConnMemory(); //TODO: Move this line as was a test.../?
+  void testWsConnMemory();
 
   /// Loads config params that are front end parameters only and are updated by posting params for new sims for using to post for new simulations.
   Future<GemberAppConfig> loadGemberAppConfig(String simulationId);
@@ -346,9 +346,6 @@ abstract class IMarketStateViewer extends ChangeNotifier {
   final httpClient = HttpClientGember();
 
   void transactionOccured(TransactionModel t) {
-    //TODO: Add the Transaction object to state on this MarketStateViewer and then notifyListeners so that anyone
-    //looking at the state of MarketStateViewer can see teh new transaction. Perhaps store a transaction count,
-    //increment the counter and then get the latest transaction from the list
     transactions.add(t);
     notifyListeners();
   }
