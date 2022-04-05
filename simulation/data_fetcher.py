@@ -52,7 +52,7 @@ def get_dataset(use_local_csv:bool=True):
         use_local_csv if true will use the local ./greenPointsSimulation.csv to populate the DataFrame, otherwise we simulate a load of items named Item1 to ItemN'''
 
     if use_local_csv:
-        #BUG: https://github.com/Dwonczykj/gember-points/issues/2 -> Cannot read a csv on the same thread that creates the socket server...
+        #FIXED: https://github.com/Dwonczykj/gember-points/issues/2 -> Cannot read a csv on the same thread that creates the socket server...
         df: pd.DataFrame = pd.read_csv(
             './GreenPointsSimulation.csv', iterator=False)  # type: ignore
         # assert isinstance(df,pd.DataFrame)

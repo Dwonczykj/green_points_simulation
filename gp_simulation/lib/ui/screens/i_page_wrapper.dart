@@ -43,7 +43,7 @@ class _IPageWrapperState extends State<IPageWrapper> {
                 child: Padding(
                   padding: const EdgeInsets.only(right: 8.0),
                   child: Text(
-                      'Demonstrative retailer: ${appStateManager.controlRetailer ?? 'None'}'),
+                      '🏢: ${appStateManager.controlRetailer ?? 'None'}'),
                 ),
               ),
               Center(
@@ -151,7 +151,7 @@ class _IPageWrapperState extends State<IPageWrapper> {
                       return widget.childGetter(
                           marketStateService, appStateManager);
                     }))
-                  : ConfigDialog(fullScreen: true));
+                  : ConfigAppDialog(fullScreen: true));
     });
   }
 
@@ -198,7 +198,7 @@ class _IPageWrapperState extends State<IPageWrapper> {
     //https://gallery.flutter.dev/#/demo/dialog
     showDialog<String>(
       context: context,
-      builder: (BuildContext context) => ConfigDialog(fullScreen: false),
+      builder: (BuildContext context) => ConfigAppDialog(fullScreen: false),
       //   builder: (BuildContext context) => AlertDialog(
       //     title: const Text('AlertDialog Title'),
       //     content: const Text('AlertDialog description'),

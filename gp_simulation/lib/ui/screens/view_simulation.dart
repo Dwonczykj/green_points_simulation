@@ -9,6 +9,7 @@ import 'package:webtemplate/ui/network/market_state_viewer.dart';
 import 'package:webtemplate/ui/screens/i_page_wrapper.dart';
 import 'package:webtemplate/utils/string_extensions.dart';
 
+import '../components/components.dart';
 import '../model/models.dart';
 
 class ViewSimulationPage extends StatelessWidget {
@@ -19,8 +20,7 @@ class ViewSimulationPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return IPageWrapper(
         title: title,
-        childGetter: (marketStateViewer, appStateManager) =>
-            ViewSimulation(
+        childGetter: (marketStateViewer, appStateManager) => ViewSimulation(
               marketStateViewer: marketStateViewer,
               appStateManager: appStateManager,
             ));
@@ -69,7 +69,7 @@ class _ViewSimulationState extends State<ViewSimulation> {
                   .toList()))
           .toList() ??
       <charts.Series<IterationDataPoint, int>>[];
-      
+
   String get title =>
       ('Retailer ${viewMeasType.name.toSentenceCaseFromCamelCase()}');
 
@@ -104,84 +104,52 @@ class _ViewSimulationState extends State<ViewSimulation> {
 
   @override
   Widget build(BuildContext context) {
-    
+    var configureRetailerButtonLabel =
+        widget.appStateManager.controlRetailer ?? 'Retailer';
     return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisAlignment: MainAxisAlignment.start,
+      // crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
+        Align(
+          alignment: Alignment.topRight,
+          child: Flex(
+            direction: Axis.vertical,
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: <Widget>[
+              ConfigDialogDrowdown(
+                appStateMgr: widget.appStateManager,
+                label: 'Aggregation',
+                value: widget.appStateManager.viewAggType,
+                onChanged: (ViewAggregationType? value) {
+                  widget.appStateManager.updateAggregationType(
+                      value ?? ViewAggregationType.runningAverage);
+                },
+                labelsToValuesMap: Map<String, ViewAggregationType>.fromEntries(
+                    ViewAggregationType.values
+                        .map((v) => MapEntry(getAggregationUILabel(v), v))),
+              ),
+              ConfigDialogDrowdown(
+                appStateMgr: widget.appStateManager,
+                label: 'Performance measure',
+                value: widget.appStateManager.viewMeasType,
+                onChanged: (ViewMeasureType? value) {
+                  widget.appStateManager
+                      .updateMeasureType(value ?? ViewMeasureType.sales_count);
+                },
+                labelsToValuesMap: Map<String, ViewMeasureType>.fromEntries(
+                    ViewMeasureType.values
+                        .map((v) => MapEntry(getMeasureUILabel(v), v))),
+              ),
+            ],
+          ),
+        ),
         Expanded(
             child: Center(
           child: Stack(
             alignment: Alignment.center,
             children: <Widget>[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  Column(
-                    children: <Widget>[
-                      Padding(
-                        padding: EdgeInsets.only(left: 24.0),
-                        child: Text(
-                            'Measure: ${viewMeasType.name.toSentenceCaseFromCamelCase()}'),
-                      ),
-                      Align(
-                        alignment: Alignment.topLeft,
-                        child: SizedBox(
-                          width: ViewMeasureType.values.length * 100,
-                          height: 40,
-                          child: Slider(
-                            value: viewMeasType.index.toDouble(),
-                            label: viewMeasType.name,
-                            divisions: (ViewMeasureType.values.length - 1),
-                            min: 0.0,
-                            max: (ViewMeasureType.values.length - 1).toDouble(),
-                            onChangeEnd: (value) {
-                              var i = value.round();
-                              widget.appStateManager
-                                  .updateMeasureType(ViewMeasureType.values[i]);
-                            },
-                            onChanged: (double value) {
-                              // setState({});
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Column(
-                    children: <Widget>[
-                      Padding(
-                        padding: EdgeInsets.only(left: 24.0),
-                        child: Text(
-                            'Aggregation: ${viewAggType.name.toSentenceCaseFromCamelCase()}'),
-                      ),
-                      Align(
-                        alignment: Alignment.topRight,
-                        child: SizedBox(
-                          width: ViewAggregationType.values.length * 100,
-                          height: 40,
-                          child: Slider(
-                            value: viewAggType.index.toDouble(),
-                            label: viewAggType.name,
-                            divisions: (ViewAggregationType.values.length - 1),
-                            min: 0.0,
-                            max: (ViewAggregationType.values.length - 1)
-                                .toDouble(),
-                            onChangeEnd: (value) {
-                              var i = value.round();
-                              widget.appStateManager.updateAggregationType(
-                                  ViewAggregationType.values[i]);
-                            },
-                            onChanged: (double value) {
-                              // setState({});
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+              
               // SimpleLineChart.withSampleData(),
               chartDataGetter.isNotEmpty
                   ? charts.LineChart(
@@ -263,23 +231,38 @@ class _ViewSimulationState extends State<ViewSimulation> {
                               .then((simId) {
                             if (simId != null) {
                               setState(() {
-                                runningSimulationsWithIds
-                                    .add(simId);
+                                runningSimulationsWithIds.add(simId);
                               });
                             }
                           });
                         },
                       )),
                   Padding(
-                    padding: EdgeInsets.only(left: 4.0),
+                    padding: EdgeInsets.only(left: 4.0, right: 4.0),
                     child: Text(''),
                   ),
+                  Align(
+                      alignment: Alignment.bottomCenter,
+                      child: ElevatedButton(
+                        child: Text('Configure $configureRetailerButtonLabel'),
+                        onPressed: () {
+                          _openConfigPopup(context);
+                        },
+                      )),
                 ],
               )
             ],
           ),
         ))
       ],
+    );
+  }
+
+  void _openConfigPopup(BuildContext context) {
+    showDialog<String>(
+      context: context,
+      builder: (BuildContext context) =>
+          ConfigRetailerDialog(fullScreen: false),
     );
   }
 }

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:webtemplate/utils/pipe.dart';
 
+import '../../utils/color_lighter.dart';
+
 class NumberInput extends StatelessWidget {
   NumberInput({
     Key? key,
@@ -13,6 +15,7 @@ class NumberInput extends StatelessWidget {
     this.icon,
     this.allowDecimal = false,
     this.disabled = false,
+    this.labelAbove = false,
   }) : super(key: key) {
     if (controller == null && allowDecimal) {
       controller = _getCommaStyledController();
@@ -28,6 +31,7 @@ class NumberInput extends StatelessWidget {
   final String? error;
   final Widget? icon;
   final bool allowDecimal;
+  final bool labelAbove;
 
   StyleableTextFieldController _getCommaStyledController() {
     return StyleableTextFieldController(
@@ -47,34 +51,77 @@ class NumberInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      initialValue: value,
-      onChanged: (String val) => pipe_if_func_exists(
-          allowDecimal
-              ? double.tryParse(val) ?? 0.0
-              : double.tryParse(val)?.round() ?? 0,
-          onChanged),
-      readOnly: disabled,
-      keyboardType: TextInputType.numberWithOptions(decimal: allowDecimal),
-      inputFormatters: <TextInputFormatter>[
-        FilteringTextInputFormatter.allow(RegExp(_getRegexString())),
-        TextInputFormatter.withFunction(
-          (oldValue, newValue) => newValue.copyWith(
-            text: newValue.text.replaceAll('.', ','),
-          ),
-        ),
-      ],
-      decoration: InputDecoration(
-        label: Text(label),
-        errorText: error,
-        icon: icon,
-        floatingLabelAlignment: FloatingLabelAlignment.start,
-        labelStyle: Theme.of(context).textTheme.labelMedium,
-
+    return Container(
+      decoration: BoxDecoration(
+        color: darken(Theme.of(context).backgroundColor),
+        border: Border.all(color: Colors.black87),
       ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(width: 200, height: 50, child: Text('test data')),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextFormField(
+              controller: controller,
+              initialValue: value,
+              onChanged: (String val) => pipe_if_func_exists(
+                  allowDecimal
+                      ? double.tryParse(val) ?? 0.0
+                      : double.tryParse(val)?.round() ?? 0,
+                  onChanged),
+              readOnly: disabled,
+              keyboardType:
+                  TextInputType.numberWithOptions(decimal: allowDecimal),
+              inputFormatters: <TextInputFormatter>[
+                FilteringTextInputFormatter.allow(RegExp(_getRegexString())),
+                TextInputFormatter.withFunction(
+                  (oldValue, newValue) => newValue.copyWith(
+                    text: newValue.text.replaceAll('.', ','),
+                  ),
+                ),
+              ],
 
+              // decoration: InputDecoration(
+              //   label: Text(label),
+              //   errorText: error,
+              //   icon: icon,
+              //   floatingLabelAlignment: FloatingLabelAlignment.start,
+              //   labelStyle: Theme.of(context).textTheme.labelLarge,
+              // ),
+            ),
+          ),
+        ],
+      ),
     );
+    // return TextFormField(
+    //   controller: controller,
+    //   initialValue: value,
+    //   onChanged: (String val) => pipe_if_func_exists(
+    //       allowDecimal
+    //           ? double.tryParse(val) ?? 0.0
+    //           : double.tryParse(val)?.round() ?? 0,
+    //       onChanged),
+    //   readOnly: disabled,
+    //   keyboardType: TextInputType.numberWithOptions(decimal: allowDecimal),
+    //   inputFormatters: <TextInputFormatter>[
+    //     FilteringTextInputFormatter.allow(RegExp(_getRegexString())),
+    //     TextInputFormatter.withFunction(
+    //       (oldValue, newValue) => newValue.copyWith(
+    //         text: newValue.text.replaceAll('.', ','),
+    //       ),
+    //     ),
+    //   ],
+
+    //   decoration: InputDecoration(
+    //     label: Text(label),
+    //     errorText: error,
+    //     icon: icon,
+    //     floatingLabelAlignment: FloatingLabelAlignment.start,
+    //     labelStyle: Theme.of(context).textTheme.labelLarge,
+    //   ),
+    // );
   }
 
   String _getRegexString() =>

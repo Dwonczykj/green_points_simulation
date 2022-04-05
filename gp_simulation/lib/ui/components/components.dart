@@ -10,5 +10,7 @@ export 'money_send_animation_widget.dart';
 export 'balances_chart.dart';
 export 'stacked_balances_chart.dart';
 export 'number_input.dart';
-export 'config_dialog.dart';
+export 'config_app_dialog.dart';
+export 'config_retailer_dialog.dart';
+export 'config_dialog_dropdown.dart';
 export 'min_height_column.dart';

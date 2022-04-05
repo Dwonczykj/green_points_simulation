@@ -320,7 +320,7 @@ class WebSocketsStack(IWebSocketsStack):
 #                     #BUG: https://github.com/Dwonczykj/gember-points/issues/1 -> receiving messages from the client whilst trying sending messages to the client -> Fix using 2 channels?
 #                     # Try to implement https://stackoverflow.com/questions/27572336/handle-multiple-requests-with-select
 #                     logging.debug(Fore.YELLOW + Style.DIM + f'Failed to send from ws on attempt: {i}, {retrying}' + Style.RESET_ALL)
-#                     logging.debug(Fore.CYAN + 'BUG is due to receiving messages from teh client whilst trying sending messages to the client .' + Style.RESET_ALL)
+#                     logging.debug(Fore.CYAN + 'BUG is due to receiving messages from the client whilst trying sending messages to the client .' + Style.RESET_ALL)
 #                     logging.debug(Fore.RED + Style.DIM)
 #                     # import sys
 #                     traceback.print_exc()

@@ -104,14 +104,14 @@ abstract class AppStateManagerProperties {
 
   set retailerNames(List<String>? retailerNames) {
     _retailerNames = retailerNames;
-    retailerColorMap = Map<String, Color>.fromEntries(retailerNames!
-                .map((rname) => MapEntry<String, Color>(
-                    rname,
-                    Color((math.Random().nextDouble() * 0xFFFFFF).toInt())
-                        .withOpacity(1.0))));
+    retailerColorMap = Map<String, Color>.fromEntries(retailerNames!.map(
+        (rname) => MapEntry<String, Color>(
+            rname,
+            Color((math.Random().nextDouble() * 0xFFFFFF).toInt())
+                .withOpacity(1.0))));
   }
+
   Map<String, Color>? retailerColorMap;
-  
 
   String _connectionStatus = 'N/A';
   String get connectionStatus => _connectionStatus;
@@ -153,7 +153,7 @@ abstract class AppStateManagerProperties {
 
   int numCustomersForNextSim = 4;
 
-  int maxN = 1;
+  int maxN = 4;
 
   double convergenceThreshold = 0.0;
 
@@ -200,11 +200,9 @@ abstract class AppStateManagerProperties {
 }
 
 class AppStateManager extends ChangeNotifier with AppStateManagerProperties {
-
   static SimulationDataCache? _simulationDataCache;
-  
-  SimulationDataCache? get simulationDataCache => _simulationDataCache;
 
+  SimulationDataCache? get simulationDataCache => _simulationDataCache;
 
   AppStateManager._privateConstructor(
       {required IMarketStateViewer marketStateViewer}) {
@@ -353,8 +351,29 @@ class AppStateManager extends ChangeNotifier with AppStateManagerProperties {
     }
   }
 
-  void updateNextSimConfig({required GemberAppConfig configOptions}) {
-    updateNextSimConfigNoNotifiy(configOptions: configOptions);
+  void updateNextSimConfig({
+    int? basketFullSize,
+    int? numTripsPerIteration,
+    int? numCustomers,
+    int? maximumNIterations,
+    double? convergenceTH,
+    double? strategy,
+    double? sustainabilityBaseline,
+    String? controlRetailerName,
+  }) {
+    GemberAppConfig allConfigOptions = GemberAppConfig(
+      BASKET_FULL_SIZE: basketFullSize ?? basketSizeForNextSim,
+      NUM_SHOP_TRIPS_PER_ITERATION:
+          numTripsPerIteration ?? numTripsToShopsForNextSim,
+      NUM_CUSTOMERS: numCustomers ?? numCustomersForNextSim,
+      maxN: maximumNIterations ?? maxN,
+      convergenceTH: convergenceTH ?? convergenceThreshold,
+      strategy: strategy ?? retailerStrategy,
+      sustainabilityBaseline: sustainabilityBaseline ?? retailerSustainability,
+      controlRetailerName: controlRetailerName ?? controlRetailer,
+    );
+    print('value changed to $allConfigOptions');
+    updateNextSimConfigNoNotifiy(configOptions: allConfigOptions);
     notifyListeners();
   }
 
@@ -398,9 +417,7 @@ class AppStateManager extends ChangeNotifier with AppStateManagerProperties {
           _simulationProgressBar = GemberProgressBar(
               i: wsMessage.iterationNumber, N: wsMessage.maxNIterations);
 
-          
           retailerNames ??= wsMessage.runningAverage.salesCount.keys.toList();
-          
 
           _simulationDataCache ??= SimulationDataCache(wsMessage);
           _simulationDataCache!.append(wsMessage);
@@ -432,26 +449,27 @@ class AppStateManager extends ChangeNotifier with AppStateManagerProperties {
     );
   }
 
-  Map<String, Map<String, Map<String, charts.Series<IterationDataPoint, int>>>>?
-      _mapChartBackingData({String? filterRetailerName}) =>
-          _simulationDataCache?.mapAggType((aggType, seriesColn) => seriesColn.map(
-              (seriesName, seriesByRetailer) => Map.fromEntries(seriesByRetailer
-                      .entries
-                      .where((retAndConfNameToPointsList) => retAndConfNameToPointsList.value.retailerName == filterRetailerName || filterRetailerName == null))
-                  .map((retailerName, datapoints) => MapEntry(
-                      datapoints.seriesLabel,
-                      charts.Series<IterationDataPoint, int>(
-                        id: datapoints.seriesLabel,
-                        seriesCategory: aggType,
-                        labelAccessorFn: (datapoint, _) =>
-                            '$retailerName $seriesName ($aggType)',
-                        colorFn: (_, __) => charts.ColorUtil.fromDartColor(
-                            retailerColorMap?[retailerName] ??
-                                Color((math.Random().nextDouble() * 0xFFFFFF).toInt()).withOpacity(1.0)),
-                        domainFn: (datapoint, _) => datapoint.iterationNumber,
-                        measureFn: (datapoint, _) => datapoint.datapoint,
-                        data: datapoints.points,
-                      )))));
+  Map<String, Map<String, Map<String, charts.Series<IterationDataPoint, int>>>>? _mapChartBackingData(
+          {String? filterRetailerName}) =>
+      _simulationDataCache?.mapAggType((aggType, seriesColn) => seriesColn.map(
+          (seriesName, seriesByRetailer) => Map.fromEntries(
+              seriesByRetailer.entries.where((retAndConfNameToPointsList) =>
+                  retAndConfNameToPointsList.value.retailerName == filterRetailerName ||
+                  filterRetailerName == null)).map((retailerName, datapoints) => MapEntry(
+              datapoints.seriesLabel,
+              charts.Series<IterationDataPoint, int>(
+                id: datapoints.seriesLabel,
+                seriesCategory: aggType,
+                labelAccessorFn: (datapoint, _) =>
+                    '$retailerName $seriesName ($aggType)',
+                colorFn: (_, __) => charts.ColorUtil.fromDartColor(
+                    retailerColorMap?[retailerName] ??
+                        Color((math.Random().nextDouble() * 0xFFFFFF).toInt())
+                            .withOpacity(1.0)),
+                domainFn: (datapoint, _) => datapoint.iterationNumber,
+                measureFn: (datapoint, _) => datapoint.datapoint,
+                data: datapoints.points,
+              )))));
 }
 
 class GemberProgressBar {

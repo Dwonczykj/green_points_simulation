@@ -15,7 +15,7 @@ from markupsafe import escape
 # NOTE: To run webapp: flask run from the Terminal in the GreenPointsSimulation venv.
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'secret!' #TODO P1 v1.0: Read from Env File (Check the clickshop code for example...)
+app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app) # https://flask-socketio.readthedocs.io/en/latest/getting_started.html
 
 
