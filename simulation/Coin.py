@@ -1,6 +1,10 @@
 from __future__ import annotations
-from ISerializable import TSERIALIZABLE_ALIAS, TSTRUC_ALIAS, ISerializable
+
 from typing import TYPE_CHECKING
+
+from func_wrappers import recursion_detector
+from ISerializable import TSERIALIZABLE_ALIAS, TSTRUC_ALIAS, ISerializable
+
 if TYPE_CHECKING:
     from Bank import Bank
 
@@ -19,15 +23,18 @@ class Money(Divideable, ISerializable):
     def copy(self):
         return Money(self.amount, self.currency)
     
+    @recursion_detector()
     def toDict(self) -> dict[str,TSTRUC_ALIAS]:
         return {
             "amount": self.amount,
             "currency": self.currency
         }
-        
+    
+    @recursion_detector()    
     def toDictLight(self) -> dict[str,TSTRUC_ALIAS]:
         return super().toDictLight()
     
+    @recursion_detector()    
     def toDictUI(self) -> dict[str,TSTRUC_ALIAS]:
         return super().toDictUI()
     
@@ -67,15 +74,18 @@ class Money(Divideable, ISerializable):
 class EtherCoin(Divideable):
     def __init__(self, amount: float) -> None:
         super().__init__(amount)
-        
+    
+    @recursion_detector()    
     def toDict(self) -> dict[str,TSTRUC_ALIAS]:
         return {
             "amount": self.amount
         }
-        
+    
+    @recursion_detector()    
     def toDictLight(self) -> dict[str,TSTRUC_ALIAS]:
         return self.toDict()
         
+    @recursion_detector()    
     def toDictUI(self) -> dict[str,TSTRUC_ALIAS]:
         return self.toDict()
         

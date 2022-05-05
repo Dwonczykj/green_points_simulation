@@ -1,28 +1,34 @@
 from __future__ import annotations
 
+import abc
+import enum
+import logging
+import uuid
 from collections import defaultdict
 from functools import reduce
-import uuid
-import enum
-import abc
-from typing import Tuple, Any, Callable, Literal, Iterable, DefaultDict, TypeVar
-from typing_extensions import Self
-from collections import defaultdict
-from enums import *
+from typing import (Any, Callable, DefaultDict, Iterable, Literal, Tuple,
+                    TypeVar)
+
 import numpy as np
-import logging
-
-from Coin import Money, EtherCoin
-from Identifiable import Identifiable
-from ISerializable import TSERIALIZABLE_ALIAS, TSTRUC_ALIAS, ISerializable, ISerializableBasic
-from InsufficientCoinError import CheckSameTypeError, GreenPointsLostInDoubleBookingTransactionException, DoubleBookingTransactionMisMatchException, InsufficientEtherError, InsufficientGreenPointsError, InsufficientMoneyError, BankTransactionFailedError, NotAllowedError, PurchaseItemTransactionError
-from Institution import Institution
-from Multipliable import Numeric
 from Observer import Observable, Observer
-from Transfer import GreenPointTransfer, MoneyTransfer, Transfer
-from ChainLinkDummyDataFeed import ChainLinkDummyDataFeed
+from typing_extensions import Self
 
-        
+from ChainLinkDummyDataFeed import ChainLinkDummyDataFeed
+from Coin import EtherCoin, Money
+from enums import *
+from func_wrappers import recursion_detector
+from Identifiable import Identifiable
+from Institution import Institution
+from InsufficientCoinError import (
+    BankTransactionFailedError, CheckSameTypeError,
+    DoubleBookingTransactionMisMatchException,
+    GreenPointsLostInDoubleBookingTransactionException, InsufficientEtherError,
+    InsufficientGreenPointsError, InsufficientMoneyError, NotAllowedError,
+    PurchaseItemTransactionError)
+from ISerializable import (TSERIALIZABLE_ALIAS, TSTRUC_ALIAS, ISerializable,
+                           ISerializableBasic)
+from Multipliable import Numeric
+from Transfer import GreenPointTransfer, MoneyTransfer, Transfer
 
 _RT = TypeVar('_RT')
 def tryInline(func:Callable[[],_RT]) -> _RT | None:
@@ -195,6 +201,7 @@ class GreenPointTokensView(ISerializable):
     def valueInPeggedCurrency(self):
         return Money(amount=self.amount * self.tokenValueInPeggedCurrency, currency=self.peggedCurrency)
     
+    @recursion_detector()
     def toDict(self) -> dict[str,TSTRUC_ALIAS]:
         return {
             "amount": self.amount,
@@ -202,12 +209,14 @@ class GreenPointTokensView(ISerializable):
             "valueInPeggedCurrency": self.valueInPeggedCurrency.toDict(),
             "peggedCurrency": self.peggedCurrency
         }
-        
+    
+    @recursion_detector()    
     def toDictLight(self) -> dict[str,TSTRUC_ALIAS]:
         return {
             "amount": self.amount
         }
         
+    @recursion_detector()    
     def toDictUI(self) -> dict[str,TSTRUC_ALIAS]:
         return {
             "amount": self.amount
@@ -693,13 +702,15 @@ class Entity(Identifiable,ISerializable,metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def copyInstance(self:Self, copyId:bool=False) -> Self:
         raise NotImplementedError('Entity.fromEntity is abstract')
-
+    
+    @recursion_detector()
     def toDict(self) -> dict[str,TSTRUC_ALIAS]:
         return {
             **self.toDictUI(),
             "accounts": [a.toDictFromCaller(caller=self) for a in self._accounts]
         }
         
+    @recursion_detector()    
     def toDictUI(self) -> dict[str, TSTRUC_ALIAS]:
         return {
             **self.toDictLight(),
@@ -707,7 +718,8 @@ class Entity(Identifiable,ISerializable,metaclass=abc.ABCMeta):
             "balance": self.balance.toDictUI(),
             "balanceMoney": self.balance.combinedBalance.toDict()
         }
-        
+    
+    @recursion_detector()   
     def toDictLight(self) -> dict[str,TSTRUC_ALIAS]:
         return {
             "id": self.id,
@@ -808,6 +820,7 @@ class Customer(Entity):
     def purchaseHistory(self):
         return self._purchaseHistory
     
+    @recursion_detector()
     def toDict(self) -> dict[str,TSTRUC_ALIAS]:
         return {
             **super().toDict(),
@@ -815,12 +828,13 @@ class Customer(Entity):
             "basket": [p.toDict() for p in self.basket],
             "purchaseHistory": [p.toDict() for p in self.purchaseHistory]
         }
-        
+           
+    @recursion_detector()    
     def toDictUI(self) -> dict[str,TSTRUC_ALIAS]:
         return {
             **super().toDictUI(),
             "bank": self.bank.toDictLight(),
-            "basket": [p.toDictUI() for p in self.basket],
+            "basket": [p.toDictLight() for p in self.basket],
             "purchaseHistory": [p.toDictUI() for p in self.purchaseHistory]
         }
     
@@ -1177,6 +1191,7 @@ class CryptoWallet(Identifiable):
     def ownerBank(self):
         return self._ownerBankAccount.bank
     
+    @recursion_detector()
     def toDict(self) -> dict[str,TSTRUC_ALIAS]:
         return {
             "ethBalance": self.ethBalance.toDict(),
@@ -1186,6 +1201,7 @@ class CryptoWallet(Identifiable):
             "ownerBank": self.ownerBank.toDictLight()
         }
     
+    @recursion_detector()
     def toDictLight(self) -> dict[str,TSTRUC_ALIAS]:
         return {
             "ethBalance": self.ethBalance.toDict(),
@@ -1195,6 +1211,7 @@ class CryptoWallet(Identifiable):
             "ownerBank": self.ownerBank.toDictLight()
         }
     
+    @recursion_detector()    
     def toDictUI(self) -> dict[str,TSTRUC_ALIAS]:
         return {
             "ethBalance": self.ethBalance.toDict(),
@@ -1296,7 +1313,7 @@ class BankAccount(Identifiable, ISerializable):
         else:
             return self.toDict()
             
-        
+    @recursion_detector()   
     def toDict(self) -> dict[str,TSTRUC_ALIAS]:
         return {
             **super().toDict(),
@@ -1307,11 +1324,13 @@ class BankAccount(Identifiable, ISerializable):
             "cryptoWallet": self.cryptoWallet.toDict()
         }
         
+    @recursion_detector()
     def toDictLight(self) -> dict[str,TSTRUC_ALIAS]:
         return {
             **super().toDict()
         }
     
+    @recursion_detector()    
     def toDictUI(self) -> dict[str,TSTRUC_ALIAS]:
         return {
             **super().toDict(),
@@ -1703,6 +1722,7 @@ class Bank(Institution):
         # 'Banks can not make purchases'
         return
     
+    @recursion_detector()
     def toDict(self) -> dict[str,TSTRUC_ALIAS]:
         return {
             **super().toDict(),
@@ -1710,13 +1730,15 @@ class Bank(Institution):
             "transactionHistory": [t.toDict() for t in self.transactionHistory],
             "treasury": self._treasury.toDict()
         }
-        
+     
+    @recursion_detector()   
     def toDictLight(self) -> dict[str,TSTRUC_ALIAS]:
         return {
             "id": self.id,
             "name":self.name
         }
         
+    @recursion_detector()    
     def toDictUI(self) -> dict[str,TSTRUC_ALIAS]:
         return {
             "id": self.id,
@@ -1983,6 +2005,7 @@ class Bank(Institution):
             def _emit_event(self, event_name:Bank.Event, data:TSTRUC_ALIAS):
                 '''emits an event from the hosting bank which is listened to by the GreenpointsApp'''
                 self._p._bank._bankEventNotifier.notifyListeners(event_name, data)
+                wont_reach = False
             
             def transact(self):
                 # emit transaction creation event
@@ -2159,6 +2182,7 @@ class Bank(Institution):
         def totalMoneyCostInclTopUps(self):
             return self.ether.money + self.greenpoints.money + (self._topUpEtherTransaction.ether.money if self._topUpEtherTransaction is not None else Money(0.0))
         
+        @recursion_detector()
         def toDict(self) -> dict[str,TSTRUC_ALIAS]:
             return {
                 "id": self.id,
@@ -2172,6 +2196,7 @@ class Bank(Institution):
                 "topUpEtherTransaction": self.topUpEtherTransaction.toDictLight() if self.topUpEtherTransaction is not None else {}
             }
         
+        @recursion_detector()    
         def toDictUI(self) -> dict[str,TSTRUC_ALIAS]:
             return {
                 "id": self.id,
@@ -2184,6 +2209,7 @@ class Bank(Institution):
                 "totalMoneyCostInclTopUps": self.totalMoneyCostInclTopUps.toDictUI()
             }
         
+        @recursion_detector()
         def toDictLight(self) -> dict[str,TSTRUC_ALIAS]:
             return {
                 "id": self.id
@@ -2224,16 +2250,19 @@ class Bank(Institution):
             def money(self):
                 return self._money
             
+            @recursion_detector()
             def toDict(self) -> dict[str,TSTRUC_ALIAS]:
                 return {
                     "ether": self.ether.toDict(),
                     "gas": self.gas.toDict(),
                     "money": self.money.toDict()
                 }
-                
+             
+            @recursion_detector()   
             def toDictLight(self) -> dict[str,TSTRUC_ALIAS]:
                 return self.toDict()
             
+            @recursion_detector()    
             def toDictUI(self) -> dict[str,TSTRUC_ALIAS]:
                 return self.toDict()
             
@@ -2257,16 +2286,19 @@ class Bank(Institution):
             def money(self):
                 return self._money
             
+            @recursion_detector() 
             def toDict(self) -> dict[str,TSTRUC_ALIAS]:
                 return {
                     "greenPoints": self.greenPoints.toDict(),
                     "gas": self.gas.toDict(),
                     "money": self.money.toDict()
                 }
-                
+            
+            @recursion_detector() 
             def toDictLight(self) -> dict[str,TSTRUC_ALIAS]:
                 return self.toDict()
             
+            @recursion_detector()    
             def toDictUI(self) -> dict[str,TSTRUC_ALIAS]:
                 return self.toDict()
             
@@ -2312,6 +2344,7 @@ class Item(Identifiable, ISerializable):
     def retailer(self):
         return self._retailer
     
+    @recursion_detector()
     def toDict(self) -> dict[str,TSTRUC_ALIAS]:
         return {
             **super().toDict(),
@@ -2325,6 +2358,7 @@ class Item(Identifiable, ISerializable):
             **{k:getattr(self, k) for k in self.attsKeys}
         }
         
+    @recursion_detector()    
     def toDictUI(self) -> dict[str,TSTRUC_ALIAS]:
         return {
             **super().toDict(),
@@ -2335,6 +2369,7 @@ class Item(Identifiable, ISerializable):
             'GP': self.GP
         }
     
+    @recursion_detector()
     def toDictLight(self) -> dict[str,TSTRUC_ALIAS]:
         return {
             **super().toDict(),
@@ -2358,6 +2393,7 @@ class Item(Identifiable, ISerializable):
         def __str__(self):
             return f'{self.retailer.name} sold {self.item.name}'
         
+        @recursion_detector()
         def toDict(self) -> dict[str,TSTRUC_ALIAS]:
             return {
                 "totalGasBoughtWithMoney": self.totalGasBoughtWithMoney.toDict(),
@@ -2365,9 +2401,11 @@ class Item(Identifiable, ISerializable):
                 **self.item.toDict()
             }
             
+        @recursion_detector()    
         def toDictUI(self) -> dict[str,TSTRUC_ALIAS]:
             return super().toDictUI()
         
+        @recursion_detector()
         def toDictLight(self) -> dict[str,TSTRUC_ALIAS]:
             return super().toDictLight()
         
@@ -2384,6 +2422,7 @@ class PurchaseDTO(Identifiable, ISerializable):
         self.gpReward = gpReward
         self.atts = atts
     
+    @recursion_detector()
     def toDict(self) -> dict[str,TSTRUC_ALIAS]:
         return {
             "customer": self.customer.toDict(),
@@ -2393,7 +2432,7 @@ class PurchaseDTO(Identifiable, ISerializable):
             "gpReward": self.gpReward,
             **self.atts
         }
-        
+    @recursion_detector()
     def toDictLight(self) -> dict[str,TSTRUC_ALIAS]:
         return {
             "customer": self.customer.toDictLight(),
@@ -2403,6 +2442,7 @@ class PurchaseDTO(Identifiable, ISerializable):
             "gpReward": self.gpReward
         }
     
+    @recursion_detector()    
     def toDictUI(self) -> dict[str,TSTRUC_ALIAS]:
         return {
             "customer": self.customer.toDictUI(),
@@ -2545,19 +2585,21 @@ class Sale(Item.Transaction):
     def __init__(self, transaction: Bank.Transaction, retailer: Retailer, item: Item, greenPointsIssuedForItem: Bank.Transaction.GreenPoints) -> None:
         super().__init__(transaction, retailer, item)
         self.greenPointsIssuedForItem = greenPointsIssuedForItem
-        
+    
+    @recursion_detector()   
     def toDict(self) -> dict[str,TSTRUC_ALIAS]:
         return {
             **super().toDict(),
             "greenPointsIssuedForItem": self.greenPointsIssuedForItem.toDict()
         }
         
+    @recursion_detector()   
     def toDictUI(self) -> dict[str,TSTRUC_ALIAS]:
         return {
             **super().toDictUI(),
             "greenPointsIssuedForItem": self.greenPointsIssuedForItem.toDictUI()
         }
-    
+    @recursion_detector()
     def toDictLight(self) -> dict[str,TSTRUC_ALIAS]:
         return {
             **super().toDictLight(),

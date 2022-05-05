@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import abc
-from typing import Any, Callable, Iterable, Sequence, Union
-from typing import TypeGuard, TypeVar, Type, Set
+import json
+from typing import (Any, Callable, Iterable, Sequence, Set, Type, TypeGuard,
+                    TypeVar, Union)
+
 # from typeguard import check_argument_types, check_return_type, typechecked # https://typeguard.readthedocs.io/en/latest/userguide.html    
 from typing_extensions import Self
-import json
+
+from func_wrappers import recursion_detector
 
 TVALUE = Union[str, bytes, int, float, bool]
 TSTRUC = Union[str, bytes, int, float, bool, Iterable[Union[str, bytes, int, float, bool]], dict[(str|int|float),Union[str, bytes, int, float, bool]]]
@@ -112,14 +115,17 @@ TSERIALIZABLE_ALIAS = (TSTRUC_ALIAS|
 
 class ISerializableBasic(ISerializable):
     
+    @recursion_detector()
     def toDict(self) -> dict[str,TSTRUC_ALIAS]:
         return super().toDict()
     
     
+    @recursion_detector()
     def toDictLight(self) -> dict[str,TSTRUC_ALIAS]:
         '''returns light information for object identification at runtime'''
         return self.toDict()
     
+    @recursion_detector()    
     def toDictUI(self) -> dict[str,TSTRUC_ALIAS]:
         '''returns viewable information on an object that would not necessarily be sufficient to create a copy of the object'''
         return self.toDict()

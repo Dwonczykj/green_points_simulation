@@ -78,6 +78,13 @@ class SimulationIterationConfig:
             'sustainability': self.sustainabilityBaseline.value,
             'controlRetailerName': self.controlRetailerName,
         }
+        
+    def __str__(self) -> str:
+        return ';'.join([str(x) for x in [
+            self.BASKET_FULL_SIZE,
+            self.NUM_SHOP_TRIPS_PER_ITERATION,
+            self.NUM_CUSTOMERS,
+        ]])
     
 class SimulationConfig(SimulationIterationConfig):
     '''class containing simulation config parameters that can be changed.'''
@@ -85,7 +92,9 @@ class SimulationConfig(SimulationIterationConfig):
         super().__init__()
         self.maxN = 5
         self.convergenceTH = 1.0
-    
+        
+    def __str__(self) -> str:
+        return super().__str__()
     
     def toJson(self) -> dict[str,float|int]:
         return {

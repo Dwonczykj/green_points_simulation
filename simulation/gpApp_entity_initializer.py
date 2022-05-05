@@ -42,7 +42,3 @@ class EntityInitialiser:
     @property
     def retailers(self):
         return self._retailers
-
-    # @property
-    # def customers(self):
-    #     return self._customers

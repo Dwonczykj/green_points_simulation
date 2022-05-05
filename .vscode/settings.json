@@ -4,7 +4,7 @@
     "python.pythonPath": "/Users/joeyd/opt/anaconda3/envs/gpsim/bin/python",
     "python.testing.pytestArgs": [],
     "python.testing.pytestEnabled": true,
-    "python.analysis.extraPaths": [
+    "python.analysis.extraPaths": [ // The root folder should be Gember/GreenPoint
         "${workspaceFolder}/simulation/",
         "${workspaceFolder}/simulation/Observable/utils/",
         "${workspaceFolder}/simulation/webSockets/"

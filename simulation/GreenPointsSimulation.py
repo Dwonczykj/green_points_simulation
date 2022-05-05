@@ -1,37 +1,39 @@
 from __future__ import annotations
-from enum import Enum
-from typing import Any, Callable, Literal, Tuple, TypeGuard
-import cachetools.func # for ttl_cacheing of sim_envs
-import cachetools
-import eventlet
-import time
-from eventlet import queue
-import uuid
-from colorama import Fore, Back, Style
+
+import abc
 # from queue_main_global import QueueHolder
 import logging
-import pandas as pd
-import numpy as np
-from flask_socketio import SocketIO
-import abc
-from Multipliable import Numeric
+import time
+import uuid
+from enum import Enum
+from typing import Any, Callable, Literal, Tuple, TypeGuard
 
-# from Singleton import classproperty
-from enums import *
-from data_fetcher import get_dataset, pd_dataframe_explain_update
+import cachetools
+import cachetools.func  # for ttl_cacheing of sim_envs
+import eventlet
+import numpy as np
+import pandas as pd
+from app_config import SimulationConfig, SimulationIterationConfig
+from colorama import Back, Fore, Style
+from event_names import WebSocketServerResponseEvent
+from eventlet import queue
+from flask_socketio import SocketIO
 from Observer import Observable, Observer
-from Bank import Bank, BankAccountView, ControlRetailer, Customer, Entity, RetailerStrategyGPMultiplier, Retailer, RetailerSustainabilityIntercept, SalesAggregation
+from web_socket_stack import WebSocketsStack
+
+from Bank import (Bank, BankAccountView, ControlRetailer, Customer, Entity,
+                  Retailer, RetailerStrategyGPMultiplier,
+                  RetailerSustainabilityIntercept, SalesAggregation)
 from Bank import debug as APP_DEBUG
 from Coin import Money
+from data_fetcher import get_dataset, pd_dataframe_explain_update
+# from Singleton import classproperty
+from enums import *
+from gpApp_entity_initializer import *
 # import random
 from ISerializable import TSTRUC_ALIAS, SerializableList
-from event_names import WebSocketServerResponseEvent
-from gpApp_entity_initializer import *
-from app_config import SimulationConfig, SimulationIterationConfig
+from Multipliable import Numeric
 
-
-
-from web_socket_stack import WebSocketsStack
 # import sys
 # sys.path += ['./Observable/utils']
 
@@ -91,6 +93,8 @@ class GreenPointsLoyaltyApp():
             
             self._websocket = WebSocketsStack.getInstance(self,socketio)
             # self.nonBlockingQueueChecker()
+            self.observableAppEndPoint = GreenPointsLoyaltyApp.ObservableAppEndPoint(outer=self)
+            
             
     # def nonBlockingQueueChecker(self):
     #     while True:
@@ -446,8 +450,11 @@ class GreenPointsLoyaltyApp():
                      runningVariance:GreenPointsLoyaltyApp.IterationResult):
             self.iterationNumber = iterationNumber
             self.maxNIterations = maxNIterations
+            assert isinstance(runningSum, GreenPointsLoyaltyApp.IterationResult), 'runningSum must be IterationResult'
             self.runningSum = runningSum
+            assert isinstance(runningAverage, GreenPointsLoyaltyApp.IterationResult), 'runningAverage must be IterationResult'
             self.runningAverage = runningAverage
+            assert isinstance(runningVariance, GreenPointsLoyaltyApp.IterationResult), 'runningVariance must be IterationResult'
             self.runningVariance = runningVariance
             
         @staticmethod
@@ -540,6 +547,10 @@ class GreenPointsLoyaltyApp():
     
     
     class IterationResult:
+        '''
+        DTO for Streaming to external services
+            each pandas series is a series of values for that iteration_number indexed by retailer
+        '''
         def __init__(self, 
                      salesCount: pd.Series[Numeric], 
                      greenPointsIssued: pd.Series[Numeric], 
@@ -595,6 +606,19 @@ class GreenPointsLoyaltyApp():
         
         def toDict(self):
             return self.toDataFrame().to_dict()
+        
+        @classmethod
+        def fromDict(cls,dict:dict):
+            df = pd.DataFrame(dict)
+            inst = cls(
+                salesCount=df[GemberMeasureType.sales_count.value],
+                greenPointsIssued=df[GemberMeasureType.GP_Issued.value],
+                marketShare=df[GemberMeasureType.market_share.value],
+                totalSalesRevenue=df[GemberMeasureType.total_sales_revenue.value],
+                totalSalesRevenueLessGP=df[GemberMeasureType.total_sales_revenue_less_gp.value],
+            )
+            return inst
+            
             
         @staticmethod
         def fromRetailers(retailers:dict[str,Retailer], preferredCurrency:str|None=None):
@@ -939,7 +963,8 @@ class GreenPointsLoyaltyApp():
                                         eventlet.sleep(round(self.gpApp.secondsBetweenPurchases))
                                     break
                         except Exception as e:
-                            from colorama import Fore, Back, Style
+                            from colorama import Back, Fore, Style
+
                             # logging.debug(Fore.RED + 'some red text')
                             # logging.debug(Back.GREEN + 'and with a green background')
                             # logging.debug(Style.DIM + 'and in dim text')
@@ -949,6 +974,7 @@ class GreenPointsLoyaltyApp():
                                   f'{GreenPointsLoyaltyApp.__name__}.{GreenPointsLoyaltyApp.SimulationEnvironment.__name__}._run_iteration errored in item purchase loop with exception: ' + 
                                   str(e))
                             import traceback
+
                             # import sys
                             traceback.print_exc()  # print_exception(*sys.exc_info(), limit, file)
                             logging.debug(e)
@@ -1025,6 +1051,7 @@ class GreenPointsLoyaltyApp():
                 pass
             
             iterCounter = 1
+            
             retailersFixedForSimIteration = self._run_iteration(run_isolated_iteration=False,
                                 iterationCounter=iterCounter)
             runningAverage = self.summarise_first_iteration(retailersSnapshot=retailersFixedForSimIteration, maxNIterations=self.maxN, debug=False)
@@ -1255,12 +1282,12 @@ class GreenPointsLoyaltyApp():
             # assert self.active_simulation_environment is not None, 'Must init a new simulation before starting the app'
             self._running = True
             active_simulation_environment = self._simulationEnvironments[simulationId][1]
-            resultDf = active_simulation_environment.run_simulation(
+            result = active_simulation_environment.run_simulation(
                 betweenIterationCallback=betweenIterationCallback)
             self._simsRun += 1
             self._running = False
             self._simulationEnvironments.pop(simulationId)
-            return resultDf
+            return result
         except Exception as e:
             logging.debug(e)
             raise e
@@ -1329,10 +1356,30 @@ class GreenPointsLoyaltyApp():
                 self.websocket.broadcast(event_name, data)
                 logging.debug(Fore.YELLOW + Style.DIM + f'{GreenPointsLoyaltyApp.__name__} emitted event: {event_name}')
                 # logging.debug(Fore.YELLOW + Style.DIM + f'{type(self).__name__}.websocket[{type(self.websocket).__name__}] emitted event: {event_name}' + Style.RESET_ALL)
+                self.observableAppEndPoint.notifyListeners(event_name=event_name, data=data)
             else:
                 self.websocket.broadcast(event_name, 'empty')
+                self.observableAppEndPoint.notifyListeners(event_name=event_name, data='empty')
                     
-
+    class ObservableAppEndPoint(Observable):
+        def __init__(self, outer:GreenPointsLoyaltyApp, *args):
+            super().__init__()
+            self._outer = outer
+            self.eventOccuredAlready = 0 # This is the flag that stops 100 open events from updating the observers 100 times.
+            
+        def notifyListeners(self, event_name:WebSocketServerResponseEvent, data:Any):
+            self.setChanged()
+            super().notifyObservers(event_name=event_name, data=data)
+            
+        def notifyObservers(self, **kwargs):
+            # Implement the super().notifyObservers(self) to cause change
+            if self.eventOccuredAlready == 0:
+                self.setChanged() # Crucial otherwise wont update observers.
+                super().notifyObservers(**kwargs)
+                self.eventOccuredAlready = 1
+            else:
+                # event already occured so no need to notify all the observers
+                pass
     
 
     class AppStream(Observable):

@@ -37,6 +37,18 @@
             "justMyCode": true
         },
         {
+            "name": "Python: main_terminal",
+            "type": "python",
+            "request": "launch",
+            "module": "main_terminal",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/simulation/:${workspaceFolder}/simulation/webSockets/:${workspaceFolder}/simulation/Observable/utils/",
+                "FLASK_APP": "simulation.app.py",
+                "FLASK_ENV": "development"
+            },
+            "justMyCode": true
+        },
+        {
             "name": "Python: Current File",
             "type": "python",
             "request": "launch",
